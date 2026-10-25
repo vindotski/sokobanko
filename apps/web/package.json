@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@lucide/vue": "^1.61.0",
+    "@nuxtjs/supabase": "2.1.0",
     "@pinia/nuxt": "^1.0.3",
     "@sokobanko/core": "workspace:*",
     "@sokobanko/game": "workspace:*",
