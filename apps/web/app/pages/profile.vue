@@ -1,5 +1,7 @@
 <script setup lang="ts">
-// Temporary: inspect the session's JWT claims while auth is being built.
+// The session's JWT claims, for the development-only card below. Nuxt strips
+// DevOnly blocks from production builds (don't write the tag in comments: the
+// stripping is a plain text match over this whole file).
 const user = useSupabaseUser();
 const { data: completions } = await useCompletions();
 </script>
@@ -56,16 +58,18 @@ const { data: completions } = await useCompletions();
         </Table>
       </CardContent>
     </Card>
-    <Card>
-      <CardHeader>
-        <CardTitle>User</CardTitle>
-        <CardDescription>JWT claims from useSupabaseUser()</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <pre class="overflow-x-auto rounded-md bg-muted p-4 text-xs">{{
-          user ? JSON.stringify(user, null, 2) : "No session yet"
-        }}</pre>
-      </CardContent>
-    </Card>
+    <DevOnly>
+      <Card>
+        <CardHeader>
+          <CardTitle>User</CardTitle>
+          <CardDescription>JWT claims from useSupabaseUser()</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre class="overflow-x-auto rounded-md bg-muted p-4 text-xs">{{
+            user ? JSON.stringify(user, null, 2) : "No session yet"
+          }}</pre>
+        </CardContent>
+      </Card>
+    </DevOnly>
   </div>
 </template>
