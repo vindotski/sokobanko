@@ -1,3 +1,15 @@
-export type { Direction } from "./direction.ts";
+export {
+  type Direction,
+  directionToLetter,
+  letterToDirection,
+} from "./direction.ts";
 export type { LevelJson, ParsedLevel } from "./level.ts";
 export { LevelParseError, parseLevel } from "./level.ts";
+export {
+  isSolved,
+  type MoveResult,
+  move,
+  ReplayError,
+  type ReplayResult,
+  replay,
+} from "./moves.ts";
