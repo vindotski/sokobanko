@@ -1,14 +1,34 @@
 <script setup lang="ts">
-// The session's JWT claims, for the development-only card below. Nuxt strips
-// DevOnly blocks from production builds (don't write the tag in comments: the
-// stripping is a plain text match over this whole file).
+import { UserIcon } from "@lucide/vue";
+
+// The session's JWT claims. The raw claims card at the bottom is development
+// only: Nuxt strips DevOnly blocks from production builds (don't write the tag
+// in comments, as the stripping is a plain text match over this whole file).
 const user = useSupabaseUser();
 const { data: completions } = await useCompletions();
+
+const isGuest = computed(() => user.value?.is_anonymous !== false);
+const name = computed(() =>
+  isGuest.value ? "Guest" : String(user.value?.email ?? "Player"),
+);
 </script>
 
 <template>
   <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-    <h1 class="text-2xl font-bold">Profile</h1>
+    <div class="flex items-center gap-4">
+      <Avatar class="size-12">
+        <AvatarFallback><UserIcon /></AvatarFallback>
+      </Avatar>
+      <div class="flex min-w-0 flex-col gap-1">
+        <h1 class="truncate text-2xl font-semibold tracking-tight">
+          {{ name }}
+        </h1>
+        <p v-if="isGuest" class="text-sm text-muted-foreground">
+          Clearing site data will lose all your progress. Accounts are coming
+          soon.
+        </p>
+      </div>
+    </div>
     <Card>
       <CardHeader>
         <CardTitle>Completed levels</CardTitle>
