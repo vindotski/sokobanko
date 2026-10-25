@@ -31,40 +31,48 @@ const questions = [
     answer: "Not yet, but it's planned.",
   },
   {
-    question: "I found a bug or something's not right. What do I do?",
+    question: "Which technologies were used to make this?",
     answer:
-      "Sorry about that! Please describe what happened, and which level and device you were on, in an email to",
+      "TypeScript throughout: Nuxt and Vue for the site, PixiJS for drawing the game, Tailwind CSS and shadcn-vue for the interface, and Supabase for accounts and saved results.",
+  },
+  {
+    question: "I didn't find my answer here. What do I do?",
+    answer:
+      "Questions, bug reports and ideas are all welcome. Send an email to",
     email: "ivan@vin.ski",
   },
 ];
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-    <div class="flex flex-col gap-1">
-      <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
-      <p class="text-sm text-muted-foreground">
-        Answers to common questions about Sokobanko.
-      </p>
+  <div class="flex flex-1 flex-col">
+    <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
+        <p class="text-sm text-muted-foreground">
+          Answers to common questions about Sokobanko.
+        </p>
+      </div>
+      <Accordion type="single" collapsible>
+        <AccordionItem
+          v-for="(item, index) in questions"
+          :key="item.question"
+          :value="`item-${index}`"
+        >
+          <AccordionTrigger>{{ item.question }}</AccordionTrigger>
+          <AccordionContent class="text-muted-foreground">
+            {{ item.answer }}
+            <template v-if="item.email">
+              <a
+                :href="`mailto:${item.email}`"
+                class="font-medium text-foreground underline underline-offset-4"
+                >{{ item.email }}</a
+              >.
+            </template>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </div>
-    <Accordion type="single" collapsible>
-      <AccordionItem
-        v-for="(item, index) in questions"
-        :key="item.question"
-        :value="`item-${index}`"
-      >
-        <AccordionTrigger>{{ item.question }}</AccordionTrigger>
-        <AccordionContent class="text-muted-foreground">
-          {{ item.answer }}
-          <template v-if="item.email">
-            <a
-              :href="`mailto:${item.email}`"
-              class="font-medium text-foreground underline underline-offset-4"
-              >{{ item.email }}</a
-            >.
-          </template>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+    <MadeByFooter class="mt-auto" />
   </div>
 </template>
