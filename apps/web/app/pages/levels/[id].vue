@@ -62,22 +62,20 @@ async function onSolved({ solution }: GameProgress) {
 <template>
   <div class="flex flex-1 flex-col">
     <div class="border-b">
-      <div class="mx-auto flex h-12 w-full max-w-5xl items-center gap-2 px-4">
+      <div class="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4">
         <Button as-child variant="ghost" size="icon-sm">
           <NuxtLink to="/levels" aria-label="Back to levels">
             <ArrowLeftIcon />
           </NuxtLink>
         </Button>
-        <h1 class="min-w-0 flex-1 truncate text-base font-semibold">
-          {{ level.title }}
-        </h1>
-        <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
-          {{ count(progress.moves, "move", "moves") }}<span
-            class="hidden sm:inline"
-          >
-            · {{ count(progress.pushes, "push", "pushes") }}</span
-          >
-        </span>
+        <!-- Title above the counts, so neither competes with the buttons. -->
+        <div class="flex min-w-0 flex-1 flex-col">
+          <h1 class="truncate text-sm font-semibold">{{ level.title }}</h1>
+          <p class="truncate text-xs text-muted-foreground tabular-nums">
+            {{ count(progress.moves, "move", "moves") }} ·
+            {{ count(progress.pushes, "push", "pushes") }}
+          </p>
+        </div>
         <Toggle
           v-if="overview.available"
           variant="outline"
