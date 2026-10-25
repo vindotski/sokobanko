@@ -34,6 +34,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      level_completions: {
+        Row: {
+          completed_at: string;
+          level_id: string;
+          moves: number;
+          pushes: number;
+          solution: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string;
+          level_id: string;
+          moves: number;
+          pushes: number;
+          solution: string;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string;
+          level_id?: string;
+          moves?: number;
+          pushes?: number;
+          solution?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "level_completions_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       levels: {
         Row: {
           author_id: string | null;
@@ -94,7 +130,23 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
-      [_ in never]: never;
+      record_level_completion: {
+        Args: { p_level_id: string; p_solution: string; p_user_id: string };
+        Returns: {
+          completed_at: string;
+          level_id: string;
+          moves: number;
+          pushes: number;
+          solution: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "level_completions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
     };
     Enums: {
       [_ in never]: never;
