@@ -1,6 +1,7 @@
 import {
   type Direction,
   directionToLetter,
+  insideCells,
   isSolved,
   type LevelJson,
   move,
@@ -13,12 +14,14 @@ import { listenToMovementKeys } from "./keyboard.ts";
 
 const TILE = 64;
 
+// Same colors as the --board-* variables in apps/web/app/assets/css/main.css.
 const COLORS = {
-  wall: 0x52525b,
+  wall: 0x475569,
+  floor: 0xfaf7f0,
   goal: 0xf59e0b,
-  box: 0xa16207,
+  box: 0xb45309,
   boxOnGoal: 0x16a34a,
-  player: 0x3b82f6,
+  player: 0x2563eb,
 };
 
 export interface GameProgress {
@@ -162,12 +165,17 @@ function drawLevel(g: Graphics, level: ParsedLevel) {
   const cellX = (i: number) => (i % level.width) * TILE;
   const cellY = (i: number) => Math.floor(i / level.width) * TILE;
 
+  const inside = insideCells(level);
+
   g.clear();
   for (let i = 0; i < level.walls.length; i++) {
     const x = cellX(i);
     const y = cellY(i);
     if (level.walls[i]) {
-      g.rect(x, y, TILE, TILE).fill(COLORS.wall);
+      // Slightly inset, like the tiles in the web previews.
+      g.roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 2).fill(COLORS.wall);
+    } else if (inside[i]) {
+      g.rect(x, y, TILE, TILE).fill(COLORS.floor);
     }
     if (level.goals[i]) {
       g.circle(x + TILE / 2, y + TILE / 2, TILE * 0.15).fill(COLORS.goal);

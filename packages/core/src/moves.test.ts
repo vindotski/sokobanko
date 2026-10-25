@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseLevel } from "./level.ts";
-import { isSolved, move, ReplayError, replay } from "./moves.ts";
+import { insideCells, isSolved, move, ReplayError, replay } from "./moves.ts";
 
 const level = (...map: string[]) =>
   parseLevel({ id: "test", title: "Test", map });
@@ -52,6 +52,34 @@ describe("move", () => {
 
     expect(l.player).toBe(cell(l, 1, 1));
     expect(l.boxes).toEqual(boxes);
+  });
+});
+
+describe("insideCells", () => {
+  it("marks the floor inside the walls, including under boxes and goals", () => {
+    const l = level(" #####", "##   #", "#@$$ #", "#  ..#", "######");
+    const inside = insideCells(l);
+
+    expect(inside.reduce((n, c) => n + c, 0)).toBe(11);
+    expect(inside[cell(l, 2, 2)]).toBe(1); // box
+    expect(inside[cell(l, 3, 3)]).toBe(1); // goal
+  });
+
+  it("leaves walls and the space outside them empty", () => {
+    const l = level(" #####", "##   #", "#@$$ #", "#  ..#", "######");
+    const inside = insideCells(l);
+
+    expect(inside[cell(l, 0, 0)]).toBe(0); // outside, top-left
+    expect(inside[cell(l, 1, 0)]).toBe(0); // wall
+  });
+
+  it("leaves padding outside a closed map empty", () => {
+    // The short first row is padded with floor at (4, 0), outside the walls.
+    const l = level("####", "#@$.#", "#####");
+    const inside = insideCells(l);
+
+    expect(inside.reduce((n, c) => n + c, 0)).toBe(3);
+    expect(inside[cell(l, 4, 0)]).toBe(0);
   });
 });
 

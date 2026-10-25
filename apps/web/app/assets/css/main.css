@@ -26,6 +26,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-board-wall: var(--board-wall);
+  --color-board-floor: var(--board-floor);
+  --color-board-goal: var(--board-goal);
+  --color-board-box: var(--board-box);
+  --color-board-box-on-goal: var(--board-box-on-goal);
+  --color-board-player: var(--board-player);
 }
 
 :root {
@@ -48,6 +54,13 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  /* Sokoban board; packages/game/src/game.ts uses the same colors. */
+  --board-wall: #475569;
+  --board-floor: #faf7f0;
+  --board-goal: #f59e0b;
+  --board-box: #b45309;
+  --board-box-on-goal: #16a34a;
+  --board-player: #2563eb;
 }
 
 .dark {

@@ -38,7 +38,7 @@ async function onSolved({ solution }: GameProgress) {
       `/api/levels/${levelId}/complete`,
       { method: "POST", body: { solution } },
     );
-    store.markCompleted(levelId);
+    store.markCompleted(levelId, result.best);
     verification.value = { state: "verified", best: result.best };
   } catch (error) {
     const message =

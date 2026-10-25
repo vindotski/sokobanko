@@ -21,6 +21,27 @@ function neighbor(level: ParsedLevel, cell: number, direction: Direction) {
   return y * level.width + x;
 }
 
+/**
+ * Marks the floor inside the walls: every cell the player could ever walk to,
+ * treating boxes as passable. Cells outside the walls stay 0, so renderers can
+ * leave them empty.
+ */
+export function insideCells(level: ParsedLevel): Uint8Array {
+  const inside = new Uint8Array(level.walls.length);
+  const queue = [level.player];
+  inside[level.player] = 1;
+
+  for (let cell = queue.pop(); cell !== undefined; cell = queue.pop()) {
+    for (const direction of ["U", "D", "L", "R"] as const) {
+      const next = neighbor(level, cell, direction);
+      if (next === null || inside[next] || level.walls[next]) continue;
+      inside[next] = 1;
+      queue.push(next);
+    }
+  }
+  return inside;
+}
+
 export interface MoveResult {
   level: ParsedLevel;
   pushed: boolean;

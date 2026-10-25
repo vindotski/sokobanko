@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { CheckIcon } from "@lucide/vue";
+import { parseLevel } from "@sokobanko/core";
+
 const progress = useProgressStore();
 const user = useSupabaseUser();
 const { data: levels } = await useLevels();
@@ -6,29 +9,83 @@ const { data: levels } = await useLevels();
 await useAsyncData("completions", () => progress.load(), {
   watch: [() => user.value?.sub],
 });
+
+const cards = computed(() =>
+  (levels.value ?? []).map((level, index) => {
+    const parsed = parseLevel(level);
+    return {
+      level,
+      number: index + 1,
+      boxes: parsed.boxes.reduce((n, box) => n + box, 0),
+      best: progress.best[level.id],
+    };
+  }),
+);
+const solvedCount = computed(() => cards.value.filter((c) => c.best).length);
+const solvedPercent = computed(() =>
+  cards.value.length ? (solvedCount.value / cards.value.length) * 100 : 0,
+);
 </script>
 
 <template>
   <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
-    <h1 class="text-2xl font-bold">Levels</h1>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <NuxtLink
-        v-for="(level, index) in levels"
-        :key="level.id"
-        :to="`/levels/${level.id}`"
-      >
-        <Card class="h-full transition-colors hover:bg-accent">
-          <CardHeader>
-            <CardTitle>{{ level.title }}</CardTitle>
-            <CardDescription>
-              {{ progress.isCompleted(level.id) ? "Completed" : `Level ${index + 1}` }}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <LevelPreview :level="level" />
-          </CardContent>
-        </Card>
-      </NuxtLink>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-semibold tracking-tight">Levels</h1>
+        <p class="text-sm text-muted-foreground">
+          Pick a puzzle. Your best result is saved when you solve it.
+        </p>
+      </div>
+      <div v-if="cards.length" class="flex items-center gap-3">
+        <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+          {{ solvedCount }} of {{ cards.length }} solved
+        </span>
+        <Progress :model-value="solvedPercent" class="w-32" />
+      </div>
     </div>
+
+    <ItemGroup
+      v-if="cards.length"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+    >
+      <Item
+        v-for="card in cards"
+        :key="card.level.id"
+        as-child
+        variant="outline"
+        role="listitem"
+      >
+        <!-- Pack the wrapped rows at the top, so previews and text line up
+             across cards of equal height. -->
+        <NuxtLink :to="`/levels/${card.level.id}`" class="content-start">
+          <!-- Same faint tile grid as the home page hero. -->
+          <ItemHeader
+            class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[12px_12px] p-4"
+          >
+            <LevelPreview :level="card.level" />
+            <Badge v-if="card.best" class="absolute top-2 right-2">
+              <CheckIcon />
+              {{ card.best.moves }} moves
+            </Badge>
+          </ItemHeader>
+          <ItemContent class="min-w-0">
+            <ItemTitle class="w-full">
+              <span class="truncate">{{ card.level.title }}</span>
+            </ItemTitle>
+            <ItemDescription class="truncate tabular-nums">
+              Level {{ card.number }} · {{ card.boxes }}
+              {{ card.boxes === 1 ? "box" : "boxes" }}
+            </ItemDescription>
+          </ItemContent>
+        </NuxtLink>
+      </Item>
+    </ItemGroup>
+
+    <Empty v-else class="border">
+      <EmptyHeader>
+        <EmptyTitle>No levels yet</EmptyTitle>
+        <EmptyDescription>Published levels will show up here.</EmptyDescription>
+      </EmptyHeader>
+    </Empty>
   </div>
 </template>
