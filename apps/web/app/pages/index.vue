@@ -1,19 +1,9 @@
-<script setup lang="ts">
-import type { LevelJson } from "@sokobanko/core";
-
-const counter = useCounterStore();
-
-const level: LevelJson = {
-  id: "world1-001",
-  title: "Hello World!",
-  map: ["##########", "####....##", "#  $$$$###", "#  @   ###", "##########"],
-};
-</script>
-
 <template>
-  <main class="flex min-h-svh flex-col items-center justify-center gap-4">
-    <h1 class="text-3xl font-bold">Sokobanko</h1>
-    <SokobanGame :level="level" class="h-96 w-full max-w-2xl" />
-    <Button @click="counter.increment()">Count: {{ counter.count }}</Button>
-  </main>
+  <div class="flex flex-col items-center gap-6 py-16 text-center">
+    <h1 class="text-4xl font-bold">Sokobanko</h1>
+    <p class="text-muted-foreground">Push every box onto a goal.</p>
+    <Button as-child size="lg">
+      <NuxtLink to="/levels">Play</NuxtLink>
+    </Button>
+  </div>
 </template>
