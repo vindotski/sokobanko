@@ -11,16 +11,16 @@
             Levels
           </NuxtLink>
           <NuxtLink
-            to="/faq"
-            class="text-muted-foreground hover:text-foreground [&.router-link-active]:text-foreground"
-          >
-            FAQ
-          </NuxtLink>
-          <NuxtLink
             to="/profile"
             class="text-muted-foreground hover:text-foreground [&.router-link-active]:text-foreground"
           >
             Profile
+          </NuxtLink>
+          <NuxtLink
+            to="/faq"
+            class="text-muted-foreground hover:text-foreground [&.router-link-active]:text-foreground"
+          >
+            FAQ
           </NuxtLink>
         </div>
       </nav>
