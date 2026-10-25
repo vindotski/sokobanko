@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { LEVELS } from "~/data/levels";
+const { data: levelIds } = await useLevelIds();
 
 function playRandom() {
-  const level = LEVELS[Math.floor(Math.random() * LEVELS.length)];
-  if (level) navigateTo(`/levels/${level.id}`);
+  const ids = levelIds.value ?? [];
+  const id = ids[Math.floor(Math.random() * ids.length)];
+  if (id) navigateTo(`/levels/${id}`);
 }
 </script>
 
@@ -24,13 +25,15 @@ function playRandom() {
       Push every box onto a goal. You can't pull, so every move counts.
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
-      <Button size="lg" @click="playRandom">Random level</Button>
+      <Button size="lg" :disabled="!levelIds?.length" @click="playRandom">
+        Random level
+      </Button>
       <Button as-child size="lg" variant="outline">
         <NuxtLink to="/levels">Browse levels</NuxtLink>
       </Button>
     </div>
     <p class="text-sm text-muted-foreground">
-      {{ LEVELS.length }} levels and counting
+      {{ levelIds?.length ?? 0 }} levels and counting
     </p>
   </section>
 </template>

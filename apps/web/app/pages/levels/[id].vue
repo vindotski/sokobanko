@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { GameProgress } from "@sokobanko/game";
-import { findLevel } from "~/data/levels";
 
 const route = useRoute();
-const level = findLevel(String(route.params.id));
+const { data } = await useLevel(String(route.params.id));
+const level = data.value;
 if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
