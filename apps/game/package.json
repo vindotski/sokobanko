@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sokobanko/core": "workspace:*",
     "pixi.js": "^8.22.0"
   },
   "devDependencies": {
