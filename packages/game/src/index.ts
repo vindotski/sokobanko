@@ -1,1 +1,1 @@
-export { createGame, type Game } from "./game.ts";
+export { createGame, type Game, type GameOptions } from "./game.ts";

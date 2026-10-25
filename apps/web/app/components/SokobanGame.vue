@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { LevelJson } from "@sokobanko/core";
+import type { Direction, LevelJson } from "@sokobanko/core";
 import type { Game } from "@sokobanko/game";
 
 const props = defineProps<{ level: LevelJson }>();
+const emit = defineEmits<{ move: [direction: Direction] }>();
 
 const container = useTemplateRef("container");
 let game: Game | undefined;
@@ -15,7 +16,9 @@ onMounted(async () => {
   if (!el || unmounted) return;
 
   const initialLevel = props.level;
-  const created = await createGame(el, initialLevel);
+  const created = await createGame(el, initialLevel, {
+    onMove: (direction) => emit("move", direction),
+  });
   if (unmounted) {
     created.destroy();
     return;

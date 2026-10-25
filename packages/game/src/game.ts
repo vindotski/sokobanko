@@ -1,5 +1,11 @@
-import { type LevelJson, type ParsedLevel, parseLevel } from "@sokobanko/core";
+import {
+  type Direction,
+  type LevelJson,
+  type ParsedLevel,
+  parseLevel,
+} from "@sokobanko/core";
 import { Application, Graphics } from "pixi.js";
+import { Joystick } from "./joystick.ts";
 
 const TILE = 64;
 
@@ -10,6 +16,11 @@ const COLORS = {
   boxOnGoal: 0x16a34a,
   player: 0x3b82f6,
 };
+
+export interface GameOptions {
+  /** Called for every step from the joystick. */
+  onMove?: (direction: Direction) => void;
+}
 
 export interface Game {
   /** Replaces the current level. Throws `LevelParseError` if it is invalid. */
@@ -24,6 +35,7 @@ export interface Game {
 export async function createGame(
   container: HTMLElement,
   level: LevelJson,
+  options: GameOptions = {},
 ): Promise<Game> {
   let parsed = parseLevel(level);
 
@@ -37,8 +49,16 @@ export async function createGame(
   });
   container.appendChild(app.canvas);
 
+  // Make the whole canvas a pointer target for the joystick.
+  app.stage.eventMode = "static";
+  app.stage.hitArea = app.screen;
+
   const board = new Graphics();
-  app.stage.addChild(board);
+  const joystick = new Joystick(app.stage, (direction) =>
+    options.onMove?.(direction),
+  );
+  app.stage.addChild(board, joystick);
+  app.ticker.add((ticker) => joystick.update(ticker.deltaMS));
 
   const layout = () => {
     const width = parsed.width * TILE;

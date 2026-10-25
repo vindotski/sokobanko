@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Direction } from "@sokobanko/core";
 import { findLevel } from "~/data/levels";
 
 const route = useRoute();
@@ -6,6 +7,9 @@ const level = findLevel(String(route.params.id));
 if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
+
+// Placeholder until core can apply moves.
+const moves = ref<Direction[]>([]);
 </script>
 
 <template>
@@ -19,6 +23,14 @@ if (!level) {
         Restart
       </Button>
     </div>
-    <SokobanGame :level="level" class="h-[60svh] w-full" />
+    <SokobanGame
+      :level="level"
+      class="h-[60svh] w-full touch-none select-none"
+      @move="moves.push($event)"
+    />
+    <p class="text-sm text-muted-foreground">
+      Drag on the board to move.
+      <span v-if="moves.length" class="font-mono">{{ moves.join("") }}</span>
+    </p>
   </div>
 </template>
