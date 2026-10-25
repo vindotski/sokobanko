@@ -17,5 +17,10 @@ export default defineNuxtConfig({
     redirect: false,
     // Enable once types are generated with `supabase gen types`.
     types: false,
+    cookieOptions: {
+      // The default 8 hours would drop anonymous sessions, and their progress,
+      // daily. 400 days is the longest lifetime browsers allow.
+      maxAge: 60 * 60 * 24 * 400,
+    },
   },
 });
