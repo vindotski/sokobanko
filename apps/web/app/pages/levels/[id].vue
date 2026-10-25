@@ -99,7 +99,7 @@ async function onSolved({ solution }: GameProgress) {
         </span>
       </template>
       <template v-else>
-        Drag on the board to move.
+        Drag on the board or use the arrow keys.
         {{ progress.moves }} moves, {{ progress.pushes }} pushes
       </template>
     </p>

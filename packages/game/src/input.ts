@@ -14,6 +14,19 @@ export function directionFromVector(
   return dy > 0 ? "D" : "U";
 }
 
+// A Map, so keys like "constructor" don't hit Object.prototype.
+const ARROW_KEYS = new Map<string, Direction>([
+  ["ArrowUp", "U"],
+  ["ArrowDown", "D"],
+  ["ArrowLeft", "L"],
+  ["ArrowRight", "R"],
+]);
+
+/** Direction for a `KeyboardEvent.key`, or `null` if it is not an arrow. */
+export function directionFromKey(key: string): Direction | null {
+  return ARROW_KEYS.get(key) ?? null;
+}
+
 /**
  * Turns a held direction into discrete steps: one step as soon as the
  * direction changes, then one every `intervalMs` while it stays the same.

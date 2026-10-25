@@ -1,5 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { directionFromVector, StepRepeater } from "./input.ts";
+import {
+  directionFromKey,
+  directionFromVector,
+  StepRepeater,
+} from "./input.ts";
+
+describe("directionFromKey", () => {
+  it("maps arrow keys to directions", () => {
+    expect(directionFromKey("ArrowUp")).toBe("U");
+    expect(directionFromKey("ArrowDown")).toBe("D");
+    expect(directionFromKey("ArrowLeft")).toBe("L");
+    expect(directionFromKey("ArrowRight")).toBe("R");
+  });
+
+  it("ignores other keys", () => {
+    expect(directionFromKey("w")).toBeNull();
+    expect(directionFromKey("Enter")).toBeNull();
+    expect(directionFromKey("constructor")).toBeNull();
+  });
+});
 
 describe("directionFromVector", () => {
   it("returns null inside the dead zone", () => {
