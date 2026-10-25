@@ -9,14 +9,13 @@ import {
   parseLevel,
 } from "@sokobanko/core";
 import { Application, Graphics } from "pixi.js";
+import { centerAxis, ease, followAxis, tileSize } from "./camera.ts";
 import { Joystick } from "./joystick.ts";
 import { listenToMovementKeys } from "./keyboard.ts";
 
 const TILE = 64;
 /** Default space kept free around the board, in CSS pixels. */
 const MARGIN = 24;
-/** Largest on-screen tile, so small levels don't turn into giant blocks. */
-const MAX_TILE = 96;
 
 // Same colors as the --board-* variables in apps/web/app/assets/css/main.css.
 const COLORS = {
@@ -98,7 +97,10 @@ export async function createGame(
   const board = new Graphics();
   const joystick = new Joystick(app.stage, (direction) => step(direction));
   app.stage.addChild(board, joystick);
-  app.ticker.add((ticker) => joystick.update(ticker.deltaMS));
+  app.ticker.add((ticker) => {
+    joystick.update(ticker.deltaMS);
+    followCamera(ticker.deltaMS);
+  });
   const stopKeyboard = listenToMovementKeys((direction) => step(direction));
 
   const {
@@ -108,27 +110,50 @@ export async function createGame(
     left = MARGIN,
   } = options.padding ?? {};
 
-  const layout = () => {
-    const width = start.width * TILE;
-    const height = start.height * TILE;
-    const available = {
-      width: app.screen.width - left - right,
-      height: app.screen.height - top - bottom,
+  // Where the board's top-left corner sits within the play area.
+  const camera = { x: 0, y: 0 };
+
+  /** Play area, board size and player centre, in screen pixels. */
+  const view = () => {
+    const area = {
+      width: Math.max(app.screen.width - left - right, 0),
+      height: Math.max(app.screen.height - top - bottom, 0),
     };
-    const scale = Math.max(
-      Math.min(
-        available.width / width,
-        available.height / height,
-        MAX_TILE / TILE,
-      ),
-      0.01,
-    );
-    board.scale.set(scale);
-    board.position.set(
-      left + (available.width - width * scale) / 2,
-      top + (available.height - height * scale) / 2,
-    );
+    const tile = tileSize(area);
+    const { player, width } = current();
+    return {
+      area,
+      tile,
+      board: { width: start.width * tile, height: start.height * tile },
+      player: {
+        x: ((player % width) + 0.5) * tile,
+        y: (Math.floor(player / width) + 0.5) * tile,
+      },
+    };
   };
+
+  const placeBoard = (tile: number) => {
+    board.scale.set(tile / TILE);
+    board.position.set(left + camera.x, top + camera.y);
+  };
+
+  /** Jumps to the player, e.g. when a level loads or the canvas resizes. */
+  const snapCamera = () => {
+    const { area, board: size, player, tile } = view();
+    camera.x = centerAxis(area.width, size.width, player.x);
+    camera.y = centerAxis(area.height, size.height, player.y);
+    placeBoard(tile);
+  };
+
+  /** Eases towards the player once they leave the dead zone. */
+  function followCamera(deltaMs: number) {
+    const { area, board: size, player, tile } = view();
+    const x = followAxis(area.width, size.width, player.x, camera.x);
+    const y = followAxis(area.height, size.height, player.y, camera.y);
+    camera.x = ease(camera.x, x, deltaMs);
+    camera.y = ease(camera.y, y, deltaMs);
+    placeBoard(tile);
+  }
 
   const update = () => {
     drawLevel(board, current());
@@ -157,8 +182,8 @@ export async function createGame(
   }
 
   update();
-  layout();
-  app.renderer.on("resize", layout);
+  snapCamera();
+  app.renderer.on("resize", snapCamera);
 
   // ResizePlugin only listens to window resizes; also track the container.
   const observer = new ResizeObserver(() => app.queueResize());
@@ -169,7 +194,7 @@ export async function createGame(
       start = parseLevel(next);
       history = [];
       update();
-      layout();
+      snapCamera();
     },
     undo() {
       if (history.pop()) update();
