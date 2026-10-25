@@ -6,11 +6,24 @@ import { UserIcon } from "@lucide/vue";
 // in comments, as the stripping is a plain text match over this whole file).
 const user = useSupabaseUser();
 const { data: completions } = await useCompletions();
+const { data: levelIds } = await useLevelIds();
 
 const isGuest = computed(() => user.value?.is_anonymous !== false);
 const name = computed(() =>
   isGuest.value ? "Guest" : String(user.value?.email ?? "Player"),
 );
+
+const stats = computed(() => {
+  const done = completions.value ?? [];
+  const total = levelIds.value?.length ?? 0;
+  return {
+    solved: done.length,
+    total,
+    percent: total ? (done.length / total) * 100 : 0,
+    moves: done.reduce((sum, c) => sum + c.moves, 0),
+    pushes: done.reduce((sum, c) => sum + c.pushes, 0),
+  };
+});
 </script>
 
 <template>
@@ -28,6 +41,33 @@ const name = computed(() =>
           soon.
         </p>
       </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <Card>
+        <CardHeader>
+          <CardDescription>Solved</CardDescription>
+          <CardTitle class="text-2xl tabular-nums">
+            {{ stats.solved }} of {{ stats.total }}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Progress :model-value="stats.percent" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardDescription>Best moves</CardDescription>
+          <CardTitle class="text-2xl tabular-nums">{{ stats.moves }}</CardTitle>
+        </CardHeader>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardDescription>Best pushes</CardDescription>
+          <CardTitle class="text-2xl tabular-nums">
+            {{ stats.pushes }}
+          </CardTitle>
+        </CardHeader>
+      </Card>
     </div>
     <Card>
       <CardHeader>
