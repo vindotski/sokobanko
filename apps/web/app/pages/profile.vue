@@ -5,7 +5,7 @@ const { data: completions } = await useCompletions();
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
+  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
     <h1 class="text-2xl font-bold">Profile</h1>
     <Card>
       <CardHeader>
