@@ -43,3 +43,25 @@ export function useLevel(id: string) {
     return data;
   });
 }
+
+/** The current user's best completions, newest first. */
+export function useCompletions() {
+  const supabase = useSupabaseClient();
+  const user = useSupabaseUser();
+  return useAsyncData(
+    "my-completions",
+    async () => {
+      if (!user.value) return [];
+      const { data, error } = await supabase
+        .from("level_completions")
+        .select("moves, pushes, completed_at, level:levels (id, title)")
+        .order("completed_at", { ascending: false });
+      if (error) {
+        throw createError({ statusCode: 500, message: error.message });
+      }
+      return data;
+    },
+    // Reload when the session changes, e.g. once anonymous sign-in finishes.
+    { watch: [() => user.value?.sub] },
+  );
+}
