@@ -19,7 +19,7 @@
         </div>
       </nav>
     </header>
-    <main class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+    <main class="flex flex-1 flex-col">
       <slot />
     </main>
   </div>

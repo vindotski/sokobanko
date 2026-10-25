@@ -1,9 +1,36 @@
+<script setup lang="ts">
+import { LEVELS } from "~/data/levels";
+
+function playRandom() {
+  const level = LEVELS[Math.floor(Math.random() * LEVELS.length)];
+  if (level) navigateTo(`/levels/${level.id}`);
+}
+</script>
+
 <template>
-  <div class="flex flex-col items-center gap-6 py-16 text-center">
-    <h1 class="text-4xl font-bold">Sokobanko</h1>
-    <p class="text-muted-foreground">Push every box onto a goal.</p>
-    <Button as-child size="lg">
-      <NuxtLink to="/levels">Play</NuxtLink>
-    </Button>
-  </div>
+  <section
+    class="relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden px-4 py-24 text-center"
+  >
+    <div
+      class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[48px_48px] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
+    />
+    <p
+      class="rounded-full border px-3 py-1 text-sm text-muted-foreground"
+    >
+      A classic box-pushing puzzle
+    </p>
+    <h1 class="text-5xl font-bold tracking-tight sm:text-7xl">Sokobanko</h1>
+    <p class="max-w-xl text-lg text-muted-foreground sm:text-xl">
+      Push every box onto a goal. You can't pull, so every move counts.
+    </p>
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <Button size="lg" @click="playRandom">Random level</Button>
+      <Button as-child size="lg" variant="outline">
+        <NuxtLink to="/levels">Browse levels</NuxtLink>
+      </Button>
+    </div>
+    <p class="text-sm text-muted-foreground">
+      {{ LEVELS.length }} levels and counting
+    </p>
+  </section>
 </template>

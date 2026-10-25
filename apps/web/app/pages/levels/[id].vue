@@ -9,7 +9,7 @@ if (!level) {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4">
+  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-8">
     <div class="flex items-center gap-2">
       <Button as-child variant="ghost" size="sm">
         <NuxtLink to="/levels">Back</NuxtLink>
