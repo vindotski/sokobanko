@@ -9,31 +9,55 @@ function playRandom() {
 </script>
 
 <template>
-  <section
-    class="relative flex flex-1 flex-col items-center justify-center gap-8 overflow-hidden px-4 py-24 text-center"
-  >
-    <div
-      class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[48px_48px] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
-    />
-    <p
-      class="rounded-full border px-3 py-1 text-sm text-muted-foreground"
+  <div class="flex flex-1 flex-col">
+    <section
+      class="relative flex flex-1 flex-col items-center justify-center gap-6 overflow-hidden px-4 py-8 text-center sm:gap-8 sm:py-24"
     >
-      A classic box-pushing puzzle
-    </p>
-    <h1 class="text-5xl font-bold tracking-tight sm:text-7xl">Sokobanko</h1>
-    <p class="max-w-xl text-lg text-muted-foreground sm:text-xl">
-      Push every box onto a goal. You can't pull, so every move counts.
-    </p>
-    <div class="flex flex-col gap-3 sm:flex-row">
-      <Button size="lg" :disabled="!levelIds?.length" @click="playRandom">
-        Random level
-      </Button>
-      <Button as-child size="lg" variant="outline">
-        <NuxtLink to="/levels">Browse levels</NuxtLink>
-      </Button>
-    </div>
-    <p class="text-sm text-muted-foreground">
-      {{ levelIds?.length ?? 0 }} levels and counting
-    </p>
-  </section>
+      <div
+        class="absolute inset-0 -z-10 bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[48px_48px] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
+      />
+      <p
+        class="rounded-full border px-3 py-1 text-sm text-muted-foreground"
+      >
+        A classic box-pushing puzzle
+      </p>
+      <h1 class="text-5xl font-bold tracking-tight sm:text-7xl">Sokobanko</h1>
+      <p class="max-w-xl text-lg text-muted-foreground sm:text-xl">
+        Push every box onto a goal. You can't pull, so every move counts.
+      </p>
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <Button size="lg" :disabled="!levelIds?.length" @click="playRandom">
+          Random level
+        </Button>
+        <Button as-child size="lg" variant="outline">
+          <NuxtLink to="/levels">Browse levels</NuxtLink>
+        </Button>
+      </div>
+      <p class="text-sm text-muted-foreground">
+        {{ levelIds?.length ?? 0 }} levels and counting
+      </p>
+    </section>
+
+    <footer
+      class="flex items-center justify-center gap-3 px-4 py-4 text-sm text-muted-foreground sm:py-6"
+    >
+      <Avatar class="size-8">
+        <AvatarImage src="/vinski.jpg" alt="Vinski&amp;Friends" />
+        <AvatarFallback>VF</AvatarFallback>
+      </Avatar>
+      <p>
+        Made by
+        <a
+          href="https://www.vin.ski"
+          aria-label="Ivan Vinski"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-medium text-foreground underline-offset-4 hover:underline"
+        >
+          Vinski&amp;Friends
+        </a>
+        in Croatia
+      </p>
+    </footer>
+  </div>
 </template>
