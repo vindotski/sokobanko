@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { centerAxis, ease, followAxis, tileSize } from "./camera.ts";
+import {
+  centerAxis,
+  ease,
+  fitTileSize,
+  followAxis,
+  tileSize,
+  zoomTarget,
+} from "./camera.ts";
 
 describe("tileSize", () => {
   it("is 10% of the play area's shorter side", () => {
@@ -9,6 +16,38 @@ describe("tileSize", () => {
   it("is clamped to 32-80 px", () => {
     expect(tileSize({ width: 200, height: 900 })).toBe(32);
     expect(tileSize({ width: 2000, height: 1500 })).toBe(80);
+  });
+});
+
+describe("fitTileSize", () => {
+  it("is limited by the tighter axis", () => {
+    expect(fitTileSize({ width: 1200, height: 600 }, 30, 20)).toBe(30);
+    expect(fitTileSize({ width: 300, height: 600 }, 30, 20)).toBe(10);
+  });
+});
+
+describe("zoomTarget", () => {
+  const area = { width: 1200, height: 600 };
+
+  it("uses the normal zoom outside the overview", () => {
+    expect(zoomTarget(area, 30, 20, false)).toEqual({
+      tile: 60,
+      available: true,
+    });
+  });
+
+  it("zooms out to fit a big board in the overview", () => {
+    expect(zoomTarget(area, 30, 20, true)).toEqual({
+      tile: 30,
+      available: true,
+    });
+  });
+
+  it("never zooms in on a board that already fits", () => {
+    expect(zoomTarget(area, 7, 3, true)).toEqual({
+      tile: 60,
+      available: false,
+    });
   });
 });
 

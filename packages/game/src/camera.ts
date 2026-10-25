@@ -18,6 +18,31 @@ export function tileSize(area: { width: number; height: number }) {
   return Math.min(Math.max(size, MIN_TILE), MAX_TILE);
 }
 
+/** Largest tile size at which the whole board fits in the play area. */
+export function fitTileSize(
+  area: { width: number; height: number },
+  cols: number,
+  rows: number,
+) {
+  return Math.min(area.width / cols, area.height / rows);
+}
+
+/**
+ * Tile size to zoom to. The overview zooms out until the whole board fits,
+ * and is only `available` when that is smaller than the normal zoom.
+ */
+export function zoomTarget(
+  area: { width: number; height: number },
+  cols: number,
+  rows: number,
+  overview: boolean,
+) {
+  const normal = tileSize(area);
+  const fit = fitTileSize(area, cols, rows);
+  const available = fit < normal;
+  return { tile: overview && available ? fit : normal, available };
+}
+
 /** Keeps the board from scrolling past its own edges. */
 function clampOffset(length: number, board: number, offset: number) {
   return Math.min(Math.max(offset, length - board), 0);

@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import type { LevelJson } from "@sokobanko/core";
-import type { Game, GamePadding, GameProgress } from "@sokobanko/game";
+import type {
+  Game,
+  GamePadding,
+  GameProgress,
+  OverviewState,
+} from "@sokobanko/game";
 
 const props = defineProps<{
   level: LevelJson;
@@ -10,6 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   change: [progress: GameProgress];
   solved: [progress: GameProgress];
+  overview: [state: OverviewState];
 }>();
 
 const container = useTemplateRef("container");
@@ -27,6 +33,7 @@ onMounted(async () => {
     ...(props.padding && { padding: props.padding }),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
+    onOverviewChange: (state) => emit("overview", state),
   });
   if (unmounted) {
     created.destroy();
@@ -44,6 +51,7 @@ watch(
 defineExpose({
   undo: () => game?.undo(),
   restart: () => game?.restart(),
+  setOverview: (on: boolean) => game?.setOverview(on),
 });
 
 onBeforeUnmount(() => {

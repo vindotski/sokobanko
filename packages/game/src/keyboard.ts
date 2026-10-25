@@ -1,24 +1,47 @@
 import type { Direction } from "@sokobanko/core";
 import { directionFromKey } from "./input.ts";
 
+export interface KeyHandlers {
+  /** Arrow and WASD keys, including the keyboard's auto-repeat while held. */
+  onStep: (direction: Direction) => void;
+  /** Space held down (true) and released (false). */
+  onPeek: (peeking: boolean) => void;
+}
+
 /**
- * Steps on arrow and WASD keys anywhere on the page, including the keyboard's
- * own auto-repeat while a key is held. Returns a function that stops listening.
+ * Listens for game keys anywhere on the page. Returns a function that stops
+ * listening.
  */
-export function listenToMovementKeys(onStep: (direction: Direction) => void) {
+export function listenToKeys({ onStep, onPeek }: KeyHandlers) {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (isTyping(e.target)) return;
+
+    // Space and arrow keys would otherwise scroll the page.
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (!e.repeat) onPeek(true);
+      return;
+    }
     const direction = directionFromKey(e.code);
     if (!direction) return;
-
-    // Arrow keys would otherwise scroll the page.
     e.preventDefault();
     onStep(direction);
   };
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (e.code === "Space") onPeek(false);
+  };
+  // A key released while the page is in the background never sends keyup.
+  const handleBlur = () => onPeek(false);
 
   window.addEventListener("keydown", handleKeyDown);
-  return () => window.removeEventListener("keydown", handleKeyDown);
+  window.addEventListener("keyup", handleKeyUp);
+  window.addEventListener("blur", handleBlur);
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+    window.removeEventListener("keyup", handleKeyUp);
+    window.removeEventListener("blur", handleBlur);
+  };
 }
 
 function isTyping(target: EventTarget | null) {

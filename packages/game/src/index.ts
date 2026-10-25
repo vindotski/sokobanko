@@ -4,4 +4,5 @@ export {
   type GameOptions,
   type GamePadding,
   type GameProgress,
+  type OverviewState,
 } from "./game.ts";

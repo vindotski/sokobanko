@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ArrowLeftIcon, RotateCcwIcon, Undo2Icon } from "@lucide/vue";
-import type { GameProgress } from "@sokobanko/game";
+import {
+  ArrowLeftIcon,
+  RotateCcwIcon,
+  ScanSearchIcon,
+  Undo2Icon,
+} from "@lucide/vue";
+import type { GameProgress, OverviewState } from "@sokobanko/game";
 
 const route = useRoute();
 const { data } = await useLevel(String(route.params.id));
@@ -17,6 +22,7 @@ const progress = ref<GameProgress>({
   solution: "",
   solved: false,
 });
+const overview = ref<OverviewState>({ available: false, active: false });
 
 type Verification =
   | { state: "idle" | "pending" }
@@ -72,6 +78,16 @@ async function onSolved({ solution }: GameProgress) {
             · {{ count(progress.pushes, "push", "pushes") }}</span
           >
         </span>
+        <Toggle
+          v-if="overview.available"
+          variant="outline"
+          size="sm"
+          :model-value="overview.active"
+          @update:model-value="game?.setOverview($event)"
+        >
+          <ScanSearchIcon data-icon="inline-start" />
+          <span class="sr-only sm:not-sr-only">Overview</span>
+        </Toggle>
         <Button
           variant="outline"
           size="sm"
@@ -102,6 +118,7 @@ async function onSolved({ solution }: GameProgress) {
           class="size-full touch-none select-none"
           @change="onChange"
           @solved="onSolved"
+          @overview="overview = $event"
         />
       </div>
 
@@ -142,6 +159,10 @@ async function onSolved({ solution }: GameProgress) {
           <ItemContent>
             <ItemDescription>
               Drag the board or use arrow keys / WASD
+              <!-- Phones have no Space key; they use the Overview toggle. -->
+              <span v-if="overview.available" class="hidden sm:inline">
+                · hold Space for overview
+              </span>
             </ItemDescription>
           </ItemContent>
         </Item>

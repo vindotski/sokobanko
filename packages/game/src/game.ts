@@ -9,9 +9,9 @@ import {
   parseLevel,
 } from "@sokobanko/core";
 import { Application, Graphics } from "pixi.js";
-import { centerAxis, ease, followAxis, tileSize } from "./camera.ts";
+import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
 import { Joystick } from "./joystick.ts";
-import { listenToMovementKeys } from "./keyboard.ts";
+import { listenToKeys } from "./keyboard.ts";
 
 const TILE = 64;
 /** Default space kept free around the board, in CSS pixels. */
@@ -42,6 +42,13 @@ export interface GamePadding {
   left?: number;
 }
 
+export interface OverviewState {
+  /** The level is bigger than the screen, so an overview shows more. */
+  available: boolean;
+  /** The overview is showing (toggled on, or Space held). */
+  active: boolean;
+}
+
 export interface GameOptions {
   /** Space to keep free around the board, in CSS pixels; 24 on each side by default. */
   padding?: GamePadding;
@@ -49,6 +56,8 @@ export interface GameOptions {
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
   onSolved?: (progress: GameProgress) => void;
+  /** Called whenever the overview's availability or visibility changes. */
+  onOverviewChange?: (state: OverviewState) => void;
 }
 
 export interface Game {
@@ -58,6 +67,8 @@ export interface Game {
   undo(): void;
   /** Returns to the start of the level. */
   restart(): void;
+  /** Zooms out to show the whole level, or back to the player. */
+  setOverview(on: boolean): void;
   destroy(): void;
 }
 
@@ -101,7 +112,12 @@ export async function createGame(
     joystick.update(ticker.deltaMS);
     followCamera(ticker.deltaMS);
   });
-  const stopKeyboard = listenToMovementKeys((direction) => step(direction));
+  const stopKeyboard = listenToKeys({
+    onStep: (direction) => step(direction),
+    onPeek: (on) => {
+      peeking = on;
+    },
+  });
 
   const {
     top = MARGIN,
@@ -112,47 +128,78 @@ export async function createGame(
 
   // Where the board's top-left corner sits within the play area.
   const camera = { x: 0, y: 0 };
+  // On-screen tile size; eases towards the zoom target.
+  let tile = 1;
+  let toggled = false;
+  let peeking = false;
+  let overview: OverviewState = { available: false, active: false };
 
-  /** Play area, board size and player centre, in screen pixels. */
-  const view = () => {
-    const area = {
-      width: Math.max(app.screen.width - left - right, 0),
-      height: Math.max(app.screen.height - top - bottom, 0),
-    };
-    const tile = tileSize(area);
+  const playArea = () => ({
+    width: Math.max(app.screen.width - left - right, 0),
+    height: Math.max(app.screen.height - top - bottom, 0),
+  });
+
+  const zoom = () =>
+    zoomTarget(playArea(), start.width, start.height, toggled || peeking);
+
+  /** Board size and player centre at a tile size, in screen pixels. */
+  const measure = (size: number) => {
     const { player, width } = current();
     return {
-      area,
-      tile,
-      board: { width: start.width * tile, height: start.height * tile },
+      board: { width: start.width * size, height: start.height * size },
       player: {
-        x: ((player % width) + 0.5) * tile,
-        y: (Math.floor(player / width) + 0.5) * tile,
+        x: ((player % width) + 0.5) * size,
+        y: (Math.floor(player / width) + 0.5) * size,
       },
     };
   };
 
-  const placeBoard = (tile: number) => {
+  const placeBoard = () => {
     board.scale.set(tile / TILE);
     board.position.set(left + camera.x, top + camera.y);
   };
 
-  /** Jumps to the player, e.g. when a level loads or the canvas resizes. */
-  const snapCamera = () => {
-    const { area, board: size, player, tile } = view();
-    camera.x = centerAxis(area.width, size.width, player.x);
-    camera.y = centerAxis(area.height, size.height, player.y);
-    placeBoard(tile);
+  const reportOverview = (available: boolean) => {
+    const active = available && (toggled || peeking);
+    if (overview.available === available && overview.active === active) {
+      return;
+    }
+    overview = { available, active };
+    options.onOverviewChange?.(overview);
   };
 
-  /** Eases towards the player once they leave the dead zone. */
+  /** Jumps to the player, e.g. when a level loads or the canvas resizes. */
+  const snapCamera = () => {
+    const area = playArea();
+    const target = zoom();
+    tile = Math.max(target.tile, 1);
+    const { board: size, player } = measure(tile);
+    camera.x = centerAxis(area.width, size.width, player.x);
+    camera.y = centerAxis(area.height, size.height, player.y);
+    placeBoard();
+    reportOverview(target.available);
+  };
+
+  /** Eases the zoom and follows the player once they leave the dead zone. */
   function followCamera(deltaMs: number) {
-    const { area, board: size, player, tile } = view();
+    const area = playArea();
+    const target = zoom();
+    const next = Math.max(ease(tile, target.tile, deltaMs), 1);
+
+    // Zoom around the player, so they stay put on screen while it changes.
+    const before = measure(tile).player;
+    const after = measure(next).player;
+    camera.x += before.x - after.x;
+    camera.y += before.y - after.y;
+    tile = next;
+
+    const { board: size, player } = measure(tile);
     const x = followAxis(area.width, size.width, player.x, camera.x);
     const y = followAxis(area.height, size.height, player.y, camera.y);
     camera.x = ease(camera.x, x, deltaMs);
     camera.y = ease(camera.y, y, deltaMs);
-    placeBoard(tile);
+    placeBoard();
+    reportOverview(target.available);
   }
 
   const update = () => {
@@ -193,6 +240,7 @@ export async function createGame(
     setLevel(next) {
       start = parseLevel(next);
       history = [];
+      toggled = false;
       update();
       snapCamera();
     },
@@ -202,6 +250,9 @@ export async function createGame(
     restart() {
       history = [];
       update();
+    },
+    setOverview(on) {
+      toggled = on;
     },
     destroy() {
       stopKeyboard();
