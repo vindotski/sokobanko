@@ -1,6 +1,11 @@
 <script setup lang="ts">
 const progress = useProgressStore();
+const user = useSupabaseUser();
 const { data: levels } = await useLevels();
+// Reload when the session changes, e.g. once anonymous sign-in finishes.
+await useAsyncData("completions", () => progress.load(), {
+  watch: [() => user.value?.sub],
+});
 </script>
 
 <template>
