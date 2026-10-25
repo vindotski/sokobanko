@@ -58,9 +58,8 @@ const solvedPercent = computed(() =>
         <!-- Pack the wrapped rows at the top, so previews and text line up
              across cards of equal height. -->
         <NuxtLink :to="`/levels/${card.level.id}`" class="content-start">
-          <!-- Same faint tile grid as the home page hero. -->
           <ItemHeader
-            class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-[linear-gradient(to_right,var(--border)_1px,transparent_1px),linear-gradient(to_bottom,var(--border)_1px,transparent_1px)] bg-size-[12px_12px] p-4"
+            class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-tile-grid p-4"
           >
             <LevelPreview :level="card.level" />
             <Badge v-if="card.best" class="absolute top-2 right-2">

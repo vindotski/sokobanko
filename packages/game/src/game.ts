@@ -13,6 +13,10 @@ import { Joystick } from "./joystick.ts";
 import { listenToMovementKeys } from "./keyboard.ts";
 
 const TILE = 64;
+/** Default space kept free around the board, in CSS pixels. */
+const MARGIN = 24;
+/** Largest on-screen tile, so small levels don't turn into giant blocks. */
+const MAX_TILE = 96;
 
 // Same colors as the --board-* variables in apps/web/app/assets/css/main.css.
 const COLORS = {
@@ -32,7 +36,16 @@ export interface GameProgress {
   solved: boolean;
 }
 
+export interface GamePadding {
+  top?: number;
+  right?: number;
+  bottom?: number;
+  left?: number;
+}
+
 export interface GameOptions {
+  /** Space to keep free around the board, in CSS pixels; 24 on each side by default. */
+  padding?: GamePadding;
   /** Called after every move, undo, restart and level change. */
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
@@ -88,17 +101,32 @@ export async function createGame(
   app.ticker.add((ticker) => joystick.update(ticker.deltaMS));
   const stopKeyboard = listenToMovementKeys((direction) => step(direction));
 
+  const {
+    top = MARGIN,
+    right = MARGIN,
+    bottom = MARGIN,
+    left = MARGIN,
+  } = options.padding ?? {};
+
   const layout = () => {
     const width = start.width * TILE;
     const height = start.height * TILE;
-    const scale = Math.min(
-      app.screen.width / width,
-      app.screen.height / height,
+    const available = {
+      width: app.screen.width - left - right,
+      height: app.screen.height - top - bottom,
+    };
+    const scale = Math.max(
+      Math.min(
+        available.width / width,
+        available.height / height,
+        MAX_TILE / TILE,
+      ),
+      0.01,
     );
     board.scale.set(scale);
     board.position.set(
-      (app.screen.width - width * scale) / 2,
-      (app.screen.height - height * scale) / 2,
+      left + (available.width - width * scale) / 2,
+      top + (available.height - height * scale) / 2,
     );
   };
 

@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import type { LevelJson } from "@sokobanko/core";
-import type { Game, GameProgress } from "@sokobanko/game";
+import type { Game, GamePadding, GameProgress } from "@sokobanko/game";
 
-const props = defineProps<{ level: LevelJson }>();
+const props = defineProps<{
+  level: LevelJson;
+  /** Space to keep free around the board, e.g. for overlays. */
+  padding?: GamePadding;
+}>();
 const emit = defineEmits<{
   change: [progress: GameProgress];
   solved: [progress: GameProgress];
@@ -20,6 +24,7 @@ onMounted(async () => {
 
   const initialLevel = props.level;
   const created = await createGame(el, initialLevel, {
+    ...(props.padding && { padding: props.padding }),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
   });

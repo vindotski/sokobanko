@@ -3,6 +3,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Faint grid lines, like an empty board. Set --tile-grid-size to resize. */
+@utility bg-tile-grid {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: var(--tile-grid-size, 12px) var(--tile-grid-size, 12px);
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

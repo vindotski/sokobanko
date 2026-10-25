@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ArrowLeftIcon, RotateCcwIcon, Undo2Icon } from "@lucide/vue";
 import type { GameProgress } from "@sokobanko/game";
 
 const route = useRoute();
@@ -23,6 +24,9 @@ type Verification =
   | { state: "failed"; message: string };
 const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
+
+const count = (n: number, one: string, many: string) =>
+  `${n} ${n === 1 ? one : many}`;
 
 function onChange(next: GameProgress) {
   progress.value = next;
@@ -50,20 +54,32 @@ async function onSolved({ solution }: GameProgress) {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-8">
-    <div class="flex items-center gap-2">
-      <Button as-child variant="ghost" size="sm">
-        <NuxtLink to="/levels">Back</NuxtLink>
-      </Button>
-      <h1 class="text-2xl font-bold">{{ level.title }}</h1>
-      <div class="ml-auto flex gap-2">
+  <div class="flex flex-1 flex-col">
+    <div class="border-b">
+      <div class="mx-auto flex h-12 w-full max-w-5xl items-center gap-2 px-4">
+        <Button as-child variant="ghost" size="icon-sm">
+          <NuxtLink to="/levels" aria-label="Back to levels">
+            <ArrowLeftIcon />
+          </NuxtLink>
+        </Button>
+        <h1 class="min-w-0 flex-1 truncate text-base font-semibold">
+          {{ level.title }}
+        </h1>
+        <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+          {{ count(progress.moves, "move", "moves") }}<span
+            class="hidden sm:inline"
+          >
+            · {{ count(progress.pushes, "push", "pushes") }}</span
+          >
+        </span>
         <Button
           variant="outline"
           size="sm"
           :disabled="progress.moves === 0"
           @click="game?.undo()"
         >
-          Undo
+          <Undo2Icon data-icon="inline-start" />
+          <span class="sr-only sm:not-sr-only">Undo</span>
         </Button>
         <Button
           variant="outline"
@@ -71,37 +87,65 @@ async function onSolved({ solution }: GameProgress) {
           :disabled="progress.moves === 0"
           @click="game?.restart()"
         >
-          Restart
+          <RotateCcwIcon data-icon="inline-start" />
+          <span class="sr-only sm:not-sr-only">Restart</span>
         </Button>
       </div>
     </div>
-    <SokobanGame
-      ref="game"
-      :level="level"
-      class="h-[60svh] w-full touch-none select-none"
-      @change="onChange"
-      @solved="onSolved"
-    />
-    <p class="text-sm text-muted-foreground">
-      <template v-if="progress.solved">
-        <span class="font-medium text-foreground">
-          Solved in {{ progress.moves }} moves and {{ progress.pushes }} pushes!
-        </span>
-        <template v-if="verification.state === 'pending'"> Saving…</template>
-        <template v-else-if="verification.state === 'verified'">
-          Your best: {{ verification.best.moves }} moves.
-        </template>
-        <span
-          v-else-if="verification.state === 'failed'"
-          class="text-destructive"
+
+    <div class="relative flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]">
+      <div class="absolute inset-0">
+        <SokobanGame
+          ref="game"
+          :level="level"
+          :padding="{ bottom: 96 }"
+          class="size-full touch-none select-none"
+          @change="onChange"
+          @solved="onSolved"
+        />
+      </div>
+
+      <!-- Clicks and drags pass through to the board. -->
+      <div
+        class="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4"
+      >
+        <Item
+          v-if="progress.solved"
+          variant="outline"
+          size="sm"
+          class="bg-background"
         >
-          Not saved: {{ verification.message }}
-        </span>
-      </template>
-      <template v-else>
-        Drag on the board or use the arrow keys or WASD.
-        {{ progress.moves }} moves, {{ progress.pushes }} pushes
-      </template>
-    </p>
+          <ItemContent>
+            <ItemTitle>
+              Solved in {{ count(progress.moves, "move", "moves") }}!
+            </ItemTitle>
+            <ItemDescription v-if="verification.state === 'pending'">
+              Saving…
+            </ItemDescription>
+            <ItemDescription v-else-if="verification.state === 'verified'">
+              Best: {{ count(verification.best.moves, "move", "moves") }}
+            </ItemDescription>
+            <ItemDescription
+              v-else-if="verification.state === 'failed'"
+              class="text-destructive"
+            >
+              Not saved: {{ verification.message }}
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+        <Item
+          v-else-if="progress.moves === 0"
+          variant="outline"
+          size="sm"
+          class="bg-background"
+        >
+          <ItemContent>
+            <ItemDescription>
+              Drag the board or use arrow keys / WASD
+            </ItemDescription>
+          </ItemContent>
+        </Item>
+      </div>
+    </div>
   </div>
 </template>
