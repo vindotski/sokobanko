@@ -12,6 +12,8 @@
   "dependencies": {
     "@lucide/vue": "^1.61.0",
     "@pinia/nuxt": "^1.0.3",
+    "@sokobanko/core": "workspace:*",
+    "@sokobanko/game": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
