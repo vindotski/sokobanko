@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import type { Direction, LevelJson } from "@sokobanko/core";
-import type { Game } from "@sokobanko/game";
+import type { LevelJson } from "@sokobanko/core";
+import type { Game, GameProgress } from "@sokobanko/game";
 
 const props = defineProps<{ level: LevelJson }>();
-const emit = defineEmits<{ move: [direction: Direction] }>();
+const emit = defineEmits<{
+  change: [progress: GameProgress];
+  solved: [progress: GameProgress];
+}>();
 
 const container = useTemplateRef("container");
 let game: Game | undefined;
@@ -17,7 +20,8 @@ onMounted(async () => {
 
   const initialLevel = props.level;
   const created = await createGame(el, initialLevel, {
-    onMove: (direction) => emit("move", direction),
+    onChange: (progress) => emit("change", progress),
+    onSolved: (progress) => emit("solved", progress),
   });
   if (unmounted) {
     created.destroy();
@@ -31,6 +35,11 @@ watch(
   () => props.level,
   (level) => game?.setLevel(level),
 );
+
+defineExpose({
+  undo: () => game?.undo(),
+  restart: () => game?.restart(),
+});
 
 onBeforeUnmount(() => {
   unmounted = true;

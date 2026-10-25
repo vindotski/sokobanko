@@ -1,6 +1,9 @@
 import {
   type Direction,
+  directionToLetter,
+  isSolved,
   type LevelJson,
+  move,
   type ParsedLevel,
   parseLevel,
 } from "@sokobanko/core";
@@ -17,15 +20,35 @@ const COLORS = {
   player: 0x3b82f6,
 };
 
+export interface GameProgress {
+  moves: number;
+  pushes: number;
+  /** Moves so far as LURD letters; uppercase letters are pushes. */
+  solution: string;
+  solved: boolean;
+}
+
 export interface GameOptions {
-  /** Called for every step from the joystick. */
-  onMove?: (direction: Direction) => void;
+  /** Called after every move, undo, restart and level change. */
+  onChange?: (progress: GameProgress) => void;
+  /** Called on the move that solves the level. */
+  onSolved?: (progress: GameProgress) => void;
 }
 
 export interface Game {
   /** Replaces the current level. Throws `LevelParseError` if it is invalid. */
   setLevel(level: LevelJson): void;
+  /** Takes back the last move. */
+  undo(): void;
+  /** Returns to the start of the level. */
+  restart(): void;
   destroy(): void;
+}
+
+interface Step {
+  level: ParsedLevel;
+  letter: string;
+  pushed: boolean;
 }
 
 /**
@@ -37,7 +60,9 @@ export async function createGame(
   level: LevelJson,
   options: GameOptions = {},
 ): Promise<Game> {
-  let parsed = parseLevel(level);
+  let start = parseLevel(level);
+  let history: Step[] = [];
+  const current = () => history.at(-1)?.level ?? start;
 
   const app = new Application();
   await app.init({
@@ -54,15 +79,13 @@ export async function createGame(
   app.stage.hitArea = app.screen;
 
   const board = new Graphics();
-  const joystick = new Joystick(app.stage, (direction) =>
-    options.onMove?.(direction),
-  );
+  const joystick = new Joystick(app.stage, (direction) => step(direction));
   app.stage.addChild(board, joystick);
   app.ticker.add((ticker) => joystick.update(ticker.deltaMS));
 
   const layout = () => {
-    const width = parsed.width * TILE;
-    const height = parsed.height * TILE;
+    const width = start.width * TILE;
+    const height = start.height * TILE;
     const scale = Math.min(
       app.screen.width / width,
       app.screen.height / height,
@@ -74,12 +97,34 @@ export async function createGame(
     );
   };
 
-  const render = () => {
-    drawLevel(board, parsed);
-    layout();
+  const update = () => {
+    drawLevel(board, current());
+    const progress: GameProgress = {
+      moves: history.length,
+      pushes: history.filter((s) => s.pushed).length,
+      solution: history.map((s) => s.letter).join(""),
+      solved: isSolved(current()),
+    };
+    options.onChange?.(progress);
+    return progress;
   };
 
-  render();
+  function step(direction: Direction) {
+    if (isSolved(current())) return;
+    const result = move(current(), direction);
+    if (!result) return;
+
+    history.push({
+      level: result.level,
+      letter: directionToLetter(direction, result.pushed),
+      pushed: result.pushed,
+    });
+    const progress = update();
+    if (progress.solved) options.onSolved?.(progress);
+  }
+
+  update();
+  layout();
   app.renderer.on("resize", layout);
 
   // ResizePlugin only listens to window resizes; also track the container.
@@ -88,8 +133,17 @@ export async function createGame(
 
   return {
     setLevel(next) {
-      parsed = parseLevel(next);
-      render();
+      start = parseLevel(next);
+      history = [];
+      update();
+      layout();
+    },
+    undo() {
+      if (history.pop()) update();
+    },
+    restart() {
+      history = [];
+      update();
     },
     destroy() {
       observer.disconnect();
