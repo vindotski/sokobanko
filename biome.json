@@ -6,7 +6,8 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false
+    "ignoreUnknown": false,
+    "includes": ["**", "!apps/web/app/components/ui"]
   },
   "formatter": {
     "enabled": true,
@@ -23,6 +24,34 @@
       "quoteStyle": "double"
     }
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/*.vue"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/web/app/pages/**/*.vue", "apps/web/app/app.vue"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useVueMultiWordComponentNames": "off"
+          }
+        }
+      }
+    }
+  ],
   "assist": {
     "enabled": true,
     "actions": {
