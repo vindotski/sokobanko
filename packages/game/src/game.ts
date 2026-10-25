@@ -9,7 +9,7 @@ import {
 } from "@sokobanko/core";
 import { Application, Graphics } from "pixi.js";
 import { Joystick } from "./joystick.ts";
-import { listenToArrowKeys } from "./keyboard.ts";
+import { listenToMovementKeys } from "./keyboard.ts";
 
 const TILE = 64;
 
@@ -83,7 +83,7 @@ export async function createGame(
   const joystick = new Joystick(app.stage, (direction) => step(direction));
   app.stage.addChild(board, joystick);
   app.ticker.add((ticker) => joystick.update(ticker.deltaMS));
-  const stopKeyboard = listenToArrowKeys((direction) => step(direction));
+  const stopKeyboard = listenToMovementKeys((direction) => step(direction));
 
   const layout = () => {
     const width = start.width * TILE;

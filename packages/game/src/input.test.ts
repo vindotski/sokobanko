@@ -13,8 +13,17 @@ describe("directionFromKey", () => {
     expect(directionFromKey("ArrowRight")).toBe("R");
   });
 
+  it("maps WASD to directions", () => {
+    expect(directionFromKey("KeyW")).toBe("U");
+    expect(directionFromKey("KeyS")).toBe("D");
+    expect(directionFromKey("KeyA")).toBe("L");
+    expect(directionFromKey("KeyD")).toBe("R");
+  });
+
   it("ignores other keys", () => {
+    // Characters rather than physical key codes.
     expect(directionFromKey("w")).toBeNull();
+    expect(directionFromKey("KeyQ")).toBeNull();
     expect(directionFromKey("Enter")).toBeNull();
     expect(directionFromKey("constructor")).toBeNull();
   });
