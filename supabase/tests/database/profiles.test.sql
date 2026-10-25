@@ -76,7 +76,8 @@ select throws_ok(
   '42501', null, 'anonymous users cannot claim a username'
 );
 select is(
-  (select count(*)::int from public.profiles),
+  -- Only this test's users, so seeded profiles don't affect the count.
+  (select count(*)::int from public.profiles where id::text like '00000000-0000-0000-0000-%'),
   2,
   'anonymous users can read profiles'
 );
@@ -87,7 +88,8 @@ set local role anon;
 set local request.jwt.claims = '{"role": "anon"}';
 
 select is(
-  (select count(*)::int from public.profiles),
+  -- Only this test's users, so seeded profiles don't affect the count.
+  (select count(*)::int from public.profiles where id::text like '00000000-0000-0000-0000-%'),
   2,
   'signed-out visitors can read profiles'
 );

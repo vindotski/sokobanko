@@ -57,3 +57,28 @@ insert into auth.identities (
 
 insert into public.profiles (id, username) values
   ('a0000000-0000-4000-8000-000000000001', 'admin');
+
+-- Official levels.
+insert into public.levels (id, title, map, status, position) values
+  (
+    'b0000000-0000-4000-8000-000000000001',
+    'First Push',
+    array['#######', '#@ $ .#', '#######'],
+    'published',
+    1
+  ),
+  (
+    'b0000000-0000-4000-8000-000000000002',
+    'Two Boxes',
+    array[' #####', '##   #', '#@$$ #', '#  ..#', '######'],
+    'published',
+    2
+  ),
+  (
+    -- From DoctorLai/sokoban-web (MIT).
+    'b0000000-0000-4000-8000-000000000003',
+    'Hello World!',
+    array['##########', '####....##', '#  $$$$###', '#  @   ###', '##########'],
+    'published',
+    3
+  );

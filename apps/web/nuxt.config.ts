@@ -15,8 +15,8 @@ export default defineNuxtConfig({
   supabase: {
     // Signed-out visitors can still play; there is no login page to send them to.
     redirect: false,
-    // Enable once types are generated with `supabase gen types`.
-    types: false,
+    // Regenerate with `pnpm db:types` after schema changes.
+    types: "~/types/database.types.ts",
     cookieOptions: {
       // The default 8 hours would drop anonymous sessions, and their progress,
       // daily. 400 days is the longest lifetime browsers allow.
