@@ -157,6 +157,12 @@
       "skillPath": "skills/pixijs-ticker/SKILL.md",
       "computedHash": "6b3eec30377b1ec013a858301d309f3138eb512e7af8e1e8d0c3a759c8223618"
     },
+    "shadcn-vue": {
+      "source": "unovue/shadcn-vue",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn-vue/SKILL.md",
+      "computedHash": "02e09dcd144b3d1f821153a7ef7cece8b2cde4390010e69e03855f1056cf8848"
+    },
     "supabase": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
