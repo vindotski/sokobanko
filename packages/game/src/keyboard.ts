@@ -15,7 +15,7 @@ export interface KeyHandlers {
 export function listenToKeys({ onStep, onPeek }: KeyHandlers) {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-    if (isTyping(e.target)) return;
+    if (isTyping(e.target) || inDialog(e.target)) return;
 
     // Space and arrow keys would otherwise scroll the page.
     if (e.code === "Space") {
@@ -42,6 +42,11 @@ export function listenToKeys({ onStep, onPeek }: KeyHandlers) {
     window.removeEventListener("keyup", handleKeyUp);
     window.removeEventListener("blur", handleBlur);
   };
+}
+
+// Keys inside a dialog belong to its buttons, not the game.
+function inDialog(target: EventTarget | null) {
+  return target instanceof Element && !!target.closest('[role="dialog"]');
 }
 
 function isTyping(target: EventTarget | null) {

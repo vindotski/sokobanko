@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { RotateCcwIcon, ScanSearchIcon, Undo2Icon } from "@lucide/vue";
+import {
+  ArrowRightIcon,
+  RotateCcwIcon,
+  ScanSearchIcon,
+  TrophyIcon,
+  Undo2Icon,
+} from "@lucide/vue";
 import type { GameProgress, OverviewState } from "@sokobanko/game";
 
 definePageMeta({ layout: "play" });
@@ -27,6 +33,22 @@ type Verification =
   | { state: "failed"; message: string };
 const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
+const user = useSupabaseUser();
+const { data: levels } = await useLevels();
+// Completions, so "New best!" knows the previous best even on a direct visit.
+await useAsyncData("completions", () => store.load(), {
+  watch: [() => user.value?.sub],
+});
+
+// Completion dialog: this run's numbers, and whether they beat the old best.
+const solvedOpen = ref(false);
+const run = ref({ moves: 0, pushes: 0 });
+const isNewBest = ref(false);
+/** The level right after this one in play order, solved or not. */
+const nextLevel = computed(() => {
+  const all = levels.value ?? [];
+  return all[all.findIndex((l) => l.id === levelId) + 1];
+});
 
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
@@ -38,7 +60,11 @@ function onChange(next: GameProgress) {
 
 // The server replays the solution and records it only if it really solves
 // the level.
-async function onSolved({ solution }: GameProgress) {
+async function onSolved({ solution, moves, pushes }: GameProgress) {
+  run.value = { moves, pushes };
+  const previousBest = store.best[levelId];
+  isNewBest.value = false;
+  solvedOpen.value = true;
   verification.value = { state: "pending" };
   try {
     const result = await $fetch<{ best: { moves: number; pushes: number } }>(
@@ -47,12 +73,18 @@ async function onSolved({ solution }: GameProgress) {
     );
     store.markCompleted(levelId, result.best);
     verification.value = { state: "verified", best: result.best };
+    isNewBest.value = !previousBest || moves < previousBest.moves;
   } catch (error) {
     const message =
       (error as { data?: { message?: string } }).data?.message ??
       "Could not save your result";
     verification.value = { state: "failed", message };
   }
+}
+
+function replay() {
+  solvedOpen.value = false;
+  game.value?.restart();
 }
 </script>
 
@@ -123,38 +155,12 @@ async function onSolved({ solution }: GameProgress) {
             </Button>
           </div>
 
-          <div class="min-w-0 max-w-48 text-center sm:max-w-sm">
-            <template v-if="progress.solved">
-              <p class="truncate text-sm font-medium">
-                Solved in {{ count(progress.moves, "move", "moves") }}!
-              </p>
-              <p
-                class="truncate text-xs"
-                :class="
-                  verification.state === 'failed'
-                    ? 'text-destructive'
-                    : 'text-muted-foreground'
-                "
-              >
-                <template v-if="verification.state === 'pending'">
-                  Saving…
-                </template>
-                <template v-else-if="verification.state === 'verified'">
-                  Best: {{ count(verification.best.moves, "move", "moves") }}
-                </template>
-                <template v-else-if="verification.state === 'failed'">
-                  Not saved: {{ verification.message }}
-                </template>
-              </p>
-            </template>
-            <p
-              v-else
-              class="truncate text-sm text-muted-foreground tabular-nums"
-            >
-              {{ count(progress.moves, "move", "moves") }} ·
-              {{ count(progress.pushes, "push", "pushes") }}
-            </p>
-          </div>
+          <p
+            class="min-w-0 max-w-48 truncate text-center text-sm text-muted-foreground tabular-nums sm:max-w-sm"
+          >
+            {{ count(progress.moves, "move", "moves") }} ·
+            {{ count(progress.pushes, "push", "pushes") }}
+          </p>
 
           <Toggle
             variant="outline"
@@ -170,5 +176,67 @@ async function onSolved({ solution }: GameProgress) {
         </div>
       </div>
     </div>
+
+    <Dialog v-model:open="solvedOpen">
+      <DialogContent class="sm:max-w-md">
+        <DialogHeader>
+          <!-- Centred on phones, like the rest of the dialog header. -->
+          <div class="flex items-center justify-center gap-2 sm:justify-start">
+            <TrophyIcon class="size-5" />
+            <DialogTitle>Level solved!</DialogTitle>
+            <Badge v-if="isNewBest">New best!</Badge>
+          </div>
+          <DialogDescription>{{ level.title }}</DialogDescription>
+        </DialogHeader>
+
+        <div class="grid grid-cols-2 gap-3">
+          <Card class="gap-1 py-4">
+            <CardHeader class="px-4">
+              <CardDescription>This run</CardDescription>
+              <CardTitle class="text-xl tabular-nums">
+                {{ count(run.moves, "move", "moves") }}
+              </CardTitle>
+              <p class="text-sm text-muted-foreground tabular-nums">
+                {{ count(run.pushes, "push", "pushes") }}
+              </p>
+            </CardHeader>
+          </Card>
+          <Card class="gap-1 py-4">
+            <CardHeader class="px-4">
+              <CardDescription>Your best</CardDescription>
+              <template v-if="verification.state === 'verified'">
+                <CardTitle class="text-xl tabular-nums">
+                  {{ count(verification.best.moves, "move", "moves") }}
+                </CardTitle>
+                <p class="text-sm text-muted-foreground tabular-nums">
+                  {{ count(verification.best.pushes, "push", "pushes") }}
+                </p>
+              </template>
+              <p
+                v-else-if="verification.state === 'failed'"
+                class="text-sm text-destructive"
+              >
+                Not saved: {{ verification.message }}
+              </p>
+              <p v-else class="text-sm text-muted-foreground">Saving…</p>
+            </CardHeader>
+          </Card>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" @click="replay">
+            <RotateCcwIcon data-icon="inline-start" />
+            Replay
+          </Button>
+          <!-- Hidden on the last level: there is no next one. -->
+          <Button v-if="nextLevel" as-child>
+            <NuxtLink :to="`/play/${nextLevel.id}`">
+              Next level
+              <ArrowRightIcon data-icon="inline-end" />
+            </NuxtLink>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
