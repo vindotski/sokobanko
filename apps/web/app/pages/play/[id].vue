@@ -193,7 +193,21 @@ function replay() {
             <ChevronRightIcon data-icon="inline-end" />
           </NuxtLink>
         </Button>
-        <!-- The last level: /play congratulates once every level is solved. -->
+        <!--
+          The last level: Finish waits until it's solved, then /play
+          congratulates once every level is.
+        -->
+        <Button
+          v-else-if="!(levelId in store.best)"
+          variant="ghost"
+          size="sm"
+          class="justify-self-end"
+          aria-label="Finish"
+          disabled
+        >
+          <span class="sr-only sm:not-sr-only">Finish</span>
+          <TrophyIcon data-icon="inline-end" />
+        </Button>
         <Button
           v-else
           variant="ghost"
