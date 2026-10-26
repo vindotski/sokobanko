@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon, ChartColumnIcon, TrophyIcon } from "@lucide/vue";
+import { ShuffleIcon, TrophyIcon } from "@lucide/vue";
 
 definePageMeta({ layout: "play" });
 
@@ -23,6 +23,11 @@ const totals = all.reduce(
   }),
   { moves: 0, pushes: 0 },
 );
+
+function playRandom() {
+  const level = all[Math.floor(Math.random() * all.length)];
+  if (level) navigateTo(`/play/${level.id}`);
+}
 </script>
 
 <template>
@@ -45,20 +50,10 @@ const totals = all.reduce(
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <div class="flex flex-col gap-2 sm:flex-row">
-              <Button as-child>
-                <NuxtLink to="/profile">
-                  <ChartColumnIcon data-icon="inline-start" />
-                  View profile
-                </NuxtLink>
-              </Button>
-              <Button as-child variant="outline">
-                <NuxtLink to="/levels">
-                  Browse levels
-                  <ArrowRightIcon data-icon="inline-end" />
-                </NuxtLink>
-              </Button>
-            </div>
+            <Button @click="playRandom">
+              <ShuffleIcon data-icon="inline-start" />
+              Random level
+            </Button>
           </EmptyContent>
         </Empty>
       </CardContent>
