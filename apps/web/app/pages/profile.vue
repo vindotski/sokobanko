@@ -69,6 +69,19 @@ const stats = computed(() => {
         </CardHeader>
       </Card>
     </div>
+    <DevOnly>
+      <Card>
+        <CardHeader>
+          <CardTitle>User</CardTitle>
+          <CardDescription>JWT claims from useSupabaseUser()</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <pre class="overflow-x-auto rounded-md bg-muted p-4 text-xs">{{
+            user ? JSON.stringify(user, null, 2) : "No session yet"
+          }}</pre>
+        </CardContent>
+      </Card>
+    </DevOnly>
     <Card>
       <CardHeader>
         <CardTitle>Completed levels</CardTitle>
@@ -128,18 +141,5 @@ const stats = computed(() => {
         </Empty>
       </CardContent>
     </Card>
-    <DevOnly>
-      <Card>
-        <CardHeader>
-          <CardTitle>User</CardTitle>
-          <CardDescription>JWT claims from useSupabaseUser()</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <pre class="overflow-x-auto rounded-md bg-muted p-4 text-xs">{{
-            user ? JSON.stringify(user, null, 2) : "No session yet"
-          }}</pre>
-        </CardContent>
-      </Card>
-    </DevOnly>
   </div>
 </template>
