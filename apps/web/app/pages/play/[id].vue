@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowLeftIcon,
-  RotateCcwIcon,
-  ScanSearchIcon,
-  Undo2Icon,
-} from "@lucide/vue";
+import { RotateCcwIcon, ScanSearchIcon, Undo2Icon } from "@lucide/vue";
 import type { GameProgress, OverviewState } from "@sokobanko/game";
 
 definePageMeta({ layout: "play" });
@@ -65,11 +60,6 @@ async function onSolved({ solution }: GameProgress) {
   <div class="flex flex-1 flex-col">
     <div class="border-b">
       <div class="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4">
-        <Button as-child variant="ghost" size="icon-sm">
-          <NuxtLink to="/levels" aria-label="Back to levels">
-            <ArrowLeftIcon />
-          </NuxtLink>
-        </Button>
         <!-- Title above the counts, so neither competes with the buttons. -->
         <div class="flex min-w-0 flex-1 flex-col">
           <h1 class="truncate text-sm font-semibold">{{ level.title }}</h1>
