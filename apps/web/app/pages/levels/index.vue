@@ -57,7 +57,7 @@ const solvedPercent = computed(() =>
       >
         <!-- Pack the wrapped rows at the top, so previews and text line up
              across cards of equal height. -->
-        <NuxtLink :to="`/levels/${card.level.id}`" class="content-start">
+        <NuxtLink :to="`/play/${card.level.id}`" class="content-start">
           <ItemHeader
             class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-tile-grid p-4"
           >

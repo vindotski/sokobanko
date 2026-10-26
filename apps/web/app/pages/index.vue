@@ -4,7 +4,7 @@ const { data: levelIds } = await useLevelIds();
 function playRandom() {
   const ids = levelIds.value ?? [];
   const id = ids[Math.floor(Math.random() * ids.length)];
-  if (id) navigateTo(`/levels/${id}`);
+  if (id) navigateTo(`/play/${id}`);
 }
 </script>
 

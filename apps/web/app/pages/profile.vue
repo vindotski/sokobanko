@@ -117,7 +117,7 @@ function onAvatarClick() {
             >
               <TableCell>
                 <NuxtLink
-                  :to="`/levels/${completion.level.id}`"
+                  :to="`/play/${completion.level.id}`"
                   class="font-medium hover:underline"
                 >
                   {{ completion.level.title }}
