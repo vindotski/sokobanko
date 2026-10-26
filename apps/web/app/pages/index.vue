@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ArrowRightIcon } from "@lucide/vue";
+
 definePageMeta({ layout: "landing" });
 
 const { data: levelIds } = await useLevelIds();
@@ -23,7 +25,10 @@ const { data: levelIds } = await useLevelIds();
     <div class="flex flex-col gap-3 sm:flex-row">
       <PlayButton size="lg" />
       <Button as-child size="lg" variant="outline">
-        <NuxtLink to="/levels">Browse levels</NuxtLink>
+        <NuxtLink to="/levels">
+          Browse levels
+          <ArrowRightIcon data-icon="inline-end" />
+        </NuxtLink>
       </Button>
     </div>
     <p class="text-sm text-muted-foreground">
