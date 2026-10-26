@@ -1,6 +1,9 @@
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Published levels in play order. */
+/**
+ * Published levels in play order. The completion route in
+ * server/api/levels/[id]/complete.post.ts uses the same order for unlocking.
+ */
 export function useLevels() {
   const supabase = useSupabaseClient();
   return useAsyncData("levels", async () => {

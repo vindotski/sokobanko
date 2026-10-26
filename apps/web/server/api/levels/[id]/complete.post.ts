@@ -1,4 +1,4 @@
-import { parseLevel, ReplayError, replay } from "@sokobanko/core";
+import { levelStates, parseLevel, ReplayError, replay } from "@sokobanko/core";
 import {
   serverSupabaseClient,
   serverSupabaseServiceRole,
@@ -36,6 +36,32 @@ export default defineEventHandler(async (event) => {
   }
   if (!level) {
     throw createError({ statusCode: 404, message: "Level not found" });
+  }
+
+  // Levels unlock in play order: only solved levels and the first unsolved
+  // one can be completed.
+  const [order, done] = await Promise.all([
+    // Same order as useLevels() in app/composables/levels.ts.
+    supabase
+      .from("levels")
+      .select("id")
+      .eq("status", "published")
+      .order("position", { nullsFirst: false })
+      .order("created_at"),
+    // RLS limits this to the user's own completions.
+    supabase.from("level_completions").select("level_id"),
+  ]);
+  const queryError = order.error ?? done.error;
+  if (queryError) {
+    throw createError({ statusCode: 500, message: queryError.message });
+  }
+  const solved = new Set((done.data ?? []).map((c) => c.level_id));
+  const states = levelStates(
+    (order.data ?? []).map((l) => l.id),
+    (levelId) => solved.has(levelId),
+  );
+  if (states.get(level.id) === "locked") {
+    throw createError({ statusCode: 403, message: "Level is locked" });
   }
 
   let result: ReturnType<typeof replay>;
