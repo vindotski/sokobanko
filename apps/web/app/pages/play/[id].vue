@@ -3,11 +3,14 @@ import {
   ArrowRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  LockIcon,
+  PlayIcon,
   RotateCcwIcon,
   ScanSearchIcon,
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
+import { levelStates } from "@sokobanko/core";
 import type { GameProgress, OverviewState } from "@sokobanko/game";
 
 definePageMeta({ layout: "play" });
@@ -54,6 +57,22 @@ const levelIndex = computed(() =>
 const prevLevel = computed(() => levels.value?.[levelIndex.value - 1]);
 const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
 
+// Levels unlock in play order; the server enforces the same rule.
+const states = computed(() =>
+  levelStates(
+    (levels.value ?? []).map((l) => l.id),
+    (id) => id in store.best,
+  ),
+);
+const isLocked = computed(() => states.value.get(levelId) === "locked");
+const nextLocked = computed(
+  () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
+);
+/** The level to solve to unlock this one. */
+const currentLevel = computed(() =>
+  levels.value?.find((l) => states.value.get(l.id) === "current"),
+);
+
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 
@@ -98,7 +117,8 @@ function replay() {
       <!--
         Three columns, like the bottom toolbar, so the title stays centred.
         On the first level Prev is disabled rather than hidden, so nothing
-        shifts; on the last, Next becomes Finish.
+        shifts; Next is disabled while the next level is locked, and on the
+        last level it becomes Finish.
       -->
       <div
         class="mx-auto grid h-12 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
@@ -132,7 +152,18 @@ function replay() {
         </h1>
 
         <Button
-          v-if="nextLevel"
+          v-if="nextLocked"
+          variant="ghost"
+          size="sm"
+          class="justify-self-end"
+          aria-label="Next level (locked)"
+          disabled
+        >
+          <span class="sr-only sm:not-sr-only">Next</span>
+          <LockIcon data-icon="inline-end" />
+        </Button>
+        <Button
+          v-else-if="nextLevel"
           variant="ghost"
           size="sm"
           class="justify-self-end"
@@ -160,82 +191,115 @@ function replay() {
     </div>
 
     <div class="relative flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]">
-      <div class="absolute inset-0">
-        <SokobanGame
-          ref="game"
-          :level="level"
-          :padding="{ bottom: 136 }"
-          class="size-full touch-none select-none"
-          @change="onChange"
-          @solved="onSolved"
-          @overview="overview = $event"
-        />
-      </div>
-
-      <!-- Above the toolbar; clicks and drags pass through to the board. -->
+      <!-- No game on a locked level, so there's nothing to play or record. -->
       <div
-        v-if="!progress.solved && progress.moves === 0"
-        class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
+        v-if="isLocked"
+        class="absolute inset-0 flex items-center justify-center px-4 py-8"
       >
-        <Item variant="outline" size="sm" class="bg-background">
-          <ItemContent>
-            <ItemDescription>
-              Drag the board or use arrow keys / WASD
-              <!-- Phones have no Space key; they use the Overview toggle. -->
-              <span v-if="overview.available" class="hidden sm:inline">
-                · hold Space for overview
-              </span>
-            </ItemDescription>
-          </ItemContent>
-        </Item>
+        <!-- A solid card keeps the text readable over the grid. -->
+        <Card class="w-full max-w-md py-8">
+          <CardContent>
+            <Empty class="p-0 md:p-0">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <LockIcon />
+                </EmptyMedia>
+                <EmptyTitle>This level is locked</EmptyTitle>
+                <EmptyDescription v-if="currentLevel">
+                  Solve {{ currentLevel.title }} to unlock it.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent v-if="currentLevel">
+                <Button as-child>
+                  <NuxtLink :to="`/play/${currentLevel.id}`">
+                    <PlayIcon data-icon="inline-start" />
+                    Play {{ currentLevel.title }}
+                  </NuxtLink>
+                </Button>
+              </EmptyContent>
+            </Empty>
+          </CardContent>
+        </Card>
       </div>
 
-      <!-- Three columns, so the status stays centred whatever the sides hold. -->
-      <div class="absolute inset-x-0 bottom-0 border-t bg-background">
-        <div
-          class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
-        >
-          <div class="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="progress.moves === 0"
-              @click="game?.undo()"
-            >
-              <Undo2Icon data-icon="inline-start" />
-              <span class="sr-only sm:not-sr-only">Undo</span>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              :disabled="progress.moves === 0"
-              @click="game?.restart()"
-            >
-              <RotateCcwIcon data-icon="inline-start" />
-              <span class="sr-only sm:not-sr-only">Restart</span>
-            </Button>
-          </div>
-
-          <p
-            class="min-w-0 max-w-48 truncate text-center text-sm text-muted-foreground tabular-nums sm:max-w-sm"
-          >
-            {{ count(progress.moves, "move", "moves") }} ·
-            {{ count(progress.pushes, "push", "pushes") }}
-          </p>
-
-          <Toggle
-            variant="outline"
-            size="sm"
-            class="justify-self-end"
-            :disabled="!overview.available"
-            :model-value="overview.active"
-            @update:model-value="game?.setOverview($event)"
-          >
-            <ScanSearchIcon data-icon="inline-start" />
-            <span class="sr-only sm:not-sr-only">Overview</span>
-          </Toggle>
+      <template v-else>
+        <div class="absolute inset-0">
+          <SokobanGame
+            ref="game"
+            :level="level"
+            :padding="{ bottom: 136 }"
+            class="size-full touch-none select-none"
+            @change="onChange"
+            @solved="onSolved"
+            @overview="overview = $event"
+          />
         </div>
-      </div>
+
+        <!-- Above the toolbar; clicks and drags pass through to the board. -->
+        <div
+          v-if="!progress.solved && progress.moves === 0"
+          class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
+        >
+          <Item variant="outline" size="sm" class="bg-background">
+            <ItemContent>
+              <ItemDescription>
+                Drag the board or use arrow keys / WASD
+                <!-- Phones have no Space key; they use the Overview toggle. -->
+                <span v-if="overview.available" class="hidden sm:inline">
+                  · hold Space for overview
+                </span>
+              </ItemDescription>
+            </ItemContent>
+          </Item>
+        </div>
+
+        <!-- Three columns, so the status stays centred whatever the sides hold. -->
+        <div class="absolute inset-x-0 bottom-0 border-t bg-background">
+          <div
+            class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
+          >
+            <div class="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                :disabled="progress.moves === 0"
+                @click="game?.undo()"
+              >
+                <Undo2Icon data-icon="inline-start" />
+                <span class="sr-only sm:not-sr-only">Undo</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                :disabled="progress.moves === 0"
+                @click="game?.restart()"
+              >
+                <RotateCcwIcon data-icon="inline-start" />
+                <span class="sr-only sm:not-sr-only">Restart</span>
+              </Button>
+            </div>
+
+            <p
+              class="min-w-0 max-w-48 truncate text-center text-sm text-muted-foreground tabular-nums sm:max-w-sm"
+            >
+              {{ count(progress.moves, "move", "moves") }} ·
+              {{ count(progress.pushes, "push", "pushes") }}
+            </p>
+
+            <Toggle
+              variant="outline"
+              size="sm"
+              class="justify-self-end"
+              :disabled="!overview.available"
+              :model-value="overview.active"
+              @update:model-value="game?.setOverview($event)"
+            >
+              <ScanSearchIcon data-icon="inline-start" />
+              <span class="sr-only sm:not-sr-only">Overview</span>
+            </Toggle>
+          </div>
+        </div>
+      </template>
     </div>
 
     <Dialog v-model:open="solvedOpen">
@@ -289,7 +353,15 @@ function replay() {
             <RotateCcwIcon data-icon="inline-start" />
             Replay
           </Button>
-          <Button v-if="nextLevel" as-child>
+          <!--
+            The next level unlocks once this result is saved, so this waits
+            for the save, or stays disabled if it failed.
+          -->
+          <Button v-if="nextLocked" disabled>
+            Next level
+            <LockIcon data-icon="inline-end" />
+          </Button>
+          <Button v-else-if="nextLevel" as-child>
             <NuxtLink :to="`/play/${nextLevel.id}`">
               Next level
               <ArrowRightIcon data-icon="inline-end" />
