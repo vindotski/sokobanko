@@ -72,7 +72,7 @@ insert into public.levels (id, title, map, status, position) values
     'Two Boxes',
     array[' #####', '##   #', '#@$$ #', '#  ..#', '######'],
     'published',
-    2
+    3
   ),
   (
     -- From DoctorLai/sokoban-web (MIT).
@@ -80,7 +80,7 @@ insert into public.levels (id, title, map, status, position) values
     'Hello World!',
     array['##########', '####....##', '#  $$$$###', '#  @   ###', '##########'],
     'published',
-    3
+    4
   ),
   (
     -- 30x20 and mostly empty: bigger than the screen, for testing the camera.
@@ -109,5 +109,5 @@ insert into public.levels (id, title, map, status, position) values
       '##############################'
     ],
     'published',
-    4
+    2
   );
