@@ -10,6 +10,7 @@ import {
 } from "@sokobanko/core";
 import { Application, type ColorSource, Graphics } from "pixi.js";
 import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
+import { Celebration } from "./celebration.ts";
 import { Joystick } from "./joystick.ts";
 import { listenToKeys } from "./keyboard.ts";
 
@@ -121,11 +122,14 @@ export async function createGame(
   app.stage.hitArea = app.screen;
 
   const board = new Graphics();
+  // A sibling of the board rather than a child: Graphics can't have children.
+  const celebration = new Celebration(app.renderer);
   const joystick = new Joystick(app.stage, (direction) => step(direction));
-  app.stage.addChild(board, joystick);
+  app.stage.addChild(board, celebration.view, joystick);
   app.ticker.add((ticker) => {
     joystick.update(ticker.deltaMS);
     followCamera(ticker.deltaMS);
+    celebration.update(ticker.deltaMS);
   });
   const stopKeyboard = listenToKeys({
     onStep: (direction) => step(direction),
@@ -172,6 +176,8 @@ export async function createGame(
   const placeBoard = () => {
     board.scale.set(tile / TILE);
     board.position.set(left + camera.x, top + camera.y);
+    celebration.view.scale.copyFrom(board.scale);
+    celebration.view.position.copyFrom(board.position);
   };
 
   const reportOverview = (available: boolean) => {
@@ -240,7 +246,29 @@ export async function createGame(
       pushed: result.pushed,
     });
     const progress = update();
-    if (progress.solved) options.onSolved?.(progress);
+    if (progress.solved) {
+      celebrate();
+      options.onSolved?.(progress);
+    }
+  }
+
+  /** Sparks from every goal, unless the system asks for less motion. */
+  function celebrate() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const { goals, width } = current();
+    const points = [];
+    for (let i = 0; i < goals.length; i++) {
+      if (!goals[i]) continue;
+      points.push({
+        x: ((i % width) + 0.5) * TILE,
+        y: (Math.floor(i / width) + 0.5) * TILE,
+      });
+    }
+    celebration.burst(points, [
+      palette.goal,
+      palette.boxOnGoal,
+      palette.player,
+    ]);
   }
 
   update();
@@ -256,14 +284,19 @@ export async function createGame(
       start = parseLevel(next);
       history = [];
       toggled = false;
+      celebration.clear();
       update();
       snapCamera();
     },
     undo() {
-      if (history.pop()) update();
+      if (history.pop()) {
+        celebration.clear();
+        update();
+      }
     },
     restart() {
       history = [];
+      celebration.clear();
       update();
     },
     setOverview(on) {
@@ -276,6 +309,7 @@ export async function createGame(
     destroy() {
       stopKeyboard();
       observer.disconnect();
+      celebration.destroy();
       app.destroy(
         { removeView: true, releaseGlobalResources: true },
         { children: true },

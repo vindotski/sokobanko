@@ -12,6 +12,7 @@ import {
 } from "@lucide/vue";
 import { levelStates } from "@sokobanko/core";
 import type { GameProgress, OverviewState } from "@sokobanko/game";
+import { usePreferredReducedMotion } from "@vueuse/core";
 
 definePageMeta({ layout: "play" });
 
@@ -76,9 +77,21 @@ const currentLevel = computed(() =>
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 
+// The board bursts into sparks on a solve; the dialog opens once they've
+// mostly faded. Same length as CELEBRATION_MS in packages/game, which isn't
+// imported here because that would pull PixiJS into the server bundle.
+const CELEBRATION_MS = 900;
+const reducedMotion = usePreferredReducedMotion();
+let dialogTimer: ReturnType<typeof setTimeout> | undefined;
+onBeforeUnmount(() => clearTimeout(dialogTimer));
+
 function onChange(next: GameProgress) {
   progress.value = next;
-  if (!next.solved) verification.value = { state: "idle" };
+  if (!next.solved) {
+    // An undo or restart during the burst cancels the dialog.
+    clearTimeout(dialogTimer);
+    verification.value = { state: "idle" };
+  }
 }
 
 // The server replays the solution and records it only if it really solves
@@ -87,7 +100,13 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
   const previousBest = store.best[levelId];
   isNewBest.value = false;
-  solvedOpen.value = true;
+  clearTimeout(dialogTimer);
+  dialogTimer = setTimeout(
+    () => {
+      solvedOpen.value = true;
+    },
+    reducedMotion.value === "reduce" ? 0 : CELEBRATION_MS,
+  );
   verification.value = { state: "pending" };
   try {
     const result = await $fetch<{ best: { moves: number; pushes: number } }>(
