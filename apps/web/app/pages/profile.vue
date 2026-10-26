@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { UserIcon } from "@lucide/vue";
 
-// The session's JWT claims.
 const user = useSupabaseUser();
 const { data: completions } = await useCompletions();
 const { data: levelIds } = await useLevelIds();
@@ -22,29 +21,12 @@ const stats = computed(() => {
     pushes: done.reduce((sum, c) => sum + c.pushes, 0),
   };
 });
-
-// Hidden debug card with the raw claims: click the avatar 10 times in a row
-// (each within a second of the last) to toggle it. Not saved anywhere.
-const TAPS_TO_TOGGLE = 10;
-const TAP_GAP_MS = 1000;
-const showClaims = ref(false);
-let taps = 0;
-let lastTap = 0;
-
-function onAvatarClick() {
-  const now = Date.now();
-  taps = now - lastTap <= TAP_GAP_MS ? taps + 1 : 1;
-  lastTap = now;
-  if (taps < TAPS_TO_TOGGLE) return;
-  taps = 0;
-  showClaims.value = !showClaims.value;
-}
 </script>
 
 <template>
   <div class="flex flex-col gap-6">
     <div class="flex items-center gap-4">
-      <Avatar class="size-12 select-none" @click="onAvatarClick">
+      <Avatar class="size-12">
         <AvatarFallback><UserIcon /></AvatarFallback>
       </Avatar>
       <div class="flex min-w-0 flex-col gap-1">
@@ -91,17 +73,6 @@ function onAvatarClick() {
         </CardContent>
       </Card>
     </div>
-    <Card v-if="showClaims">
-      <CardHeader>
-        <CardTitle>User</CardTitle>
-        <CardDescription>JWT claims from useSupabaseUser()</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <pre class="overflow-x-auto rounded-md bg-muted p-4 text-xs">{{
-          user ? JSON.stringify(user, null, 2) : "No session yet"
-        }}</pre>
-      </CardContent>
-    </Card>
     <Card>
       <CardHeader>
         <CardTitle>Completed levels</CardTitle>
