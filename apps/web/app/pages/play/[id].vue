@@ -97,8 +97,8 @@ function replay() {
     <div class="border-b">
       <!--
         Three columns, like the bottom toolbar, so the title stays centred.
-        At either end of the list the button is disabled rather than hidden,
-        so nothing shifts.
+        On the first level Prev is disabled rather than hidden, so nothing
+        shifts; on the last, Next becomes Finish.
       -->
       <div
         class="mx-auto grid h-12 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
@@ -143,16 +143,18 @@ function replay() {
             <ChevronRightIcon data-icon="inline-end" />
           </NuxtLink>
         </Button>
+        <!-- The last level: /play congratulates once every level is solved. -->
         <Button
           v-else
           variant="ghost"
           size="sm"
           class="justify-self-end"
-          aria-label="Next level"
-          disabled
+          as-child
         >
-          <span class="sr-only sm:not-sr-only">Next</span>
-          <ChevronRightIcon data-icon="inline-end" />
+          <NuxtLink to="/play" aria-label="Finish">
+            <span class="sr-only sm:not-sr-only">Finish</span>
+            <TrophyIcon data-icon="inline-end" />
+          </NuxtLink>
         </Button>
       </div>
     </div>
@@ -287,11 +289,24 @@ function replay() {
             <RotateCcwIcon data-icon="inline-start" />
             Replay
           </Button>
-          <!-- Hidden on the last level: there is no next one. -->
           <Button v-if="nextLevel" as-child>
             <NuxtLink :to="`/play/${nextLevel.id}`">
               Next level
               <ArrowRightIcon data-icon="inline-end" />
+            </NuxtLink>
+          </Button>
+          <!--
+            The last level. Wait for the save, or /play wouldn't count this
+            level as solved yet.
+          -->
+          <Button v-else-if="verification.state === 'pending'" disabled>
+            <TrophyIcon data-icon="inline-start" />
+            Finish
+          </Button>
+          <Button v-else as-child>
+            <NuxtLink to="/play">
+              <TrophyIcon data-icon="inline-start" />
+              Finish
             </NuxtLink>
           </Button>
         </DialogFooter>
