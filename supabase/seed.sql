@@ -88,8 +88,8 @@ insert into public.levels (id, title, map, status, position) values
     'Big Room',
     array[
       '##############################',
-      '#@ $                         #',
-      '#                            #',
+      '#@                           #',
+      '#  $                         #',
       '#                            #',
       '#                            #',
       '#                            #',

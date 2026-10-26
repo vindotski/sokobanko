@@ -42,7 +42,11 @@
       }
     },
     {
-      "includes": ["apps/web/app/pages/**/*.vue", "apps/web/app/app.vue"],
+      "includes": [
+        "apps/web/app/pages/**/*.vue",
+        "apps/web/app/layouts/**/*.vue",
+        "apps/web/app/app.vue"
+      ],
       "linter": {
         "rules": {
           "style": {
