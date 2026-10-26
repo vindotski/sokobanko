@@ -45,7 +45,7 @@ const questions = [
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col gap-6">
+  <div class="flex flex-col gap-6">
     <div class="flex flex-col gap-1">
       <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
       <p class="text-sm text-muted-foreground">
@@ -71,6 +71,5 @@ const questions = [
         </AccordionContent>
       </AccordionItem>
     </Accordion>
-    <MadeByFooter class="mt-auto" />
   </div>
 </template>

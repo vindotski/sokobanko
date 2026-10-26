@@ -15,7 +15,7 @@ const isActive = (to: string) =>
 </script>
 
 <template>
-  <header class="border-b">
+  <header class="sticky top-0 z-40 border-b bg-background">
     <nav class="mx-auto flex h-14 max-w-5xl items-center gap-6 px-4">
       <NuxtLink to="/" class="font-bold">Sokobanko</NuxtLink>
       <div class="ml-auto flex gap-4 text-sm">

@@ -1,10 +1,14 @@
-<!-- Landing page: full width, with the made-by footer. -->
+<!--
+  Landing page: full width. The content is at least one screen tall, so the
+  footer always sits a scroll away.
+-->
 <template>
-  <div class="flex min-h-svh flex-col">
-    <AppHeader />
-    <main class="flex flex-1 flex-col">
+  <div>
+    <SiteHeader />
+    <!-- 3.5rem is the header's height (h-14). -->
+    <main class="flex min-h-[calc(100svh-3.5rem)] flex-col">
       <slot />
     </main>
-    <MadeByFooter />
+    <SiteFooter />
   </div>
 </template>
