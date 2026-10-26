@@ -42,7 +42,7 @@ function onAvatarClick() {
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
+  <div class="flex flex-col gap-6">
     <div class="flex items-center gap-4">
       <Avatar class="size-12 select-none" @click="onAvatarClick">
         <AvatarFallback><UserIcon /></AvatarFallback>

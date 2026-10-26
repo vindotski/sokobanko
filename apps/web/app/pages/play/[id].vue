@@ -7,6 +7,8 @@ import {
 } from "@lucide/vue";
 import type { GameProgress, OverviewState } from "@sokobanko/game";
 
+definePageMeta({ layout: "play" });
+
 const route = useRoute();
 const { data } = await useLevel(String(route.params.id));
 const level = data.value;

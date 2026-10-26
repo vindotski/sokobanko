@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ArrowRightIcon, ChartColumnIcon, TrophyIcon } from "@lucide/vue";
 
+definePageMeta({ layout: "play" });
+
 // /play without an id: jump to the first level in play order that the user
 // hasn't solved yet, or congratulate them once everything is solved.
 const { data: levels } = await useLevels();

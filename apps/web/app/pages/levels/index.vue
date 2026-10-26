@@ -28,7 +28,7 @@ const solvedPercent = computed(() =>
 </script>
 
 <template>
-  <div class="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
+  <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div class="flex flex-col gap-1">
         <h1 class="text-2xl font-semibold tracking-tight">Levels</h1>
@@ -46,7 +46,7 @@ const solvedPercent = computed(() =>
 
     <ItemGroup
       v-if="cards.length"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
     >
       <Item
         v-for="card in cards"

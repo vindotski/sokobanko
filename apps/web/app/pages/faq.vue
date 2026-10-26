@@ -45,34 +45,32 @@ const questions = [
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col">
-    <div class="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
-        <p class="text-sm text-muted-foreground">
-          Answers to common questions about Sokobanko.
-        </p>
-      </div>
-      <Accordion type="single" collapsible>
-        <AccordionItem
-          v-for="(item, index) in questions"
-          :key="item.question"
-          :value="`item-${index}`"
-        >
-          <AccordionTrigger>{{ item.question }}</AccordionTrigger>
-          <AccordionContent class="text-muted-foreground">
-            {{ item.answer }}
-            <template v-if="item.email">
-              <a
-                :href="`mailto:${item.email}`"
-                class="font-medium text-foreground underline underline-offset-4"
-                >{{ item.email }}</a
-              >.
-            </template>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+  <div class="flex flex-1 flex-col gap-6">
+    <div class="flex flex-col gap-1">
+      <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
+      <p class="text-sm text-muted-foreground">
+        Answers to common questions about Sokobanko.
+      </p>
     </div>
+    <Accordion type="single" collapsible>
+      <AccordionItem
+        v-for="(item, index) in questions"
+        :key="item.question"
+        :value="`item-${index}`"
+      >
+        <AccordionTrigger>{{ item.question }}</AccordionTrigger>
+        <AccordionContent class="text-muted-foreground">
+          {{ item.answer }}
+          <template v-if="item.email">
+            <a
+              :href="`mailto:${item.email}`"
+              class="font-medium text-foreground underline underline-offset-4"
+              >{{ item.email }}</a
+            >.
+          </template>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
     <MadeByFooter class="mt-auto" />
   </div>
 </template>
