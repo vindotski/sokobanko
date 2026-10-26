@@ -37,9 +37,9 @@ watch(
 <template>
   <header class="sticky top-0 z-40 border-b bg-background">
     <!--
-      Three columns at every size. Phones: menu button and centred title, with
-      the account in the drawer. From md: title on the left, main links
-      centred, avatar on the right.
+      Three columns at every size. Phones: menu button, centred title and theme
+      toggle, with the account in the drawer. From md: title on the left, main
+      links centred, avatar and theme toggle on the right.
     -->
     <nav
       class="mx-auto grid h-14 max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4"
@@ -112,16 +112,20 @@ watch(
         </NuxtLink>
       </div>
 
-      <NuxtLink
-        to="/profile"
-        aria-label="Profile"
-        :aria-current="isActive('/profile') ? 'page' : undefined"
-        class="col-start-3 row-start-1 hidden justify-self-end rounded-full outline-none md:block focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:ring-2 aria-[current=page]:ring-foreground/20"
-      >
-        <Avatar class="size-8">
-          <AvatarFallback><UserIcon class="size-4" /></AvatarFallback>
-        </Avatar>
-      </NuxtLink>
+      <!-- The theme toggle stays at the far right at every size. -->
+      <div class="col-start-3 row-start-1 flex items-center gap-2 justify-self-end">
+        <NuxtLink
+          to="/profile"
+          aria-label="Profile"
+          :aria-current="isActive('/profile') ? 'page' : undefined"
+          class="hidden rounded-full outline-none md:block focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:ring-2 aria-[current=page]:ring-foreground/20"
+        >
+          <Avatar class="size-8">
+            <AvatarFallback><UserIcon class="size-4" /></AvatarFallback>
+          </Avatar>
+        </NuxtLink>
+        <ThemeToggle />
+      </div>
     </nav>
   </header>
 </template>
