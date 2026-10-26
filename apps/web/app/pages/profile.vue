@@ -75,7 +75,7 @@ const stats = computed(() => {
         <CardDescription>Your best verified result for each level.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
+        <Table v-if="completions?.length">
           <TableHeader>
             <TableRow>
               <TableHead>Level</TableHead>
@@ -111,11 +111,21 @@ const stats = computed(() => {
                 />
               </TableCell>
             </TableRow>
-            <TableEmpty v-if="!completions?.length" :colspan="4">
-              No completed levels yet.
-            </TableEmpty>
           </TableBody>
         </Table>
+        <Empty v-else>
+          <EmptyHeader>
+            <EmptyTitle>No levels solved yet</EmptyTitle>
+            <EmptyDescription>
+              Solve a level and your best result shows up here.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button as-child>
+              <NuxtLink to="/levels">Browse levels</NuxtLink>
+            </Button>
+          </EmptyContent>
+        </Empty>
       </CardContent>
     </Card>
     <DevOnly>
