@@ -23,6 +23,32 @@ const totals = all.reduce(
   }),
   { moves: 0, pushes: 0 },
 );
+
+// Confetti in the board colors to celebrate: from both bottom corners, then
+// the middle. The library skips it when the system asks for reduced motion.
+let confetti: typeof import("canvas-confetti") | undefined;
+let finale: ReturnType<typeof setTimeout> | undefined;
+onMounted(async () => {
+  const { default: fire } = await import("canvas-confetti");
+  confetti = fire;
+  const { goal, boxOnGoal, player, box } = readBoardPalette();
+  const shared = {
+    particleCount: 80,
+    spread: 60,
+    startVelocity: 55,
+    colors: [goal, boxOnGoal, player, box].filter((c) => c !== undefined),
+    disableForReducedMotion: true,
+  };
+  fire({ ...shared, angle: 60, origin: { x: 0, y: 1 } });
+  fire({ ...shared, angle: 120, origin: { x: 1, y: 1 } });
+  finale = setTimeout(() => {
+    fire({ ...shared, particleCount: 120, spread: 100, origin: { y: 0.7 } });
+  }, 250);
+});
+onBeforeUnmount(() => {
+  clearTimeout(finale);
+  confetti?.reset();
+});
 </script>
 
 <template>

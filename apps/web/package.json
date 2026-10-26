@@ -18,6 +18,7 @@
     "@sokobanko/game": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@vueuse/core": "^15.0.0",
+    "canvas-confetti": "1.9.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.0",
@@ -31,6 +32,7 @@
     "vue-router": "^5.4.0"
   },
   "devDependencies": {
+    "@types/canvas-confetti": "1.9.0",
     "shadcn-nuxt": "^2.8.2",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.13"

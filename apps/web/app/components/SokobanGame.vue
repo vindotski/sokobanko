@@ -3,7 +3,6 @@ import type { LevelJson } from "@sokobanko/core";
 import type {
   Game,
   GamePadding,
-  GamePalette,
   GameProgress,
   OverviewState,
 } from "@sokobanko/game";
@@ -23,26 +22,6 @@ const container = useTemplateRef("container");
 let game: Game | undefined;
 let unmounted = false;
 
-// The canvas can't use CSS, so read the theme's --board-* colors from it.
-const PALETTE_VARS: Record<keyof GamePalette, string> = {
-  wall: "--board-wall",
-  floor: "--board-floor",
-  goal: "--board-goal",
-  box: "--board-box",
-  boxOnGoal: "--board-box-on-goal",
-  player: "--board-player",
-};
-
-function readPalette(): Partial<GamePalette> {
-  const style = getComputedStyle(document.documentElement);
-  const palette: Partial<GamePalette> = {};
-  for (const [key, name] of Object.entries(PALETTE_VARS)) {
-    const value = style.getPropertyValue(name).trim();
-    if (value) palette[key as keyof GamePalette] = value;
-  }
-  return palette;
-}
-
 onMounted(async () => {
   // PixiJS needs the DOM, so load it only on the client.
   const { createGame } = await import("@sokobanko/game");
@@ -52,7 +31,7 @@ onMounted(async () => {
   const initialLevel = props.level;
   const created = await createGame(el, initialLevel, {
     ...(props.padding && { padding: props.padding }),
-    palette: readPalette(),
+    palette: readBoardPalette(),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
     onOverviewChange: (state) => emit("overview", state),
@@ -75,7 +54,7 @@ watch(
 const colorMode = useColorMode();
 watch(
   () => colorMode.value,
-  () => game?.setPalette(readPalette()),
+  () => game?.setPalette(readBoardPalette()),
   { flush: "post" },
 );
 
