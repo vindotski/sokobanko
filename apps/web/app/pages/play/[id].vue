@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
   ArrowRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   RotateCcwIcon,
   ScanSearchIcon,
   TrophyIcon,
@@ -44,11 +46,13 @@ await useAsyncData("completions", () => store.load(), {
 const solvedOpen = ref(false);
 const run = ref({ moves: 0, pushes: 0 });
 const isNewBest = ref(false);
-/** The level right after this one in play order, solved or not. */
-const nextLevel = computed(() => {
-  const all = levels.value ?? [];
-  return all[all.findIndex((l) => l.id === levelId) + 1];
-});
+// Neighbours in play order, solved or not. Plain indexing, unlike `.at()`,
+// gives no previous level for the first one rather than wrapping around.
+const levelIndex = computed(() =>
+  (levels.value ?? []).findIndex((l) => l.id === levelId),
+);
+const prevLevel = computed(() => levels.value?.[levelIndex.value - 1]);
+const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
 
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
@@ -91,10 +95,65 @@ function replay() {
 <template>
   <div class="flex flex-1 flex-col">
     <div class="border-b">
-      <div class="mx-auto flex h-12 w-full max-w-5xl items-center px-4">
-        <h1 class="w-full truncate text-center text-sm font-semibold">
+      <!--
+        Three columns, like the bottom toolbar, so the title stays centred.
+        At either end of the list the button is disabled rather than hidden,
+        so nothing shifts.
+      -->
+      <div
+        class="mx-auto grid h-12 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
+      >
+        <Button
+          v-if="prevLevel"
+          variant="ghost"
+          size="sm"
+          class="justify-self-start"
+          as-child
+        >
+          <NuxtLink :to="`/play/${prevLevel.id}`" aria-label="Previous level">
+            <ChevronLeftIcon data-icon="inline-start" />
+            <span class="sr-only sm:not-sr-only">Prev</span>
+          </NuxtLink>
+        </Button>
+        <Button
+          v-else
+          variant="ghost"
+          size="sm"
+          class="justify-self-start"
+          aria-label="Previous level"
+          disabled
+        >
+          <ChevronLeftIcon data-icon="inline-start" />
+          <span class="sr-only sm:not-sr-only">Prev</span>
+        </Button>
+
+        <h1 class="min-w-0 truncate text-center text-sm font-semibold">
           {{ level.title }}
         </h1>
+
+        <Button
+          v-if="nextLevel"
+          variant="ghost"
+          size="sm"
+          class="justify-self-end"
+          as-child
+        >
+          <NuxtLink :to="`/play/${nextLevel.id}`" aria-label="Next level">
+            <span class="sr-only sm:not-sr-only">Next</span>
+            <ChevronRightIcon data-icon="inline-end" />
+          </NuxtLink>
+        </Button>
+        <Button
+          v-else
+          variant="ghost"
+          size="sm"
+          class="justify-self-end"
+          aria-label="Next level"
+          disabled
+        >
+          <span class="sr-only sm:not-sr-only">Next</span>
+          <ChevronRightIcon data-icon="inline-end" />
+        </Button>
       </div>
     </div>
 
