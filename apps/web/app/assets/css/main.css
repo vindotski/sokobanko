@@ -43,6 +43,8 @@
 }
 
 :root {
+  /* Native scrollbars and form controls match the active theme. */
+  color-scheme: light;
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -72,6 +74,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -90,6 +93,12 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.556 0 0);
+  --board-wall: #64748b;
+  --board-floor: #292524;
+  --board-goal: #f59e0b;
+  --board-box: #d97706;
+  --board-box-on-goal: #22c55e;
+  --board-player: #3b82f6;
 }
 
 @layer base {

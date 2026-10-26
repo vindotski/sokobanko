@@ -3,10 +3,28 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-25",
   devtools: { enabled: true },
-  modules: ["@pinia/nuxt", "@nuxtjs/supabase", "shadcn-nuxt"],
+  modules: [
+    "@pinia/nuxt",
+    "@nuxtjs/supabase",
+    "@nuxtjs/color-mode",
+    "shadcn-nuxt",
+  ],
+  app: {
+    head: {
+      // Native scrollbars and form controls follow the theme too.
+      meta: [{ name: "color-scheme", content: "light dark" }],
+    },
+  },
   css: ["~/assets/css/main.css"],
   vite: {
     plugins: [tailwindcss()],
+  },
+  colorMode: {
+    // Follow the system; a light/dark toggle can set `preference` later.
+    preference: "system",
+    fallback: "light",
+    // `dark` rather than `dark-mode`, which is what shadcn's variant expects.
+    classSuffix: "",
   },
   shadcn: {
     prefix: "",
