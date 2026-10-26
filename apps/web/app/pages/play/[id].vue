@@ -59,43 +59,10 @@ async function onSolved({ solution }: GameProgress) {
 <template>
   <div class="flex flex-1 flex-col">
     <div class="border-b">
-      <div class="mx-auto flex h-14 w-full max-w-5xl items-center gap-2 px-4">
-        <!-- Title above the counts, so neither competes with the buttons. -->
-        <div class="flex min-w-0 flex-1 flex-col">
-          <h1 class="truncate text-sm font-semibold">{{ level.title }}</h1>
-          <p class="truncate text-xs text-muted-foreground tabular-nums">
-            {{ count(progress.moves, "move", "moves") }} ·
-            {{ count(progress.pushes, "push", "pushes") }}
-          </p>
-        </div>
-        <Toggle
-          v-if="overview.available"
-          variant="outline"
-          size="sm"
-          :model-value="overview.active"
-          @update:model-value="game?.setOverview($event)"
-        >
-          <ScanSearchIcon data-icon="inline-start" />
-          <span class="sr-only sm:not-sr-only">Overview</span>
-        </Toggle>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="progress.moves === 0"
-          @click="game?.undo()"
-        >
-          <Undo2Icon data-icon="inline-start" />
-          <span class="sr-only sm:not-sr-only">Undo</span>
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          :disabled="progress.moves === 0"
-          @click="game?.restart()"
-        >
-          <RotateCcwIcon data-icon="inline-start" />
-          <span class="sr-only sm:not-sr-only">Restart</span>
-        </Button>
+      <div class="mx-auto flex h-12 w-full max-w-5xl items-center px-4">
+        <h1 class="w-full truncate text-center text-sm font-semibold">
+          {{ level.title }}
+        </h1>
       </div>
     </div>
 
@@ -104,7 +71,7 @@ async function onSolved({ solution }: GameProgress) {
         <SokobanGame
           ref="game"
           :level="level"
-          :padding="{ bottom: 96 }"
+          :padding="{ bottom: 136 }"
           class="size-full touch-none select-none"
           @change="onChange"
           @solved="onSolved"
@@ -112,40 +79,12 @@ async function onSolved({ solution }: GameProgress) {
         />
       </div>
 
-      <!-- Clicks and drags pass through to the board. -->
+      <!-- Above the toolbar; clicks and drags pass through to the board. -->
       <div
-        class="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center px-4"
+        v-if="!progress.solved && progress.moves === 0"
+        class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
       >
-        <Item
-          v-if="progress.solved"
-          variant="outline"
-          size="sm"
-          class="bg-background"
-        >
-          <ItemContent>
-            <ItemTitle>
-              Solved in {{ count(progress.moves, "move", "moves") }}!
-            </ItemTitle>
-            <ItemDescription v-if="verification.state === 'pending'">
-              Saving…
-            </ItemDescription>
-            <ItemDescription v-else-if="verification.state === 'verified'">
-              Best: {{ count(verification.best.moves, "move", "moves") }}
-            </ItemDescription>
-            <ItemDescription
-              v-else-if="verification.state === 'failed'"
-              class="text-destructive"
-            >
-              Not saved: {{ verification.message }}
-            </ItemDescription>
-          </ItemContent>
-        </Item>
-        <Item
-          v-else-if="progress.moves === 0"
-          variant="outline"
-          size="sm"
-          class="bg-background"
-        >
+        <Item variant="outline" size="sm" class="bg-background">
           <ItemContent>
             <ItemDescription>
               Drag the board or use arrow keys / WASD
@@ -156,6 +95,79 @@ async function onSolved({ solution }: GameProgress) {
             </ItemDescription>
           </ItemContent>
         </Item>
+      </div>
+
+      <!-- Three columns, so the status stays centred whatever the sides hold. -->
+      <div class="absolute inset-x-0 bottom-0 border-t bg-background">
+        <div
+          class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
+        >
+          <div class="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="progress.moves === 0"
+              @click="game?.undo()"
+            >
+              <Undo2Icon data-icon="inline-start" />
+              <span class="sr-only sm:not-sr-only">Undo</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="progress.moves === 0"
+              @click="game?.restart()"
+            >
+              <RotateCcwIcon data-icon="inline-start" />
+              <span class="sr-only sm:not-sr-only">Restart</span>
+            </Button>
+          </div>
+
+          <div class="min-w-0 max-w-48 text-center sm:max-w-sm">
+            <template v-if="progress.solved">
+              <p class="truncate text-sm font-medium">
+                Solved in {{ count(progress.moves, "move", "moves") }}!
+              </p>
+              <p
+                class="truncate text-xs"
+                :class="
+                  verification.state === 'failed'
+                    ? 'text-destructive'
+                    : 'text-muted-foreground'
+                "
+              >
+                <template v-if="verification.state === 'pending'">
+                  Saving…
+                </template>
+                <template v-else-if="verification.state === 'verified'">
+                  Best: {{ count(verification.best.moves, "move", "moves") }}
+                </template>
+                <template v-else-if="verification.state === 'failed'">
+                  Not saved: {{ verification.message }}
+                </template>
+              </p>
+            </template>
+            <p
+              v-else
+              class="truncate text-sm text-muted-foreground tabular-nums"
+            >
+              {{ count(progress.moves, "move", "moves") }} ·
+              {{ count(progress.pushes, "push", "pushes") }}
+            </p>
+          </div>
+
+          <Toggle
+            variant="outline"
+            size="sm"
+            class="justify-self-end"
+            :disabled="!overview.available"
+            :model-value="overview.active"
+            @update:model-value="game?.setOverview($event)"
+          >
+            <ScanSearchIcon data-icon="inline-start" />
+            <span class="sr-only sm:not-sr-only">Overview</span>
+          </Toggle>
+        </div>
       </div>
     </div>
   </div>
