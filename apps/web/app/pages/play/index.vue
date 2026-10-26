@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ShuffleIcon, TrophyIcon } from "@lucide/vue";
+import { TrophyIcon } from "@lucide/vue";
 
 definePageMeta({ layout: "play" });
 
@@ -23,11 +23,6 @@ const totals = all.reduce(
   }),
   { moves: 0, pushes: 0 },
 );
-
-function playRandom() {
-  const level = all[Math.floor(Math.random() * all.length)];
-  if (level) navigateTo(`/play/${level.id}`);
-}
 </script>
 
 <template>
@@ -50,10 +45,8 @@ function playRandom() {
             </EmptyDescription>
           </EmptyHeader>
           <EmptyContent>
-            <Button @click="playRandom">
-              <ShuffleIcon data-icon="inline-start" />
-              Random level
-            </Button>
+            <!-- Everything is solved here, so this is "Random level". -->
+            <PlayButton />
           </EmptyContent>
         </Empty>
       </CardContent>

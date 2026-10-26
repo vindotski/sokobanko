@@ -2,12 +2,6 @@
 definePageMeta({ layout: "landing" });
 
 const { data: levelIds } = await useLevelIds();
-
-function playRandom() {
-  const ids = levelIds.value ?? [];
-  const id = ids[Math.floor(Math.random() * ids.length)];
-  if (id) navigateTo(`/play/${id}`);
-}
 </script>
 
 <template>
@@ -27,9 +21,7 @@ function playRandom() {
       Push every box onto a goal. You can't pull, so every move counts.
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
-      <Button size="lg" :disabled="!levelIds?.length" @click="playRandom">
-        Random level
-      </Button>
+      <PlayButton size="lg" />
       <Button as-child size="lg" variant="outline">
         <NuxtLink to="/levels">Browse levels</NuxtLink>
       </Button>
