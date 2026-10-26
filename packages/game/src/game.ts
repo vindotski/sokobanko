@@ -8,7 +8,7 @@ import {
   type ParsedLevel,
   parseLevel,
 } from "@sokobanko/core";
-import { Application, Graphics } from "pixi.js";
+import { Application, type ColorSource, Graphics } from "pixi.js";
 import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
 import { Joystick } from "./joystick.ts";
 import { listenToKeys } from "./keyboard.ts";
@@ -17,8 +17,18 @@ const TILE = 64;
 /** Default space kept free around the board, in CSS pixels. */
 const MARGIN = 24;
 
-// Same colors as the --board-* variables in apps/web/app/assets/css/main.css.
-const COLORS = {
+/** Board colors; any PixiJS color, such as a CSS color string. */
+export interface GamePalette {
+  wall: ColorSource;
+  floor: ColorSource;
+  goal: ColorSource;
+  box: ColorSource;
+  boxOnGoal: ColorSource;
+  player: ColorSource;
+}
+
+// The light --board-* colors in apps/web/app/assets/css/main.css.
+const DEFAULT_PALETTE: GamePalette = {
   wall: 0x475569,
   floor: 0xfaf7f0,
   goal: 0xf59e0b,
@@ -52,6 +62,8 @@ export interface OverviewState {
 export interface GameOptions {
   /** Space to keep free around the board, in CSS pixels; 24 on each side by default. */
   padding?: GamePadding;
+  /** Board colors; light ones by default. */
+  palette?: Partial<GamePalette>;
   /** Called after every move, undo, restart and level change. */
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
@@ -69,6 +81,8 @@ export interface Game {
   restart(): void;
   /** Zooms out to show the whole level, or back to the player. */
   setOverview(on: boolean): void;
+  /** Redraws the board in new colors, e.g. when the theme changes. */
+  setPalette(palette: Partial<GamePalette>): void;
   destroy(): void;
 }
 
@@ -88,6 +102,7 @@ export async function createGame(
   options: GameOptions = {},
 ): Promise<Game> {
   let start = parseLevel(level);
+  let palette = { ...DEFAULT_PALETTE, ...options.palette };
   let history: Step[] = [];
   const current = () => history.at(-1)?.level ?? start;
 
@@ -203,7 +218,7 @@ export async function createGame(
   }
 
   const update = () => {
-    drawLevel(board, current());
+    drawLevel(board, current(), palette);
     const progress: GameProgress = {
       moves: history.length,
       pushes: history.filter((s) => s.pushed).length,
@@ -254,6 +269,10 @@ export async function createGame(
     setOverview(on) {
       toggled = on;
     },
+    setPalette(next) {
+      palette = { ...DEFAULT_PALETTE, ...next };
+      drawLevel(board, current(), palette);
+    },
     destroy() {
       stopKeyboard();
       observer.disconnect();
@@ -265,7 +284,7 @@ export async function createGame(
   };
 }
 
-function drawLevel(g: Graphics, level: ParsedLevel) {
+function drawLevel(g: Graphics, level: ParsedLevel, colors: GamePalette) {
   const cellX = (i: number) => (i % level.width) * TILE;
   const cellY = (i: number) => Math.floor(i / level.width) * TILE;
 
@@ -277,16 +296,16 @@ function drawLevel(g: Graphics, level: ParsedLevel) {
     const y = cellY(i);
     if (level.walls[i]) {
       // Slightly inset, like the tiles in the web previews.
-      g.roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 2).fill(COLORS.wall);
+      g.roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 2).fill(colors.wall);
     } else if (inside[i]) {
-      g.rect(x, y, TILE, TILE).fill(COLORS.floor);
+      g.rect(x, y, TILE, TILE).fill(colors.floor);
     }
     if (level.goals[i]) {
-      g.circle(x + TILE / 2, y + TILE / 2, TILE * 0.15).fill(COLORS.goal);
+      g.circle(x + TILE / 2, y + TILE / 2, TILE * 0.15).fill(colors.goal);
     }
     if (level.boxes[i]) {
       g.roundRect(x + 6, y + 6, TILE - 12, TILE - 12, 8).fill(
-        level.goals[i] ? COLORS.boxOnGoal : COLORS.box,
+        level.goals[i] ? colors.boxOnGoal : colors.box,
       );
     }
   }
@@ -294,5 +313,5 @@ function drawLevel(g: Graphics, level: ParsedLevel) {
     cellX(level.player) + TILE / 2,
     cellY(level.player) + TILE / 2,
     TILE * 0.3,
-  ).fill(COLORS.player);
+  ).fill(colors.player);
 }
