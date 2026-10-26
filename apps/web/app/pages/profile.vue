@@ -74,6 +74,10 @@ function onAvatarClick() {
           <CardDescription>Best moves</CardDescription>
           <CardTitle class="text-2xl tabular-nums">{{ stats.moves }}</CardTitle>
         </CardHeader>
+        <!-- Same height as the Solved card's progress bar, so the rows line up. -->
+        <CardContent class="flex h-2 items-center">
+          <p class="text-xs text-muted-foreground">Server-verified</p>
+        </CardContent>
       </Card>
       <Card>
         <CardHeader>
@@ -82,6 +86,9 @@ function onAvatarClick() {
             {{ stats.pushes }}
           </CardTitle>
         </CardHeader>
+        <CardContent class="flex h-2 items-center">
+          <p class="text-xs text-muted-foreground">Server-verified</p>
+        </CardContent>
       </Card>
     </div>
     <Card v-if="showClaims">
