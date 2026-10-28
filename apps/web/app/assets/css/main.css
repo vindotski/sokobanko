@@ -81,13 +81,14 @@
   --ring: #000;
   /* Decorative tile grid; quieter than real borders. */
   --grid: #e5e5e5;
-  /* Sokoban board; packages/game/src/game.ts uses the same colors. */
-  --board-wall: #475569;
-  --board-floor: #faf7f0;
-  --board-goal: #f59e0b;
-  --board-box: #b45309;
-  --board-box-on-goal: #16a34a;
-  --board-player: #2563eb;
+  /* Sokoban board; packages/game/src/game.ts uses the same colors. Pieces are
+     told apart by shape and fill, so they all share the foreground. */
+  --board-wall: #000;
+  --board-floor: #fff;
+  --board-goal: #000;
+  --board-box: #000;
+  --board-box-on-goal: #000;
+  --board-player: #000;
 }
 
 .dark {
@@ -111,12 +112,12 @@
   --input: #fff;
   --ring: #fff;
   --grid: #262626;
-  --board-wall: #64748b;
-  --board-floor: #292524;
-  --board-goal: #f59e0b;
-  --board-box: #d97706;
-  --board-box-on-goal: #22c55e;
-  --board-player: #3b82f6;
+  --board-wall: #fff;
+  --board-floor: #000;
+  --board-goal: #fff;
+  --board-box: #fff;
+  --board-box-on-goal: #fff;
+  --board-player: #fff;
 }
 
 @layer base {

@@ -28,14 +28,15 @@ export interface GamePalette {
   player: ColorSource;
 }
 
-// The light --board-* colors in apps/web/app/assets/css/main.css.
+// The light --board-* colors in apps/web/app/assets/css/main.css: black
+// pieces on white floor, told apart by shape rather than color.
 const DEFAULT_PALETTE: GamePalette = {
-  wall: 0x475569,
-  floor: 0xfaf7f0,
-  goal: 0xf59e0b,
-  box: 0xb45309,
-  boxOnGoal: 0x16a34a,
-  player: 0x2563eb,
+  wall: 0x000000,
+  floor: 0xffffff,
+  goal: 0x000000,
+  box: 0x000000,
+  boxOnGoal: 0x000000,
+  player: 0x000000,
 };
 
 export interface GameProgress {
@@ -124,7 +125,9 @@ export async function createGame(
   const board = new Graphics();
   // A sibling of the board rather than a child: Graphics can't have children.
   const celebration = new Celebration(app.renderer);
-  const joystick = new Joystick(app.stage, (direction) => step(direction));
+  const joystick = new Joystick(app.stage, palette.player, (direction) =>
+    step(direction),
+  );
   app.stage.addChild(board, celebration.view, joystick);
   app.ticker.add((ticker) => {
     joystick.update(ticker.deltaMS);
@@ -305,6 +308,7 @@ export async function createGame(
     setPalette(next) {
       palette = { ...DEFAULT_PALETTE, ...next };
       drawLevel(board, current(), palette);
+      joystick.setColor(palette.player);
     },
     destroy() {
       stopKeyboard();
@@ -318,6 +322,10 @@ export async function createGame(
   };
 }
 
+/**
+ * Square pieces on a 64-unit tile, told apart by shape and fill, not color.
+ * apps/web/app/components/LevelPreview.vue draws the same shapes in SVG.
+ */
 function drawLevel(g: Graphics, level: ParsedLevel, colors: GamePalette) {
   const cellX = (i: number) => (i % level.width) * TILE;
   const cellY = (i: number) => Math.floor(i / level.width) * TILE;
@@ -330,22 +338,33 @@ function drawLevel(g: Graphics, level: ParsedLevel, colors: GamePalette) {
     const y = cellY(i);
     if (level.walls[i]) {
       // Slightly inset, like the tiles in the web previews.
-      g.roundRect(x + 1, y + 1, TILE - 2, TILE - 2, 2).fill(colors.wall);
+      g.rect(x + 1, y + 1, TILE - 2, TILE - 2).fill(colors.wall);
     } else if (inside[i]) {
       g.rect(x, y, TILE, TILE).fill(colors.floor);
     }
-    if (level.goals[i]) {
-      g.circle(x + TILE / 2, y + TILE / 2, TILE * 0.15).fill(colors.goal);
-    }
-    if (level.boxes[i]) {
-      g.roundRect(x + 6, y + 6, TILE - 12, TILE - 12, 8).fill(
-        level.goals[i] ? colors.boxOnGoal : colors.box,
-      );
+    if (level.boxes[i] && level.goals[i]) {
+      // Box on goal: solid.
+      g.rect(x + 7, y + 7, 50, 50).fill(colors.boxOnGoal);
+    } else if (level.boxes[i]) {
+      // Box: thick frame with a solid centre.
+      g.rect(x + 10, y + 10, 44, 44).stroke({ width: 6, color: colors.box });
+      g.rect(x + 26, y + 26, 12, 12).fill(colors.box);
+    } else if (level.goals[i]) {
+      // Goal: small thin frame.
+      g.rect(x + 22, y + 22, 20, 20).stroke({ width: 3, color: colors.goal });
     }
   }
-  g.circle(
-    cellX(level.player) + TILE / 2,
-    cellY(level.player) + TILE / 2,
-    TILE * 0.3,
-  ).fill(colors.player);
+  // Player: a solid diamond (a square turned 45°), over any goal beneath it.
+  const px = cellX(level.player);
+  const py = cellY(level.player);
+  g.poly([
+    px + 32,
+    py + 8,
+    px + 56,
+    py + 32,
+    px + 32,
+    py + 56,
+    px + 8,
+    py + 32,
+  ]).fill(colors.player);
 }

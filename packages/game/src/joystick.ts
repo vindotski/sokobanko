@@ -1,7 +1,13 @@
 import type { Direction } from "@sokoban/core";
-import { Container, type FederatedPointerEvent, Graphics } from "pixi.js";
+import {
+  type ColorSource,
+  Container,
+  type FederatedPointerEvent,
+  Graphics,
+} from "pixi.js";
 import { directionFromVector, StepRepeater } from "./input.ts";
 
+/** Half the side of the square base and knob. */
 const RADIUS = 56;
 const KNOB_RADIUS = 24;
 const DEAD_ZONE = 16;
@@ -14,30 +20,41 @@ const REPEAT_MS = 180;
  */
 export class Joystick extends Container {
   private readonly onMove: (direction: Direction) => void;
-  private readonly knob = new Graphics()
-    .circle(0, 0, KNOB_RADIUS)
-    .fill({ color: 0x000000, alpha: 0.3 });
+  private readonly base = new Graphics();
+  private readonly knob = new Graphics();
   private readonly repeater = new StepRepeater(REPEAT_MS);
   private pointerId: number | null = null;
   private direction: Direction | null = null;
 
-  constructor(target: Container, onMove: (direction: Direction) => void) {
+  constructor(
+    target: Container,
+    color: ColorSource,
+    onMove: (direction: Direction) => void,
+  ) {
     super();
     this.onMove = onMove;
     this.visible = false;
-    this.addChild(
-      new Graphics()
-        .circle(0, 0, RADIUS)
-        .fill({ color: 0x000000, alpha: 0.1 })
-        .stroke({ width: 2, color: 0x000000, alpha: 0.2 }),
-      this.knob,
-    );
+    this.addChild(this.base, this.knob);
+    this.setColor(color);
 
     target
       .on("pointerdown", this.handleDown)
       .on("globalpointermove", this.handleDrag)
       .on("pointerup", this.handleUp)
       .on("pointerupoutside", this.handleUp);
+  }
+
+  /** Redraws in `color`, e.g. the board's foreground when the theme changes. */
+  setColor(color: ColorSource) {
+    this.base
+      .clear()
+      .rect(-RADIUS, -RADIUS, RADIUS * 2, RADIUS * 2)
+      .fill({ color, alpha: 0.1 })
+      .stroke({ width: 2, color, alpha: 0.4 });
+    this.knob
+      .clear()
+      .rect(-KNOB_RADIUS, -KNOB_RADIUS, KNOB_RADIUS * 2, KNOB_RADIUS * 2)
+      .fill({ color, alpha: 0.4 });
   }
 
   /** Call once per frame. */
@@ -58,7 +75,8 @@ export class Joystick extends Container {
     if (e.pointerId !== this.pointerId) return;
     const dx = e.global.x - this.x;
     const dy = e.global.y - this.y;
-    const clamp = Math.min(1, RADIUS / Math.hypot(dx, dy));
+    // Keep the knob inside the square base.
+    const clamp = Math.min(1, RADIUS / Math.max(Math.abs(dx), Math.abs(dy)));
     this.knob.position.set(dx * clamp, dy * clamp);
     this.direction = directionFromVector(dx, dy, DEAD_ZONE);
   };

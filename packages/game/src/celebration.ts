@@ -18,7 +18,7 @@ const PER_POINT = 24;
 /** In board pixels (64 per tile) per second. */
 const SPEED = { min: 150, max: 450 };
 const GRAVITY = 900;
-const RADIUS = 8;
+const SIZE = 14;
 
 interface Spark {
   particle: Particle;
@@ -39,10 +39,10 @@ export class Celebration {
   private sparks: Spark[] = [];
 
   constructor(renderer: Renderer) {
-    // One white dot, tinted per spark.
-    const dot = new Graphics().circle(RADIUS, RADIUS, RADIUS).fill(0xffffff);
-    this.texture = renderer.generateTexture(dot);
-    dot.destroy();
+    // One white square, tinted per spark.
+    const square = new Graphics().rect(0, 0, SIZE, SIZE).fill(0xffffff);
+    this.texture = renderer.generateTexture(square);
+    square.destroy();
     this.view = new ParticleContainer({
       texture: this.texture,
       // Sparks can fly anywhere around the board.
