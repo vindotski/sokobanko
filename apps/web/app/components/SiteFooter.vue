@@ -3,7 +3,12 @@
     class="flex items-center justify-center gap-3 px-4 py-4 text-sm text-muted-foreground sm:py-6"
   >
     <Avatar class="size-8">
-      <AvatarImage src="/vinski.jpg" alt="Vinski&amp;Friends" />
+      <!-- Greyscale, like the rest of the black and white design. -->
+      <AvatarImage
+        src="/vinski.jpg"
+        alt="Vinski&amp;Friends"
+        class="grayscale"
+      />
       <AvatarFallback>VF</AvatarFallback>
     </Avatar>
     <p>
