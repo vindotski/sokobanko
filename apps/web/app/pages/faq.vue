@@ -64,7 +64,7 @@ const questions = [
           <template v-if="item.email">
             <a
               :href="`mailto:${item.email}`"
-              class="font-medium text-foreground underline underline-offset-4"
+              class="font-medium text-foreground underline"
               >{{ item.email }}</a
             >.
           </template>

@@ -179,4 +179,14 @@
   body {
     @apply bg-background font-sans text-body text-foreground antialiased;
   }
+  /* Every underline looks the same: thin and clear of the letters. */
+  a {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  /* One focus style everywhere: a solid outline with a gap. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
 }

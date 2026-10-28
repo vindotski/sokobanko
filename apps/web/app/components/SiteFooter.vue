@@ -18,7 +18,7 @@
         aria-label="Ivan Vinski"
         target="_blank"
         rel="noopener noreferrer"
-        class="font-medium text-foreground underline-offset-4 hover:underline"
+        class="font-medium text-foreground hover:underline"
       >
         Vinski&amp;Friends
       </a>

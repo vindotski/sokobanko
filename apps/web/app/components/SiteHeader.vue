@@ -21,7 +21,7 @@ const isActive = (to: string) =>
   route.path === to || route.path.startsWith(`${to}/`);
 
 const linkClass =
-  "text-sm text-muted-foreground hover:text-foreground aria-[current=page]:text-foreground";
+  "text-sm text-muted-foreground hover:text-foreground hover:underline aria-[current=page]:font-medium aria-[current=page]:text-foreground";
 
 // Mobile drawer; closes whenever the page changes, and on any link click
 // (a link to the current page doesn't change it).
@@ -118,7 +118,7 @@ watch(
           to="/profile"
           aria-label="Profile"
           :aria-current="isActive('/profile') ? 'page' : undefined"
-          class="hidden outline-none md:block focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:ring-2 aria-[current=page]:ring-foreground/20"
+          class="hidden md:block aria-[current=page]:ring-2 aria-[current=page]:ring-foreground"
         >
           <Avatar class="size-8">
             <AvatarFallback><UserIcon class="size-4" /></AvatarFallback>
