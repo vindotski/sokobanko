@@ -118,7 +118,7 @@ watch(
           to="/profile"
           aria-label="Profile"
           :aria-current="isActive('/profile') ? 'page' : undefined"
-          class="hidden rounded-full outline-none md:block focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:ring-2 aria-[current=page]:ring-foreground/20"
+          class="hidden outline-none md:block focus-visible:ring-3 focus-visible:ring-ring/50 aria-[current=page]:ring-2 aria-[current=page]:ring-foreground/20"
         >
           <Avatar class="size-8">
             <AvatarFallback><UserIcon class="size-4" /></AvatarFallback>

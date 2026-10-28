@@ -14,7 +14,7 @@ const { data: levelIds } = await useLevelIds();
       class="absolute inset-0 -z-10 bg-tile-grid [--tile-grid-size:48px] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
     />
     <p
-      class="rounded-full border px-3 py-1 text-sm text-muted-foreground"
+      class="border px-3 py-1 text-sm text-muted-foreground"
     >
       A classic box-pushing puzzle
     </p>
