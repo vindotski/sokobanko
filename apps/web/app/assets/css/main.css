@@ -6,8 +6,8 @@
 /* Faint grid lines, like an empty board. Set --tile-grid-size to resize. */
 @utility bg-tile-grid {
   background-image:
-    linear-gradient(to right, var(--border) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
   background-size: var(--tile-grid-size, 12px) var(--tile-grid-size, 12px);
 }
 
@@ -34,6 +34,15 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-grid: var(--grid);
+  /* High contrast: edges are borders, never soft shadows. */
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
   --color-board-wall: var(--board-wall);
   --color-board-floor: var(--board-floor);
   --color-board-goal: var(--board-goal);
@@ -46,24 +55,27 @@
   /* Native scrollbars and form controls match the active theme. */
   color-scheme: light;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: #fff;
+  --foreground: #000;
+  --card: #fff;
+  --card-foreground: #000;
+  --popover: #fff;
+  --popover-foreground: #000;
+  --primary: #000;
+  --primary-foreground: #fff;
+  --secondary: #f2f2f2;
+  --secondary-foreground: #000;
+  --muted: #f2f2f2;
+  --muted-foreground: #404040;
+  --accent: #f2f2f2;
+  --accent-foreground: #000;
+  /* No red: errors say what went wrong in words. */
+  --destructive: #000;
+  --border: #000;
+  --input: #000;
+  --ring: #000;
+  /* Decorative tile grid; quieter than real borders. */
+  --grid: #e5e5e5;
   /* Sokoban board; packages/game/src/game.ts uses the same colors. */
   --board-wall: #475569;
   --board-floor: #faf7f0;
@@ -75,24 +87,25 @@
 
 .dark {
   color-scheme: dark;
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #000;
+  --foreground: #fff;
+  --card: #000;
+  --card-foreground: #fff;
+  --popover: #000;
+  --popover-foreground: #fff;
+  --primary: #fff;
+  --primary-foreground: #000;
+  --secondary: #1a1a1a;
+  --secondary-foreground: #fff;
+  --muted: #1a1a1a;
+  --muted-foreground: #bfbfbf;
+  --accent: #1a1a1a;
+  --accent-foreground: #fff;
+  --destructive: #fff;
+  --border: #fff;
+  --input: #fff;
+  --ring: #fff;
+  --grid: #262626;
   --board-wall: #64748b;
   --board-floor: #292524;
   --board-goal: #f59e0b;
@@ -103,7 +116,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
