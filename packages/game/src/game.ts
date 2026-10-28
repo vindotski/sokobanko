@@ -313,11 +313,13 @@ export async function createGame(
     destroy() {
       stopKeyboard();
       observer.disconnect();
-      celebration.destroy();
       app.destroy(
         { removeView: true, releaseGlobalResources: true },
         { children: true },
       );
+      // After the app: its renderer still has the spark texture bound until
+      // the scene is torn down.
+      celebration.destroy();
     },
   };
 }
