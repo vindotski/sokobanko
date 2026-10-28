@@ -85,6 +85,14 @@ export default defineEventHandler(async (event) => {
     p_level_id: level.id,
     p_solution: result.solution,
   });
+  // A validly signed session for a user that no longer exists, e.g. after a
+  // local database reset or a deleted account.
+  if (
+    saveError?.code === "23503" &&
+    saveError.message.includes("level_completions_user_id_fkey")
+  ) {
+    throw createError({ statusCode: 401, message: "Session expired" });
+  }
   if (saveError) {
     throw createError({ statusCode: 500, message: saveError.message });
   }
