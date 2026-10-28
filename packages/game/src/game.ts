@@ -7,7 +7,7 @@ import {
   move,
   type ParsedLevel,
   parseLevel,
-} from "@sokobanko/core";
+} from "@sokoban/core";
 import { Application, type ColorSource, Graphics } from "pixi.js";
 import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
 import { Celebration } from "./celebration.ts";

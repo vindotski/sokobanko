@@ -1,4 +1,4 @@
-# Sokobanko
+# Sokoban
 
 **The classic box-pushing puzzle, rebuilt for the browser.** Play instantly with no sign-up. Every best score is verified by the server.
 
@@ -84,7 +84,7 @@ The full write-up of decisions, alternatives and trade-offs lives in my portfoli
 **1. Play on the client, verify on the server.**
 - Every move runs instantly in the browser, with no network round trip per keypress.
 - On a win, the browser sends the solution as a compact move string (`rRRuL…`).
-- The server route loads the level, replays the string with the *same* `@sokobanko/core` code, and records the result only if it really solves the level.
+- The server route loads the level, replays the string with the *same* `@sokoban/core` code, and records the result only if it really solves the level.
 - The server never trusts the client's move count or "solved" flag; it recomputes both.
 - *Rejected alternative:* a server-authoritative game with one request per move. It would add latency to every step and per-move state to store, with no real security gain.
 
@@ -147,7 +147,7 @@ The full write-up of decisions, alternatives and trade-offs lives in my portfoli
 
 ## How it was built
 
-I built Sokobanko pairing with an AI coding agent (Claude Code).
+I built Sokoban pairing with an AI coding agent (Claude Code).
 - **My part:** the product and UX decisions, the scope, and the trade-offs. I reviewed and committed every change myself.
 - **The agent's part:** for each feature it researched the code, proposed options with trade-offs, implemented the one I chose, and checked it in a browser.
 - **The workflow:** features split into small units, one commit each, with frequent course corrections after trying things in use.

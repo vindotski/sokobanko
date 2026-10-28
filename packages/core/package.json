@@ -1,5 +1,5 @@
 {
-  "name": "@sokobanko/core",
+  "name": "@sokoban/core",
   "private": true,
   "type": "module",
   "exports": {

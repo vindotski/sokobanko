@@ -10,8 +10,8 @@ import {
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
-import { levelStates } from "@sokobanko/core";
-import type { GameProgress, OverviewState } from "@sokobanko/game";
+import { levelStates } from "@sokoban/core";
+import type { GameProgress, OverviewState } from "@sokoban/game";
 import { usePreferredReducedMotion } from "@vueuse/core";
 
 definePageMeta({ layout: "play" });

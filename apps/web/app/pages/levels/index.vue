@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckIcon, LockIcon, PlayIcon } from "@lucide/vue";
-import { levelStates, parseLevel } from "@sokobanko/core";
+import { levelStates, parseLevel } from "@sokoban/core";
 
 const progress = useProgressStore();
 const user = useSupabaseUser();

@@ -1,4 +1,4 @@
-import type { Direction } from "@sokobanko/core";
+import type { Direction } from "@sokoban/core";
 import { Container, type FederatedPointerEvent, Graphics } from "pixi.js";
 import { directionFromVector, StepRepeater } from "./input.ts";
 

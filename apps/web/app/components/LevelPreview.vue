@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { insideCells, type LevelJson, parseLevel } from "@sokobanko/core";
+import { insideCells, type LevelJson, parseLevel } from "@sokoban/core";
 
 const props = withDefaults(
   defineProps<{

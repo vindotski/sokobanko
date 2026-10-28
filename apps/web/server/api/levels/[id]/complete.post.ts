@@ -1,4 +1,4 @@
-import { levelStates, parseLevel, ReplayError, replay } from "@sokobanko/core";
+import { levelStates, parseLevel, ReplayError, replay } from "@sokoban/core";
 import {
   serverSupabaseClient,
   serverSupabaseServiceRole,

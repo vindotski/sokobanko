@@ -49,7 +49,7 @@ const questions = [
     <div class="flex flex-col gap-1">
       <h1 class="text-2xl font-semibold tracking-tight">FAQ</h1>
       <p class="text-sm text-muted-foreground">
-        Answers to common questions about Sokobanko.
+        Answers to common questions about Sokoban.
       </p>
     </div>
     <Accordion type="single" collapsible>

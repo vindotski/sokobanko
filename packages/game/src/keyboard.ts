@@ -1,4 +1,4 @@
-import type { Direction } from "@sokobanko/core";
+import type { Direction } from "@sokoban/core";
 import { directionFromKey } from "./input.ts";
 
 export interface KeyHandlers {
