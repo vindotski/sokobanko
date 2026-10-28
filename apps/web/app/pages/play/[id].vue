@@ -313,7 +313,7 @@ function replay() {
             </div>
 
             <p
-              class="min-w-0 max-w-48 truncate text-center text-sm text-muted-foreground tabular-nums sm:max-w-sm"
+              class="min-w-0 max-w-48 truncate text-center font-mono text-sm text-muted-foreground sm:max-w-sm"
             >
               {{ count(progress.moves, "move", "moves") }} ·
               {{ count(progress.pushes, "push", "pushes") }}
@@ -350,23 +350,23 @@ function replay() {
         <div class="grid grid-cols-2 gap-3">
           <Card class="gap-1 py-4">
             <CardHeader class="px-4">
-              <CardDescription>This run</CardDescription>
-              <CardTitle class="text-xl tabular-nums">
+              <CardDescription class="text-label">This run</CardDescription>
+              <CardTitle class="font-mono text-title">
                 {{ count(run.moves, "move", "moves") }}
               </CardTitle>
-              <p class="text-sm text-muted-foreground tabular-nums">
+              <p class="font-mono text-sm text-muted-foreground">
                 {{ count(run.pushes, "push", "pushes") }}
               </p>
             </CardHeader>
           </Card>
           <Card class="gap-1 py-4">
             <CardHeader class="px-4">
-              <CardDescription>Your best</CardDescription>
+              <CardDescription class="text-label">Your best</CardDescription>
               <template v-if="verification.state === 'verified'">
-                <CardTitle class="text-xl tabular-nums">
+                <CardTitle class="font-mono text-title">
                   {{ count(verification.best.moves, "move", "moves") }}
                 </CardTitle>
-                <p class="text-sm text-muted-foreground tabular-nums">
+                <p class="font-mono text-sm text-muted-foreground">
                   {{ count(verification.best.pushes, "push", "pushes") }}
                 </p>
               </template>

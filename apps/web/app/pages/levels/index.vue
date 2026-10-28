@@ -42,13 +42,13 @@ const solvedPercent = computed(() =>
   <div class="flex flex-col gap-6">
     <div class="flex flex-wrap items-end justify-between gap-4">
       <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-semibold tracking-tight">Levels</h1>
+        <h1 class="text-title">Levels</h1>
         <p class="text-sm text-muted-foreground">
           Pick a puzzle. Your best result is saved when you solve it.
         </p>
       </div>
       <div v-if="cards.length" class="flex items-center gap-3">
-        <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
+        <span class="text-label whitespace-nowrap text-muted-foreground">
           {{ solvedCount }} of {{ cards.length }} solved
         </span>
         <Progress :model-value="solvedPercent" class="w-32" />
@@ -107,7 +107,7 @@ const solvedPercent = computed(() =>
             <ItemTitle class="w-full">
               <span class="truncate">{{ card.level.title }}</span>
             </ItemTitle>
-            <ItemDescription class="truncate tabular-nums">
+            <ItemDescription class="truncate text-label">
               Level {{ card.number }} · {{ card.boxes }}
               {{ card.boxes === 1 ? "box" : "boxes" }}
             </ItemDescription>

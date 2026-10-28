@@ -86,7 +86,7 @@ watch(
               </Avatar>
               <div class="flex min-w-0 flex-col">
                 <span class="truncate text-sm font-medium">{{ accountName }}</span>
-                <span class="text-xs text-muted-foreground">View profile</span>
+                <span class="text-label text-muted-foreground">View profile</span>
               </div>
             </NuxtLink>
           </SheetFooter>
@@ -95,7 +95,7 @@ watch(
 
       <NuxtLink
         to="/"
-        class="col-start-2 row-start-1 justify-self-center font-bold md:col-start-1 md:justify-self-start"
+        class="col-start-2 row-start-1 justify-self-center font-semibold md:col-start-1 md:justify-self-start"
       >
         Sokoban
       </NuxtLink>

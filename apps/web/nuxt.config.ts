@@ -1,4 +1,7 @@
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
+
+const cnPath = new URL("./app/lib/utils.ts", import.meta.url);
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-25",
@@ -15,9 +18,25 @@ export default defineNuxtConfig({
       meta: [{ name: "color-scheme", content: "light dark" }],
     },
   },
-  css: ["~/assets/css/main.css"],
+  css: [
+    // Self-hosted Geist, the same typefaces as www.vin.ski.
+    "@fontsource-variable/geist",
+    "@fontsource-variable/geist-mono",
+    "~/assets/css/main.css",
+  ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      {
+        // shadcn components import `cn` from the package; use our copy that
+        // knows the custom type scale instead (app/lib/utils.ts).
+        name: "sokoban-cn",
+        enforce: "pre",
+        resolveId(id) {
+          if (id === "cn") return fileURLToPath(cnPath);
+        },
+      },
+    ],
   },
   colorMode: {
     // Follow the system; a light/dark toggle can set `preference` later.

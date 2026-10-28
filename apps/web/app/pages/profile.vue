@@ -30,7 +30,7 @@ const stats = computed(() => {
         <AvatarFallback><UserIcon /></AvatarFallback>
       </Avatar>
       <div class="flex min-w-0 flex-col gap-1">
-        <h1 class="truncate text-2xl font-semibold tracking-tight">
+        <h1 class="truncate text-title">
           {{ name }}
         </h1>
         <p v-if="isGuest" class="text-sm text-muted-foreground">
@@ -42,8 +42,8 @@ const stats = computed(() => {
     <div class="grid gap-4 sm:grid-cols-3">
       <Card>
         <CardHeader>
-          <CardDescription>Solved</CardDescription>
-          <CardTitle class="text-2xl tabular-nums">
+          <CardDescription class="text-label">Solved</CardDescription>
+          <CardTitle class="font-mono text-title">
             {{ stats.solved }} of {{ stats.total }}
           </CardTitle>
         </CardHeader>
@@ -53,23 +53,23 @@ const stats = computed(() => {
       </Card>
       <Card>
         <CardHeader>
-          <CardDescription>Best moves</CardDescription>
-          <CardTitle class="text-2xl tabular-nums">{{ stats.moves }}</CardTitle>
+          <CardDescription class="text-label">Best moves</CardDescription>
+          <CardTitle class="font-mono text-title">{{ stats.moves }}</CardTitle>
         </CardHeader>
         <!-- Same height as the Solved card's progress bar, so the rows line up. -->
         <CardContent class="flex h-2 items-center">
-          <p class="text-xs text-muted-foreground">Server-verified</p>
+          <p class="text-label text-muted-foreground">Server-verified</p>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
-          <CardDescription>Best pushes</CardDescription>
-          <CardTitle class="text-2xl tabular-nums">
+          <CardDescription class="text-label">Best pushes</CardDescription>
+          <CardTitle class="font-mono text-title">
             {{ stats.pushes }}
           </CardTitle>
         </CardHeader>
         <CardContent class="flex h-2 items-center">
-          <p class="text-xs text-muted-foreground">Server-verified</p>
+          <p class="text-label text-muted-foreground">Server-verified</p>
         </CardContent>
       </Card>
     </div>
@@ -101,10 +101,10 @@ const stats = computed(() => {
                   {{ completion.level.title }}
                 </NuxtLink>
               </TableCell>
-              <TableCell class="text-right tabular-nums">
+              <TableCell class="text-right font-mono">
                 {{ completion.moves }}
               </TableCell>
-              <TableCell class="text-right tabular-nums">
+              <TableCell class="text-right font-mono">
                 {{ completion.pushes }}
               </TableCell>
               <TableCell class="text-right text-muted-foreground">

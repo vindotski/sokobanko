@@ -14,12 +14,12 @@ const { data: levelIds } = await useLevelIds();
       class="absolute inset-0 -z-10 bg-tile-grid [--tile-grid-size:48px] mask-[radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"
     />
     <p
-      class="border px-3 py-1 text-sm text-muted-foreground"
+      class="border px-3 py-1 text-label text-muted-foreground"
     >
       A classic box-pushing puzzle
     </p>
-    <h1 class="text-5xl font-bold tracking-tight sm:text-7xl">Sokoban</h1>
-    <p class="max-w-xl text-lg text-muted-foreground sm:text-xl">
+    <h1 class="text-display">Sokoban</h1>
+    <p class="max-w-xl text-lead text-muted-foreground">
       Push every box onto a goal. You can't pull, so every move counts.
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
