@@ -1,4 +1,0 @@
--- Local development data, applied by `supabase db reset`. Never run in production.
---
--- Nothing to seed: levels come from Spotcraft (the sokobanko project on api.vin.ski), players
--- are Spotcraft accounts, and completions are made by playing.

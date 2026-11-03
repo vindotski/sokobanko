@@ -52,10 +52,6 @@ export default defineNuxtConfig({
     // (server/utils/progress.ts): players can't write content themselves.
     // Server-only; NUXT_SPOTCRAFT_ADMIN_SECRET.
     spotcraftAdminSecret: "",
-    // The completions database, used only by the server, with the secret key
-    // (server/utils/supabase.ts). NUXT_SUPABASE_URL and NUXT_SUPABASE_SECRET_KEY.
-    supabaseUrl: "",
-    supabaseSecretKey: "",
     public: {
       // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
       // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.

@@ -33,7 +33,7 @@ const questions = [
   {
     question: "Which technologies were used to make this?",
     answer:
-      "TypeScript throughout: Nuxt and Vue for the site, PixiJS for drawing the game, Tailwind CSS and shadcn-vue for the interface, and Supabase for accounts and saved results.",
+      "TypeScript throughout: Nuxt and Vue for the site, PixiJS for drawing the game, Tailwind CSS and shadcn-vue for the interface, and Spotcraft for the levels, guest accounts and saved results.",
   },
   {
     question: "I didn't find my answer here. What do I do?",
