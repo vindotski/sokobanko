@@ -2,7 +2,7 @@
 
 The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, published in [Spotcraft](https://github.com/vindotski/spotcraft), and your best results are checked and saved by the server.
 
-**A demo on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Everything else is as before: Supabase for guest accounts and verified bests, in a pnpm monorepo. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the roadmap. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
+**A demo on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Players are Spotcraft accounts too: every visitor is signed in as a Spotcraft guest. Supabase only stores their verified bests, and only the server reads and writes them. It's a pnpm monorepo. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the roadmap. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
 
 ## What it does
 
@@ -23,7 +23,7 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
 | `content/levels` | One Markdown file per level, typed by `_schema.yaml`, imported into Spotcraft |
-| `supabase/` | Guest accounts and completions: migrations, the demo user, pgTAP tests |
+| `supabase/` | The completions database: migrations and pgTAP tests |
 | `docs/` | The roadmap and the parity comparison |
 
 ## Getting started
@@ -32,7 +32,7 @@ You need Node 26, pnpm 12 (`corepack enable`), Docker, and, for the `levels:*` s
 
 ```sh
 pnpm install
-pnpm supabase start                         # local Postgres and Auth
+pnpm supabase start                         # the local completions database
 cp apps/web/.env.example apps/web/.env      # the local stack's fixed development keys
 pnpm dev                                    # http://localhost:3000
 ```
@@ -54,7 +54,7 @@ Deploying (Supabase Cloud and Vercel, at https://sokobanko.vin.ski) is described
 
 ## Stack
 
-Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Supabase (Postgres, Auth). Levels from Spotcraft.
+Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Accounts and levels from Spotcraft. Supabase (Postgres) for completions.
 
 ## Author
 

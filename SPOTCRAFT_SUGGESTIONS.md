@@ -28,10 +28,18 @@ What integrating Sokobanko with Spotcraft (its `main` at `a814a62`, and https://
 - **What happened:** "exactly one player" and "as many goals as boxes" can't be written in `_schema.yaml`. A level that breaks them passes Spotcraft's checks and gets published, and the game's server skips it (`parseLevel`).
 - **Suggestion:** validators (Spotcraft's decision 18) for content folders as well as app collections, so these rules are checked before publishing.
 
-## 7. Roadmap step 13's wording
+## 7. Token storage in the SDK for server-rendered apps
+- **What happened:** the auth guide (`SPOTCRAFT_AUTH_INTEGRATION.md`), like the SDK's token mode, keeps the session token in `localStorage`. A server-rendered app like Sokobanko's can't read that while rendering, so the server would render every page as a brand-new guest. `/play` would redirect to the first level, and the lock states would flash. Sokobanko keeps the token in a cookie instead (`sokobanko-token`), which its server forwards to Spotcraft as a bearer token.
+- **Suggestion:** a pluggable token store in the SDK's token mode, such as `createClient({ auth: "token", storage: { get, set } })`, with `localStorage` as the default. The guide could mention the cookie route for SSR apps. Exposing `set-auth-token` to browsers worked as-is.
+
+## 8. A restart can bring back an old image
+- **What happened:** after Sokobanko's origins were added to `AUTH_TRUSTED_ORIGINS`, `docker compose up -d api` started an `api` image without the auth routes (`No route for GET /v1/auth/get-session`), until it was pulled again. Compose falls back to `${IMAGE:-…:main}`, and CI sets `IMAGE` only while it deploys.
+- **Suggestion:** have the deploy write the image it deployed into the server's `.env` (`IMAGE=…:<sha>`), so a manual `up -d` restarts the same version. Or note it in Spotcraft's DEPLOY.md ("Adding a product").
+
+## 9. Roadmap step 13's wording
 How Sokobanko is built differs from step 13's text in three places:
 - **The client:** levels are read with `fetch`, not the SDK (see 1).
-- **Completions:** they're keyed by the level's slug (`first-push`), the last segment of its path, rather than the full path (`levels/first-push`).
+- **Completions:** they're keyed by the level's slug (`first-push`), the last segment of its path, rather than the full path (`levels/first-push`). Since 2026-11-04 they're keyed by the player's Spotcraft id too.
 - **The source of the levels:** they're authored in git and imported, with dashboard edits exported back. Step 13 implies the dashboard is the source.
 
-Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, completions staying in Supabase, the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.
+Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, completions staying in Supabase (now with Spotcraft ids, since Sokobanko's guests are Spotcraft guests), the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.

@@ -20,6 +20,13 @@ Done and tagged `demo` ("Spotcraft Content Integration").
 - [x] Supabase: a migration drops the `levels` table and its check function, and keys `level_completions` by slug. The seed keeps only the demo user.
 - [x] Checked in a browser against api.vin.ski, with every feature as before.
 
+### Guests on Spotcraft
+Spotcraft's API now has accounts and guests (its decisions 45 and 47). This follows `SPOTCRAFT_AUTH_INTEGRATION.md`, except that the session token is kept in a cookie rather than `localStorage`, so the server renders pages with the player's progress.
+- [x] The server checks the session with Spotcraft (`requireUser`, `server/utils/user.ts`) and reads and writes completions itself, through `GET /api/me/completions` and the completion route, with Supabase's secret key.
+- [x] The browser signs every visitor in as a Spotcraft guest (`app/plugins/spotcraft-auth.client.ts`), and the token is kept in the `sokobanko-token` cookie.
+- [x] Supabase: completions are keyed by the Spotcraft id, the browser has no access to them, `profiles` is dropped and anonymous sign-ins are off. The `@nuxtjs/supabase` module is gone.
+- [ ] Deployed: [`DEPLOY.md`](../DEPLOY.md), steps 11–15.
+
 ### Step 2: Deploy, on Vercel for now
 The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VPS that runs api.vin.ski comes later.
 - [x] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins on (no CAPTCHA yet), and the Site URL.
@@ -36,12 +43,14 @@ The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VP
 - ETag or conditional requests to the API.
 - Cache invalidation from a publish webhook (see the suggestions).
 - `@spotcraft/sdk` instead of `fetch`, once it's published.
-- CAPTCHA (Turnstile) on guest sign-in: its token passed to `signInAnonymously`, and CAPTCHA turned on in Supabase.
+- Sign-up and sign-in that keep a guest's progress: `SPOTCRAFT_AUTH_INTEGRATION.md`, section 8. The server moves completions from the guest's id to the new account's, keeping the better result per level when both have solved it.
+- Cache Spotcraft's `get-session` answer per token for a minute, if checking every request ever matters.
+- Protecting guest sign-in from abuse, such as CAPTCHA, is now on Spotcraft's side.
 
 ## Proof of concept: on the Hetzner VPS, like api.vin.ski
 Next. It hosts Sokobanko the way api.vin.ski is hosted (Spotcraft's decision 44: Docker Compose, Caddy, deployed from CI), in place of Vercel. It's an outline, to be planned in detail when it's picked up.
 - [ ] **The image:** `node:26-slim` with only the Nuxt build. It's built in CI (GitHub Actions) and pushed to `ghcr.io/vindotski/sokoban`, as `spotcraft-api` is.
-- [ ] **The server:** a Compose project in `/srv/sokobanko`, owned by `deploy`, with the Supabase variables in its `.env`.
+- [ ] **The server:** a Compose project in `/srv/sokobanko`, owned by `deploy`, with `NUXT_SUPABASE_URL` and `NUXT_SUPABASE_SECRET_KEY` in its `.env`. With Sokobanko next to the API, `NUXT_SPOTCRAFT_URL` could use the internal network.
 - [ ] **Routing:** `sokobanko.vin.ski` on the shared server is the user's, and the Spotcraft repository isn't changed (see `SPOTCRAFT_SUGGESTIONS.md`, "Several apps on one server", to be added when this is planned).
 - [ ] **The deploy job:** like Spotcraft's `deploy-api`, with `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` and `DEPLOY_HOST`.
 - [ ] **Supabase:** stay on Supabase Cloud, or self-host it next to the API. To be decided when this is planned.

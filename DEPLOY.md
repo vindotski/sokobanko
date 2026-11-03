@@ -1,6 +1,6 @@
 # Deploying the demo (Vercel and Supabase Cloud)
 
-Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase Cloud** project. These steps are done by hand, once. The levels keep coming from Spotcraft's hosted API (https://api.vin.ski), so the build doesn't need the `../spotcraft-main` worktree. Moving to the VPS comes later ([roadmap](docs/roadmap.md)).
+Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase Cloud** project. These steps are done by hand, once. Steps 1–10 took the demo live with Supabase's guest accounts; steps 11–15 then moved guests to Spotcraft, and Supabase now only holds completions. The levels keep coming from Spotcraft's hosted API (https://api.vin.ski), so the build doesn't need the `../spotcraft-main` worktree. Moving to the VPS comes later ([roadmap](docs/roadmap.md)).
 
 - [x] **1. The Supabase project:** in the Supabase dashboard, create a project in an EU region. Save its database password in your password manager.
 - [x] **2. The database:** apply this repository's migrations to it. From the repository's root:
@@ -52,8 +52,31 @@ Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase C
 
 When steps 9 and 10 pass, the demo is done (tagged `demo`). The proof of concept moves it to the Hetzner VPS ([roadmap](docs/roadmap.md)).
 
+## Guests on Spotcraft (2026-11-04)
+Spotcraft's API now has accounts and guests (its decisions 45 and 47; this repo's `SPOTCRAFT_AUTH_INTEGRATION.md`). Every visitor signs in as a Spotcraft guest, the token is kept in the `sokobanko-token` cookie, and Sokobanko's server checks it with Spotcraft before reading or writing completions. Supabase Auth and the Nuxt module are gone. In this order, so the live site keeps working until the new version is deployed:
+
+- [x] **11. Trust Sokobanko's origins in Spotcraft,** on its server, as `deploy` in `/srv/spotcraft`: add `https://sokobanko.vin.ski` and `http://localhost:3000` to `AUTH_TRUSTED_ORIGINS` in `.env`, then `docker compose up -d api`. Check that `curl -s https://api.vin.ski/v1/auth/get-session` still prints `null`. If it says "No route", the restart picked up an older image: `docker compose pull api` and start it again.
+- [ ] **12. Add the new variable in Vercel,** without removing anything yet: `NUXT_SUPABASE_URL` = the project URL (Production, and Preview if previews save results). Optionally, `NUXT_PUBLIC_SPOTCRAFT_URL`, which defaults to `https://api.vin.ski`.
+- [ ] **13. Migrate the database,** right before deploying, since the live version can't save once it runs:
+  ```bash
+  pnpm supabase db push --linked --dry-run   # lists 20261104090000_completions_for_spotcraft_users.sql
+  pnpm supabase db push --linked
+  pnpm supabase config diff                  # enable_anonymous_sign_ins: true → false
+  pnpm supabase config push
+  ```
+  The migration **truncates `level_completions`**, since the rows belong to Supabase guests no one can sign in as again, and drops `profiles`.
+- [ ] **14. Deploy:** merge `dev` into `main` and push. Once it's live, remove `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_KEY` from Vercel, since the browser no longer talks to Supabase.
+- [ ] **15. The smoke test,** in a fresh private window on https://sokobanko.vin.ski:
+  - The first visit sets the `sokobanko-token` cookie, and the profile says "Guest".
+  - `/play/two-boxes` shows the lock screen.
+  - Solving First Push shows "Your best: 3 moves". After a reload, `/levels` shows it as solved, and `/play` opens Big Room.
+  - In Supabase, the new `level_completions` row's `user_id` is a Spotcraft id, not a uuid.
+  - In Spotcraft's dashboard, **Users** counts the guest.
+  - The console shows no errors.
+
+
 ## Notes
 - **Caching:** each Vercel function instance caches the levels in memory for a minute (`apps/web/server/utils/levels.ts`), so instances can briefly disagree after a publish.
-- **Previews share the Supabase project** with production, unless you give them their own variables.
+- **Previews share the Supabase project** with production, unless you give them their own variables. They also need their origin in Spotcraft's `AUTH_TRUSTED_ORIGINS` before guests can sign in there.
 - **Rolling back:** promote an earlier deployment in Vercel. Database migrations don't roll back with it.
 - **Node versions:** Nitro builds Vercel's functions for Node 24 (`nodejs24.x`), while the build runs on Node 26. The output is plain JavaScript, so that's fine.
