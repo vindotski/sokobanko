@@ -1,4 +1,4 @@
-# Deploying the proof of concept
+# Deploying the demo (Vercel and Supabase Cloud)
 
 Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase Cloud** project. These steps are done by hand, once. The levels keep coming from Spotcraft's hosted API (https://api.vin.ski), so the build doesn't need the `../spotcraft-main` worktree. Moving to the VPS comes later ([roadmap](docs/roadmap.md)).
 
@@ -16,7 +16,7 @@ Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase C
 - [x] **3. Auth**, in the dashboard:
   - Turn on **Allow anonymous sign-ins** (Authentication → Sign In / Providers). Every visitor gets a guest account in the background, as they do locally.
   - Set **Site URL** to `https://sokobanko.vin.ski` (Authentication → URL Configuration).
-  - **CAPTCHA stays off** for the proof of concept. Guest sign-in doesn't send a CAPTCHA token yet, so turning it on would break sign-in. Supabase's rate limit on anonymous sign-ins (per IP, per hour) covers it until then.
+  - **CAPTCHA stays off** for the demo. Guest sign-in doesn't send a CAPTCHA token yet, so turning it on would break sign-in. Supabase's rate limit on anonymous sign-ins (per IP, per hour) covers it until then.
 - [x] **4. The keys:** from Settings → API Keys, copy:
   - the project URL (`https://<ref>.supabase.co`);
   - the **publishable** key (`sb_publishable_…`);
@@ -46,11 +46,11 @@ Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase C
   - The profile lists First Push, and `/play` opens Big Room.
   - In Supabase's table editor, `level_completions` has a row with `level_id = first-push`.
   - The browser console shows no errors.
-- [ ] **10. Spotcraft's check** (its roadmap, stage 2, step 13):
+- [x] **10. Spotcraft's check** (its roadmap, stage 2, step 13):
   1. In Spotcraft's dashboard, edit a level of the `sokobanko` project on a draft, publish it, and see the change on the live site within about a minute.
   2. Run `pnpm levels:export` and commit, since git is the levels' source.
 
-When steps 9 and 10 pass, the proof of concept is done. Tick it in [docs/roadmap.md](docs/roadmap.md).
+When steps 9 and 10 pass, the demo is done (tagged `demo`). The proof of concept moves it to the Hetzner VPS ([roadmap](docs/roadmap.md)).
 
 ## Notes
 - **Caching:** each Vercel function instance caches the levels in memory for a minute (`apps/web/server/utils/levels.ts`), so instances can briefly disagree after a publish.

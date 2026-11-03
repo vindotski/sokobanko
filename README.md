@@ -2,7 +2,7 @@
 
 The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, published in [Spotcraft](https://github.com/vindotski/spotcraft), and your best results are checked and saved by the server.
 
-**A proof of concept on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Everything else is as before: Supabase for guest accounts and verified bests, in a pnpm monorepo. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
+**A demo on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Everything else is as before: Supabase for guest accounts and verified bests, in a pnpm monorepo. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the roadmap. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
 
 ## What it does
 

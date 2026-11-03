@@ -1,13 +1,15 @@
 ---
 title: Roadmap
-description: The proof of concept (levels from Spotcraft, then a deploy), then the earlier plan for after it.
+description: The demo (levels from Spotcraft, on Vercel), the proof of concept (on the Hetzner VPS, like api.vin.ski), then the earlier plan.
 ---
 
 # Roadmap
 
 **Numbering:** a bare number in parentheses, like "(12)", is one of this repository's [decision records](decisions/README.md). Spotcraft's records are always written out as "Spotcraft's decision N", since the two sets of numbers overlap. Gameplay features are compared in [parity.md](parity.md).
 
-## Proof of concept: Sokobanko on Spotcraft
+## Demo: Sokobanko on Spotcraft
+Done and tagged `demo` ("Spotcraft Content Integration").
+
 **The goal:** Sokobanko's levels are defined in Spotcraft, as Markdown with typed front matter, and the game is deployed. Everything else stays as it is: Supabase (guest accounts, server-verified bests), Pinia, the monorepo and every feature. This follows Spotcraft's own plan for Sokobanko, its roadmap, stage 2, step 13. Changes Spotcraft could make to support this better go in [`SPOTCRAFT_SUGGESTIONS.md`](../SPOTCRAFT_SUGGESTIONS.md). The Spotcraft repository isn't changed from here.
 
 ### Step 1: Levels from Spotcraft
@@ -27,7 +29,7 @@ The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VP
 ### Done when
 - [x] The live URL works (https://sokobanko.vin.ski): guest play, levels unlocking in order, verified bests saved, the profile.
 - [x] The levels come from Spotcraft, locally and on the live site.
-- [ ] A level edited and published in the Spotcraft dashboard shows in the game within a minute. That's Spotcraft's step 13 check. Then `pnpm levels:export` brings the edit back into git, since git is the levels' source.
+- [x] A level edited and published in the Spotcraft dashboard shows in the game within a minute. That's Spotcraft's step 13 check. Then `pnpm levels:export` brings the edit back into git, since git is the levels' source.
 
 ### Later, for the integration
 - Show "Spotcraft unavailable" instead of a 404 when the API is down, and return 502 for upstream errors.
@@ -35,10 +37,19 @@ The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VP
 - Cache invalidation from a publish webhook (see the suggestions).
 - `@spotcraft/sdk` instead of `fetch`, once it's published.
 - CAPTCHA (Turnstile) on guest sign-in: its token passed to `signInAnonymously`, and CAPTCHA turned on in Supabase.
-- Move from Vercel to the VPS that runs api.vin.ski, deployed from CI.
+
+## Proof of concept: on the Hetzner VPS, like api.vin.ski
+Next. It hosts Sokobanko the way api.vin.ski is hosted (Spotcraft's decision 44: Docker Compose, Caddy, deployed from CI), in place of Vercel. It's an outline, to be planned in detail when it's picked up.
+- [ ] **The image:** `node:26-slim` with only the Nuxt build. It's built in CI (GitHub Actions) and pushed to `ghcr.io/vindotski/sokoban`, as `spotcraft-api` is.
+- [ ] **The server:** a Compose project in `/srv/sokobanko`, owned by `deploy`, with the Supabase variables in its `.env`.
+- [ ] **Routing:** `sokobanko.vin.ski` on the shared server is the user's, and the Spotcraft repository isn't changed (see `SPOTCRAFT_SUGGESTIONS.md`, "Several apps on one server", to be added when this is planned).
+- [ ] **The deploy job:** like Spotcraft's `deploy-api`, with `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` and `DEPLOY_HOST`.
+- [ ] **Supabase:** stay on Supabase Cloud, or self-host it next to the API. To be decided when this is planned.
+- [ ] **The switch:** DNS for `sokobanko.vin.ski` moves from Vercel to the VPS, and the demo's smoke test and dashboard check run again there. Then the Vercel project is removed.
+- [ ] **Done when** https://sokobanko.vin.ski is served from the VPS, and the demo's checks pass there.
 
 ## After the proof of concept
-The plan below was written before the proof of concept was scoped. It covers dropping Supabase, Dexie, flattening, decision records, CI and parity, and it comes after the proof of concept, to be revisited and reordered then. Its phase numbers stay, since [parity.md](parity.md) cites them.
+The plan below was written before the demo was scoped. It covers dropping Supabase, Dexie, flattening, decision records, CI and parity, and it comes after the proof of concept, to be revisited and reordered then. Its phase numbers stay, since [parity.md](parity.md) cites them.
 
 **Its goal was** one Nuxt package with a small Nitro server that serves levels, with progress in the browser's IndexedDB (Dexie), and no accounts, no database of its own and no Pinia.
 
