@@ -39,10 +39,10 @@ type Verification =
   | { state: "failed"; message: string };
 const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
-const user = useSupabaseUser();
+const token = useSessionToken();
 // Completions, so "New best!" knows the previous best even on a direct visit.
 await useAsyncData("completions", () => store.load(), {
-  watch: [() => user.value?.sub],
+  watch: [token],
 });
 
 // Completion dialog: this run's numbers, and whether they beat the old best.

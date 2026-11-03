@@ -15,24 +15,17 @@ export function useLevelIds() {
   });
 }
 
-/** The current user's best completions, newest first. */
+/** The player's best completions, newest first. */
 export function useCompletions() {
-  const supabase = useSupabaseClient();
-  const user = useSupabaseUser();
+  const token = useSessionToken();
+  const api = useApi();
   return useAsyncData(
     "my-completions",
-    async () => {
-      if (!user.value) return [];
-      const { data, error } = await supabase
-        .from("level_completions")
-        .select("level_id, moves, pushes, completed_at")
-        .order("completed_at", { ascending: false });
-      if (error) {
-        throw createError({ statusCode: 500, message: error.message });
-      }
-      return data;
-    },
-    // Reload when the session changes, e.g. once anonymous sign-in finishes.
-    { watch: [() => user.value?.sub] },
+    () =>
+      token.value
+        ? api("/api/me/completions").catch(() => [])
+        : Promise.resolve([]),
+    // Reload when the session changes, e.g. once guest sign-in finishes.
+    { watch: [token] },
   );
 }

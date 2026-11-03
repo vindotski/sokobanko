@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { UserIcon } from "@lucide/vue";
 
-const user = useSupabaseUser();
+const account = useAccount();
 const { data: completed } = await useCompletions();
 const { data: levels } = await useLevels();
 
@@ -15,9 +15,9 @@ const completions = computed(() => {
   });
 });
 
-const isGuest = computed(() => user.value?.is_anonymous !== false);
+const isGuest = computed(() => account.value?.isAnonymous !== false);
 const name = computed(() =>
-  isGuest.value ? "Guest" : String(user.value?.email ?? "Player"),
+  isGuest.value ? "Guest" : (account.value?.email ?? "Player"),
 );
 
 const stats = computed(() => {

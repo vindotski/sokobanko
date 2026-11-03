@@ -2,11 +2,9 @@
 import { MenuIcon, UserIcon } from "@lucide/vue";
 
 const route = useRoute();
-const user = useSupabaseUser();
+const account = useAccount();
 const accountName = computed(() =>
-  user.value?.is_anonymous === false
-    ? String(user.value.email ?? "Player")
-    : "Guest",
+  account.value?.isAnonymous === false ? account.value.email : "Guest",
 );
 
 const links = [

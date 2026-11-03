@@ -6,12 +6,7 @@ const cnPath = new URL("./app/lib/utils.ts", import.meta.url);
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-25",
   devtools: { enabled: true },
-  modules: [
-    "@pinia/nuxt",
-    "@nuxtjs/supabase",
-    "@nuxtjs/color-mode",
-    "shadcn-nuxt",
-  ],
+  modules: ["@pinia/nuxt", "@nuxtjs/color-mode", "shadcn-nuxt"],
   app: {
     head: {
       // Native scrollbars and form controls follow the theme too.
@@ -61,17 +56,6 @@ export default defineNuxtConfig({
       // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
       // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.
       spotcraftUrl: "https://api.vin.ski",
-    },
-  },
-  supabase: {
-    // Signed-out visitors can still play; there is no login page to send them to.
-    redirect: false,
-    // Regenerate with `pnpm db:types` after schema changes.
-    types: "~/types/database.types.ts",
-    cookieOptions: {
-      // The default 8 hours would drop anonymous sessions, and their progress,
-      // daily. 400 days is the longest lifetime browsers allow.
-      maxAge: 60 * 60 * 24 * 400,
     },
   },
 });

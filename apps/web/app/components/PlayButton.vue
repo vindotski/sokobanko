@@ -6,10 +6,10 @@ import { PlayIcon, ShuffleIcon, WandSparklesIcon } from "@lucide/vue";
 // /play already opens the next unsolved level. Attributes such as `size` pass
 // through to the Button.
 const store = useProgressStore();
-const user = useSupabaseUser();
+const token = useSessionToken();
 const { data: levelIds } = await useLevelIds();
 await useAsyncData("completions", () => store.load(), {
-  watch: [() => user.value?.sub],
+  watch: [token],
 });
 
 const state = computed(() => {

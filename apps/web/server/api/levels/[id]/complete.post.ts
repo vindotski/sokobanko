@@ -1,20 +1,15 @@
 import { levelStates, parseLevel, ReplayError, replay } from "@sokoban/core";
-import {
-  serverSupabaseClient,
-  serverSupabaseServiceRole,
-  serverSupabaseUser,
-} from "#supabase/server";
 
 // Generous upper bound; real solutions are hundreds of moves at most.
 const SOLUTION = /^[lurdLURD]{1,20000}$/;
 
 /**
- * Verifies a solution by replaying it, then records it as the user's
- * completion. Clients cannot write completions themselves.
+ * Verifies a solution by replaying it, then records it as the player's
+ * completion. The player is whoever Spotcraft says the session belongs to;
+ * clients cannot write completions themselves.
  */
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event);
-  if (!user?.sub) throw createError({ statusCode: 401, message: "No session" });
+  const user = await requireUser(event);
 
   const body = await readBody<{ solution?: unknown }>(event);
   const solution = body?.solution;
@@ -31,9 +26,11 @@ export default defineEventHandler(async (event) => {
   }
 
   // Levels unlock in play order: only solved levels and the first unsolved
-  // one can be completed. RLS limits this to the user's own completions.
-  const supabase = await serverSupabaseClient(event);
-  const done = await supabase.from("level_completions").select("level_id");
+  // one can be completed.
+  const done = await supabase()
+    .from("level_completions")
+    .select("level_id")
+    .eq("user_id", user.id);
   if (done.error) {
     throw createError({ statusCode: 500, message: done.error.message });
   }
@@ -60,21 +57,14 @@ export default defineEventHandler(async (event) => {
   }
 
   // Only the service role may record completions.
-  const { data: best, error: saveError } = await serverSupabaseServiceRole(
-    event,
-  ).rpc("record_level_completion", {
-    p_user_id: user.sub,
-    p_level_id: level.id,
-    p_solution: result.solution,
-  });
-  // A validly signed session for a user that no longer exists, e.g. after a
-  // local database reset or a deleted account.
-  if (
-    saveError?.code === "23503" &&
-    saveError.message.includes("level_completions_user_id_fkey")
-  ) {
-    throw createError({ statusCode: 401, message: "Session expired" });
-  }
+  const { data: best, error: saveError } = await supabase().rpc(
+    "record_level_completion",
+    {
+      p_user_id: user.id,
+      p_level_id: level.id,
+      p_solution: result.solution,
+    },
+  );
   if (saveError) {
     throw createError({ statusCode: 500, message: saveError.message });
   }

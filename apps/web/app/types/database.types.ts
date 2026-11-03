@@ -62,22 +62,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      profiles: {
-        Row: {
-          id: string;
-          username: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          id: string;
-          username: string;
-        };
-        Update: {
-          id?: string;
-          username?: string;
-        };
-        Relationships: [];
-      };
     };
     Views: {
       [_ in never]: never;
