@@ -36,10 +36,22 @@ What integrating Sokobanko with Spotcraft (its `main` at `a814a62`, and https://
 - **What happened:** after Sokobanko's origins were added to `AUTH_TRUSTED_ORIGINS`, `docker compose up -d api` started an `api` image without the auth routes (`No route for GET /v1/auth/get-session`), until it was pulled again. Compose falls back to `${IMAGE:-…:main}`, and CI sets `IMAGE` only while it deploys.
 - **Suggestion:** have the deploy write the image it deployed into the server's `.env` (`IMAGE=…:<sha>`), so a manual `up -d` restarts the same version. Or note it in Spotcraft's DEPLOY.md ("Adding a product").
 
-## 9. Roadmap step 13's wording
+## 9. Scoped keys, so a product's server needn't hold the admin secret
+- **What happened:** Sokobanko keeps each player's best results as content (`progress/<id>.md`). Players are `user`s, who can't write content (decision 45), and API keys aren't built, so Sokobanko's server writes with the instance's `ADMIN_SECRET`. That key can edit and publish every project on api.vin.ski.
+- **Suggestion:** the designed secret keys (decision 9), with a scope like `files:write` limited to one project, or one folder (`sokobanko:progress/`).
+
+## 10. An import that leaves other paths alone
+- **What happened:** `spotcraft import` makes the project match the folder, so it deletes every file missing from it (`transfer.ts`: `if (!(path in files)) changes.push({ path, delete: true })`). Sokobanko's `sokobanko` project holds both levels from git and players' files written by its server. The CLI's import would have deleted every player's results, and its export would have copied them into git. Sokobanko now has its own `bin/levels-import.ts` and `bin/levels-export.ts`, which touch only `levels/` and `progress/_schema.yaml`.
+- **Suggestion:** a path filter, `spotcraft import content --only levels/`, or a mode that writes and never deletes outside the given paths.
+
+## 11. App data for results
+- **What happened:** results as content means every new best is a commit on `main`, everyone's results are public, and concurrent saves retry on `CONFLICT`. It works for a demo.
+- **Suggestion:** the planned app data (Spotcraft's roadmap, "App data"): private records per player, written by a product's server without a commit each, would replace `progress/` here. Sokobanko would be the first user.
+
+## 12. Roadmap step 13's wording
 How Sokobanko is built differs from step 13's text in three places:
 - **The client:** levels are read with `fetch`, not the SDK (see 1).
-- **Completions:** they're keyed by the level's slug (`first-push`), the last segment of its path, rather than the full path (`levels/first-push`). Since 2026-11-04 they're keyed by the player's Spotcraft id too.
+- **Completions:** Supabase is gone. Each player's best results are Spotcraft content in the same project (`progress/<spotcraft-id>.md`), keyed by level slug (`first-push`), the last segment of the level's path.
 - **The source of the levels:** they're authored in git and imported, with dashboard edits exported back. Step 13 implies the dashboard is the source.
 
-Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, completions staying in Supabase (now with Spotcraft ids, since Sokobanko's guests are Spotcraft guests), the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.
+Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.

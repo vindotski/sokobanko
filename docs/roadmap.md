@@ -25,7 +25,14 @@ Spotcraft's API now has accounts and guests (its decisions 45 and 47). This foll
 - [x] The server checks the session with Spotcraft (`requireUser`, `server/utils/user.ts`) and reads and writes completions itself, through `GET /api/me/completions` and the completion route, with Supabase's secret key.
 - [x] The browser signs every visitor in as a Spotcraft guest (`app/plugins/spotcraft-auth.client.ts`), and the token is kept in the `sokobanko-token` cookie.
 - [x] Supabase: completions are keyed by the Spotcraft id, the browser has no access to them, `profiles` is dropped and anonymous sign-ins are off. The `@nuxtjs/supabase` module is gone.
-- [ ] Deployed: [`DEPLOY.md`](../DEPLOY.md), steps 11–15.
+- [x] Deployed (2026-11-04). Saving through Supabase then failed in production with a 500 whose cause wasn't found.
+
+### Results on Spotcraft
+Instead of Supabase, each player's best results are Spotcraft content: `progress/<spotcraft-id>.md` in the `sokobanko` project, typed by `content/progress/_schema.yaml`. Only the best moves and pushes are stored, not solutions, since content is public.
+- [x] The server reads a player's file through delivery (`readProgress`) and saves a new best as one commit on `main` (`recordBest`, `server/utils/progress.ts`), with Spotcraft's admin secret, since players can't write content. A save that finds `main` moved is retried.
+- [x] `levels:import` and `levels:export` are this repository's own scripts (`bin/`). They touch only `levels/` and `progress/_schema.yaml`, because `spotcraft import` deletes every project file missing from the folder.
+- [x] Supabase is removed: the folder, the CLI, the client and the variables.
+- [ ] Deployed: [`DEPLOY.md`](../DEPLOY.md), "Results on Spotcraft: the rollout".
 
 ### Step 2: Deploy, on Vercel for now
 The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VPS that runs api.vin.ski comes later.
@@ -43,17 +50,17 @@ The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VP
 - ETag or conditional requests to the API.
 - Cache invalidation from a publish webhook (see the suggestions).
 - `@spotcraft/sdk` instead of `fetch`, once it's published.
-- Sign-up and sign-in that keep a guest's progress: `SPOTCRAFT_AUTH_INTEGRATION.md`, section 8. The server moves completions from the guest's id to the new account's, keeping the better result per level when both have solved it.
+- Sign-up and sign-in that keep a guest's progress, after `SPOTCRAFT_AUTH_INTEGRATION.md`, section 8: the server moves `progress/<guest>.md` to the new account's id, keeping the better result per level when both have solved it.
+- Move results to Spotcraft's app data once it exists (its roadmap, "App data"): private, with no commit per save, and no admin secret on Sokobanko's server.
 - Cache Spotcraft's `get-session` answer per token for a minute, if checking every request ever matters.
 - Protecting guest sign-in from abuse, such as CAPTCHA, is now on Spotcraft's side.
 
 ## Proof of concept: on the Hetzner VPS, like api.vin.ski
 Next. It hosts Sokobanko the way api.vin.ski is hosted (Spotcraft's decision 44: Docker Compose, Caddy, deployed from CI), in place of Vercel. It's an outline, to be planned in detail when it's picked up.
 - [ ] **The image:** `node:26-slim` with only the Nuxt build. It's built in CI (GitHub Actions) and pushed to `ghcr.io/vindotski/sokoban`, as `spotcraft-api` is.
-- [ ] **The server:** a Compose project in `/srv/sokobanko`, owned by `deploy`, with `NUXT_SUPABASE_URL` and `NUXT_SUPABASE_SECRET_KEY` in its `.env`. With Sokobanko next to the API, `NUXT_SPOTCRAFT_URL` could use the internal network.
+- [ ] **The server:** a Compose project in `/srv/sokobanko`, owned by `deploy`, with `NUXT_SPOTCRAFT_ADMIN_SECRET` in its `.env`. With Sokobanko next to the API, `NUXT_SPOTCRAFT_URL` could use the internal network.
 - [ ] **Routing:** `sokobanko.vin.ski` on the shared server is the user's, and the Spotcraft repository isn't changed (see `SPOTCRAFT_SUGGESTIONS.md`, "Several apps on one server", to be added when this is planned).
 - [ ] **The deploy job:** like Spotcraft's `deploy-api`, with `DEPLOY_SSH_KEY`, `DEPLOY_KNOWN_HOSTS` and `DEPLOY_HOST`.
-- [ ] **Supabase:** stay on Supabase Cloud, or self-host it next to the API. To be decided when this is planned.
 - [ ] **The switch:** DNS for `sokobanko.vin.ski` moves from Vercel to the VPS, and the demo's smoke test and dashboard check run again there. Then the Vercel project is removed.
 - [ ] **Done when** https://sokobanko.vin.ski is served from the VPS, and the demo's checks pass there.
 

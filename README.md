@@ -2,7 +2,7 @@
 
 The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, published in [Spotcraft](https://github.com/vindotski/spotcraft), and your best results are checked and saved by the server.
 
-**A demo on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Players are Spotcraft accounts too: every visitor is signed in as a Spotcraft guest. Supabase only stores their verified bests, and only the server reads and writes them. It's a pnpm monorepo. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the roadmap. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
+**A demo on Spotcraft.** Everything it stores is on Spotcraft's hosted API (https://api.vin.ski), in the `sokobanko` project. The levels are Markdown in this repository, imported into it, and the game's server reads them from there. Every visitor is signed in as a Spotcraft guest. Each player's best results are saved by the server as `progress/<id>.md` in the same project. There's no database of its own. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the [roadmap](docs/roadmap.md), and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
 
 ## What it does
 
@@ -23,17 +23,17 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
 | `content/levels` | One Markdown file per level, typed by `_schema.yaml`, imported into Spotcraft |
-| `supabase/` | The completions database: migrations and pgTAP tests |
+| `content/progress` | The schema of players' result files, and a copy of the files from Spotcraft, made with `pnpm progress:export`. Spotcraft's copy is the real one. |
+| `bin/` | `levels:import` and `levels:export`, which touch only the levels and the progress schema, and `progress:export` |
 | `docs/` | The roadmap and the parity comparison |
 
 ## Getting started
 
-You need Node 26, pnpm 12 (`corepack enable`), Docker, and, for the `levels:*` scripts, Spotcraft's main branch as a worktree next to this repository: `git -C ../spotcraft worktree add ../spotcraft-main main && pnpm -C ../spotcraft-main install`.
+You need Node 26, pnpm 12 (`corepack enable`), and, for the `levels:*` scripts, Spotcraft's main branch as a worktree next to this repository: `git -C ../spotcraft worktree add ../spotcraft-main main && pnpm -C ../spotcraft-main install`.
 
 ```sh
 pnpm install
-pnpm supabase start                         # the local completions database
-cp apps/web/.env.example apps/web/.env      # the local stack's fixed development keys
+cp apps/web/.env.example apps/web/.env      # then set NUXT_SPOTCRAFT_ADMIN_SECRET to save results
 pnpm dev                                    # http://localhost:3000
 ```
 
@@ -45,17 +45,15 @@ pnpm dev                                    # http://localhost:3000
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm lint` / `pnpm format` | Biome: check, or fix and format |
 | `pnpm levels:check` | Checks `content/levels` against its schema, with Spotcraft's CLI |
-| `pnpm levels:import` | Publishes `content/levels` to the `sokobanko` project (needs `SPOTCRAFT_API_URL` and `SPOTCRAFT_ADMIN_SECRET`) |
+| `pnpm levels:import` | Publishes `content/levels` and the progress schema to the `sokobanko` project, never touching players' files (needs `SPOTCRAFT_ADMIN_SECRET`) |
 | `pnpm levels:export` | Writes the project's levels back into `content/levels`, after an edit in the dashboard |
 | `pnpm progress:export` | Writes the players' results (`progress/<id>.md`) from the project into `content/progress`, removing ones no longer there. Read-only on Spotcraft. |
-| `pnpm supabase db reset` | Recreates the local database from migrations and the seed (and wipes progress) |
-| `pnpm supabase test db` | The database tests (pgTAP) |
 
-Deploying (Supabase Cloud and Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
+Deploying (Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). To save results locally, set `NUXT_SPOTCRAFT_ADMIN_SECRET` in `apps/web/.env`; they go to api.vin.ski, unless `NUXT_SPOTCRAFT_URL` points at a local Spotcraft. The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
 
 ## Stack
 
-Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Accounts and levels from Spotcraft. Supabase (Postgres) for completions.
+Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Spotcraft for levels, guest accounts and results.
 
 ## Author
 
