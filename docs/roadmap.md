@@ -18,9 +18,11 @@ description: The proof of concept (levels from Spotcraft, then a deploy), then t
 - [x] Supabase: a migration drops the `levels` table and its check function, and keys `level_completions` by slug. The seed keeps only the demo user.
 - [x] Checked in a browser against api.vin.ski, with every feature as before.
 
-### Step 2: Deploy (planned next)
-- [ ] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins with CAPTCHA, and the Site URL.
-- [ ] The Nuxt server on the VPS that runs api.vin.ski. The user routes it.
+### Step 2: Deploy, on Vercel for now
+The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VPS that runs api.vin.ski comes later.
+- [ ] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins on (no CAPTCHA yet), and the Site URL.
+- [ ] The Vercel project: Root Directory `apps/web`, Node 26, Corepack for pnpm 12, the Supabase variables, and the domain `sokobanko.vin.ski`.
+- [ ] The smoke test on the live site.
 
 ### Done when
 - [ ] The live URL works: guest play, levels unlocking in order, verified bests saved, the profile.
@@ -32,6 +34,8 @@ description: The proof of concept (levels from Spotcraft, then a deploy), then t
 - ETag or conditional requests to the API.
 - Cache invalidation from a publish webhook (see the suggestions).
 - `@spotcraft/sdk` instead of `fetch`, once it's published.
+- CAPTCHA (Turnstile) on guest sign-in: its token passed to `signInAnonymously`, and CAPTCHA turned on in Supabase.
+- Move from Vercel to the VPS that runs api.vin.ski, deployed from CI.
 
 ## After the proof of concept
 The plan below was written before the proof of concept was scoped. It covers dropping Supabase, Dexie, flattening, decision records, CI and parity, and it comes after the proof of concept, to be revisited and reordered then. Its phase numbers stay, since [parity.md](parity.md) cites them.

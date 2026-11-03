@@ -50,7 +50,7 @@ pnpm dev                                    # http://localhost:3000
 | `pnpm supabase db reset` | Recreates the local database from migrations and the seed (and wipes progress) |
 | `pnpm supabase test db` | The database tests (pgTAP) |
 
-The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
+Deploying (Supabase Cloud and Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
 
 ## Stack
 
