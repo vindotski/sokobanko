@@ -48,6 +48,10 @@ export default defineNuxtConfig({
     // Spotcraft, for levels (server/utils/levels.ts) and for checking a
     // player's session (server/utils/user.ts). NUXT_SPOTCRAFT_URL overrides it.
     spotcraftUrl: "https://api.vin.ski",
+    // Spotcraft's ADMIN_SECRET, for saving players' results as content
+    // (server/utils/progress.ts): players can't write content themselves.
+    // Server-only; NUXT_SPOTCRAFT_ADMIN_SECRET.
+    spotcraftAdminSecret: "",
     // The completions database, used only by the server, with the secret key
     // (server/utils/supabase.ts). NUXT_SUPABASE_URL and NUXT_SUPABASE_SECRET_KEY.
     supabaseUrl: "",

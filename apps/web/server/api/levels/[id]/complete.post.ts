@@ -27,14 +27,7 @@ export default defineEventHandler(async (event) => {
 
   // Levels unlock in play order: only solved levels and the first unsolved
   // one can be completed.
-  const done = await supabase()
-    .from("level_completions")
-    .select("level_id")
-    .eq("user_id", user.id);
-  if (done.error) {
-    throw createError({ statusCode: 500, message: done.error.message });
-  }
-  const solved = new Set(done.data.map((c) => c.level_id));
+  const solved = new Set((await readProgress(user.id)).map((c) => c.level));
   const states = levelStates(
     levels.map((l) => l.id),
     (levelId) => solved.has(levelId),
@@ -56,18 +49,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: "Level is not solved" });
   }
 
-  // Only the service role may record completions.
-  const { data: best, error: saveError } = await supabase().rpc(
-    "record_level_completion",
-    {
-      p_user_id: user.id,
-      p_level_id: level.id,
-      p_solution: result.solution,
-    },
-  );
-  if (saveError) {
-    throw createError({ statusCode: 500, message: saveError.message });
-  }
+  // Kept in the player's progress file on Spotcraft, if it's a new best.
+  const best = await recordBest(user.id, {
+    level: level.id,
+    moves: result.moves,
+    pushes: result.pushes,
+    completedAt: new Date().toISOString(),
+  });
 
   return {
     moves: result.moves,

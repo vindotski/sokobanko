@@ -47,6 +47,7 @@ pnpm dev                                    # http://localhost:3000
 | `pnpm levels:check` | Checks `content/levels` against its schema, with Spotcraft's CLI |
 | `pnpm levels:import` | Publishes `content/levels` to the `sokobanko` project (needs `SPOTCRAFT_API_URL` and `SPOTCRAFT_ADMIN_SECRET`) |
 | `pnpm levels:export` | Writes the project's levels back into `content/levels`, after an edit in the dashboard |
+| `pnpm progress:export` | Writes the players' results (`progress/<id>.md`) from the project into `content/progress`, removing ones no longer there. Read-only on Spotcraft. |
 | `pnpm supabase db reset` | Recreates the local database from migrations and the seed (and wipes progress) |
 | `pnpm supabase test db` | The database tests (pgTAP) |
 

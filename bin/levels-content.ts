@@ -1,8 +1,9 @@
-// What bin/levels-import.ts and bin/levels-export.ts share: which paths in the
-// sokobanko project this repository owns, and the management client.
-// The project also holds players' results, `progress/<id>.md`, written by
-// Sokobanko's server, so these scripts never touch them (unlike
-// `spotcraft import`, which deletes every file missing from the folder).
+// What bin/levels-import.ts, bin/levels-export.ts and bin/progress-export.ts
+// share: which paths in the sokobanko project this repository owns, and the
+// management client. The project also holds players' results,
+// `progress/<id>.md`, written by Sokobanko's server, so the levels scripts
+// never touch them (unlike `spotcraft import`, which deletes every file missing
+// from the folder); only bin/progress-export.ts reads them.
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
