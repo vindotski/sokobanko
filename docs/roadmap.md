@@ -1,27 +1,42 @@
 ---
 title: Roadmap
-description: The order Sokobanko is rebuilt in, from dropping Supabase to reading its levels from Spotcraft.
+description: The proof of concept (levels from Spotcraft, then a deploy), then the earlier plan for after it.
 ---
 
-# Roadmap: Sokobanko without Supabase, on Spotcraft
+# Roadmap
 
 **Numbering:** a bare number in parentheses, like "(12)", is one of this repository's [decision records](decisions/README.md). Spotcraft's records are always written out as "Spotcraft's decision N", since the two sets of numbers overlap. Gameplay features are compared in [parity.md](parity.md).
 
-**Goal:** one Nuxt package with a small Nitro server that serves levels. The levels start as local Markdown files and later come from Spotcraft. Progress lives in the browser's IndexedDB (Dexie). There are no accounts, no database of our own and no Pinia.
+## Proof of concept: Sokobanko on Spotcraft
+**The goal:** Sokobanko's levels are defined in Spotcraft, as Markdown with typed front matter, and the game is deployed. Everything else stays as it is: Supabase (guest accounts, server-verified bests), Pinia, the monorepo and every feature. This follows Spotcraft's own plan for Sokobanko, its roadmap, stage 2, step 13. Changes Spotcraft could make to support this better go in [`SPOTCRAFT_SUGGESTIONS.md`](../SPOTCRAFT_SUGGESTIONS.md). The Spotcraft repository isn't changed from here.
 
-**Trade-offs we accept:** progress is per browser and per device, and players can edit their own saved results. Accounts, cross-device sync, server-verified bests and leaderboards are in the last section, **Later**.
+### Step 1: Levels from Spotcraft
+- [x] `content/levels/`: `_schema.yaml` (`title` and `map` required, up to 50 rows of up to 50 XSB glyphs, and `order`) and one Markdown file per level, named by slug: `first-push`, `big-room`, `two-boxes` and `hello-world`. The files are in git and imported into the `sokobanko` project on https://api.vin.ski. The `levels:check`, `levels:import` and `levels:export` scripts run Spotcraft's CLI from the `../spotcraft-main` worktree.
+- [x] Imported: `pnpm levels:import`, with `SPOTCRAFT_API_URL` and `SPOTCRAFT_ADMIN_SECRET` set.
+- [x] The Nuxt server reads the published levels with `fetch` (`server/utils/levels.ts`, cached for a minute, stale-while-revalidate), and serves them at `/api/levels`. The browser never calls Spotcraft.
+- [x] The completion route takes the level and the play order from that list, checks the unlock rule, replays the solution, and records it in Supabase, keyed by slug.
+- [x] Supabase: a migration drops the `levels` table and its check function, and keys `level_completions` by slug. The seed keeps only the demo user.
+- [x] Checked in a browser against api.vin.ski, with every feature as before.
 
-**Why this order:**
-1. **Phase 0:** decision records first, so every later change has a record. Then tooling and skills, and finally a review of this roadmap against those skills.
-2. **Phase 1:** flatten early, so all new code is written at its final paths, with the final tests and TypeScript.
-3. **Phase 2:** levels as Markdown in Spotcraft's format, behind server routes, so Phase 7 only swaps where the server reads them from.
-4. **Phase 3:** Dexie, the riskiest piece, written against the final level ids.
-5. **Phase 4:** remove Supabase once nothing uses it.
-6. **Phases 5–7:** deploy, update the docs, then move the levels to Spotcraft. CI runs the checks from Phase 1 on, Phase 5 adds the deploy job, and Phase 7 adds the levels import job.
-7. **Phase 8:** gameplay parity gaps from `docs/parity.md`.
-8. **Later:** whatever needs server validation.
+### Step 2: Deploy (planned next)
+- [ ] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins with CAPTCHA, and the Site URL.
+- [ ] The Nuxt server on the VPS that runs api.vin.ski. The user routes it.
 
-Each phase leaves the app working (`pnpm typecheck && pnpm test && pnpm lint && pnpm docs:check && pnpm dev`, plus `pnpm levels:check` from Phase 2 on) and ends in one commit or a few small ones. The one exception is Phases 2 and 3, which ship together in one PR (see Phase 2's last item). Nothing is deployed before Phase 5, so the gap between them only affects local dev.
+### Done when
+- [ ] The live URL works: guest play, levels unlocking in order, verified bests saved, the profile.
+- [x] The levels come from Spotcraft (locally, against api.vin.ski).
+- [ ] A level edited and published in the Spotcraft dashboard shows in the game within a minute. That's Spotcraft's step 13 check. Then `pnpm levels:export` brings the edit back into git, since git is the levels' source.
+
+### Later, for the integration
+- Show "Spotcraft unavailable" instead of a 404 when the API is down, and return 502 for upstream errors.
+- ETag or conditional requests to the API.
+- Cache invalidation from a publish webhook (see the suggestions).
+- `@spotcraft/sdk` instead of `fetch`, once it's published.
+
+## After the proof of concept
+The plan below was written before the proof of concept was scoped. It covers dropping Supabase, Dexie, flattening, decision records, CI and parity, and it comes after the proof of concept, to be revisited and reordered then. Its phase numbers stay, since [parity.md](parity.md) cites them.
+
+**Its goal was** one Nuxt package with a small Nitro server that serves levels, with progress in the browser's IndexedDB (Dexie), and no accounts, no database of its own and no Pinia.
 
 ## Phase 0: Decision records, tooling and early cleanup
 - [ ] **Decision records (ADRs), in Spotcraft's format (8).** Run `git show main:docs/decisions/README.md` in `../spotcraft` for the reference.

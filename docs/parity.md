@@ -76,7 +76,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Paste an XSB level to play it | ⏳ 8, played locally, never saved as official | ✖ | ✖ | ✖ | ? | ? |
 | Copy a solution as LURD | ⏳ 8 | ✖ | ✖ | ◐ | ? | ? |
 | Level metadata (author, description) | ◐ description in the body (11), shown ⏳ 8; `author` ⏳ 8 | ✖ | ✖ | ? | ? | ◐ difficulty |
-| Levels editable without a release | ✅ Markdown in git; the Spotcraft dashboard from ⏳ 7 (14) | ✖ | ✖ | ✖ | ✖ | ✖ |
+| Levels editable without a release | ✅ Markdown in git, imported into Spotcraft; editable in its dashboard | ✖ | ✖ | ✖ | ✖ | ✖ |
 | Level editor | ✖ for now (Later, 15) | ✖ (*Sokoban 2*, 1984, had one) | ✖ | ✖ | ? | ? |
 
 **On purpose:**

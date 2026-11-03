@@ -1,8 +1,8 @@
 # Sokobanko
 
-The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, and your progress is kept on your device.
+The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, published in [Spotcraft](https://github.com/vindotski/spotcraft), and your best results are checked and saved by the server.
 
-**Sokobanko is being rebuilt.** It's moving off Supabase to a single Nuxt app, with its levels served from [Spotcraft](https://github.com/vindotski/spotcraft)'s hosted API, and progress kept in the browser. Until Phase 4 of the roadmap, the code below still runs on a local Supabase stack. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps, and [docs/decisions/](docs/decisions/) records why (from Phase 0).
+**A proof of concept on Spotcraft.** The levels live in the `sokobanko` project on Spotcraft's hosted API (https://api.vin.ski). This repository holds them as Markdown and imports them, and the game's server reads them from there. Everything else is as before: Supabase for guest accounts and verified bests, in a pnpm monorepo. [docs/roadmap.md](docs/roadmap.md) gives the order of the work, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
 
 ## What it does
 
@@ -19,21 +19,20 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 
 | Folder | What's in it |
 | --- | --- |
-| `apps/web` | The Nuxt 4 app: pages, layouts, shadcn-vue components, and the route that checks a solution |
+| `apps/web` | The Nuxt 4 app: pages, layouts, shadcn-vue components, the levels route (from Spotcraft), and the route that checks a solution |
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
-| `supabase/` | Today's database (migrations, seed levels, pgTAP tests); removed in Phase 4 |
-| `docs/` | The roadmap, the parity comparison and, from Phase 0, the decision records |
-
-Phase 1 flattens this into one Nuxt package (`app/lib/sokoban`, `app/lib/game`), and Phase 2 moves the levels to `content/levels/*.md`.
+| `content/levels` | One Markdown file per level, typed by `_schema.yaml`, imported into Spotcraft |
+| `supabase/` | Guest accounts and completions: migrations, the demo user, pgTAP tests |
+| `docs/` | The roadmap and the parity comparison |
 
 ## Getting started
 
-You need Node 26, pnpm 12 (`corepack enable`) and, until Phase 4, Docker.
+You need Node 26, pnpm 12 (`corepack enable`), Docker, and, for the `levels:*` scripts, Spotcraft's main branch as a worktree next to this repository: `git -C ../spotcraft worktree add ../spotcraft-main main && pnpm -C ../spotcraft-main install`.
 
 ```sh
 pnpm install
-pnpm supabase start                         # local Postgres and Auth, with the seed levels
+pnpm supabase start                         # local Postgres and Auth
 cp apps/web/.env.example apps/web/.env      # the local stack's fixed development keys
 pnpm dev                                    # http://localhost:3000
 ```
@@ -45,14 +44,17 @@ pnpm dev                                    # http://localhost:3000
 | `pnpm test` | Unit tests (Vitest) |
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm lint` / `pnpm format` | Biome: check, or fix and format |
-| `pnpm supabase db reset` | Recreates the local database from migrations and seed levels (and wipes progress) |
+| `pnpm levels:check` | Checks `content/levels` against its schema, with Spotcraft's CLI |
+| `pnpm levels:import` | Publishes `content/levels` to the `sokobanko` project (needs `SPOTCRAFT_API_URL` and `SPOTCRAFT_ADMIN_SECRET`) |
+| `pnpm levels:export` | Writes the project's levels back into `content/levels`, after an edit in the dashboard |
+| `pnpm supabase db reset` | Recreates the local database from migrations and the seed (and wipes progress) |
 | `pnpm supabase test db` | The database tests (pgTAP) |
 
-From Phase 0, Spotcraft's main branch is also needed next to this repository, as a worktree at `../spotcraft-main` (see the roadmap's Phase 0).
+The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
 
 ## Stack
 
-Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Progress moves to Dexie (IndexedDB) and levels to Spotcraft, as the roadmap describes.
+Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Supabase (Postgres, Auth). Levels from Spotcraft.
 
 ## Author
 
