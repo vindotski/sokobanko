@@ -49,6 +49,11 @@ export default defineNuxtConfig({
     prefix: "",
     componentDir: "./app/components/ui",
   },
+  runtimeConfig: {
+    // Where the levels come from (server/utils/levels.ts): the sokobanko
+    // project on Spotcraft. Server-only; NUXT_SPOTCRAFT_URL overrides it.
+    spotcraftUrl: "https://api.vin.ski",
+  },
   supabase: {
     // Signed-out visitors can still play; there is no login page to send them to.
     redirect: false,

@@ -2,8 +2,18 @@
 import { UserIcon } from "@lucide/vue";
 
 const user = useSupabaseUser();
-const { data: completions } = await useCompletions();
-const { data: levelIds } = await useLevelIds();
+const { data: completed } = await useCompletions();
+const { data: levels } = await useLevels();
+
+// Bests with their level's title, from Spotcraft. A level that has since
+// been unpublished is left out.
+const completions = computed(() => {
+  const titles = new Map((levels.value ?? []).map((l) => [l.id, l.title]));
+  return (completed.value ?? []).flatMap((c) => {
+    const title = titles.get(c.level_id);
+    return title ? [{ ...c, title }] : [];
+  });
+});
 
 const isGuest = computed(() => user.value?.is_anonymous !== false);
 const name = computed(() =>
@@ -11,8 +21,8 @@ const name = computed(() =>
 );
 
 const stats = computed(() => {
-  const done = completions.value ?? [];
-  const total = levelIds.value?.length ?? 0;
+  const done = completions.value;
+  const total = levels.value?.length ?? 0;
   return {
     solved: done.length,
     total,
@@ -79,7 +89,7 @@ const stats = computed(() => {
         <CardDescription>Your best verified result for each level.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table v-if="completions?.length">
+        <Table v-if="completions.length">
           <TableHeader>
             <TableRow>
               <TableHead>Level</TableHead>
@@ -91,14 +101,14 @@ const stats = computed(() => {
           <TableBody>
             <TableRow
               v-for="completion in completions"
-              :key="completion.level.id"
+              :key="completion.level_id"
             >
               <TableCell>
                 <NuxtLink
-                  :to="`/play/${completion.level.id}`"
+                  :to="`/play/${completion.level_id}`"
                   class="font-medium hover:underline"
                 >
-                  {{ completion.level.title }}
+                  {{ completion.title }}
                 </NuxtLink>
               </TableCell>
               <TableCell class="text-right font-mono">

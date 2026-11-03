@@ -60,54 +60,7 @@ export type Database = {
           solution?: string;
           user_id?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: "level_completions_level_id_fkey";
-            columns: ["level_id"];
-            isOneToOne: false;
-            referencedRelation: "levels";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      levels: {
-        Row: {
-          author_id: string | null;
-          created_at: string;
-          id: string;
-          map: string[];
-          position: number | null;
-          status: string;
-          title: string;
-        };
-        ComputedFields: never;
-        Insert: {
-          author_id?: string | null;
-          created_at?: string;
-          id?: string;
-          map: string[];
-          position?: number | null;
-          status?: string;
-          title: string;
-        };
-        Update: {
-          author_id?: string | null;
-          created_at?: string;
-          id?: string;
-          map?: string[];
-          position?: number | null;
-          status?: string;
-          title?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "levels_author_id_fkey";
-            columns: ["author_id"];
-            isOneToOne: false;
-            referencedRelation: "profiles";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       profiles: {
         Row: {

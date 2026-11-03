@@ -5,15 +5,13 @@ select plan(16);
 insert into auth.users (id, is_anonymous) values
   ('00000000-0000-0000-0000-000000000001', false),
   ('00000000-0000-0000-0000-000000000002', true);
-insert into public.levels (id, title, map, status) values
-  ('00000000-0000-0000-0000-00000000000a', 'Test', array['#@ $.#'], 'published');
 
 -- Recording (as the server's service role).
 set local role service_role;
 
 select is(
   (select moves from public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'rrlrR')),
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'rrlrR')),
   5,
   'records a first completion'
 );
@@ -25,48 +23,48 @@ select is(
 );
 select is(
   (select solution from public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'rrrlrlR')),
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'rrrlrlR')),
   'rrlrR',
   'keeps the existing result when the new one has more moves'
 );
 select is(
   (select solution from public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'rlrrR')),
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'rlrrR')),
   'rrlrR',
   'keeps the existing result on a tie'
 );
 select is(
   (select solution from public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'rR')),
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'rR')),
   'rR',
   'replaces the result when the new one has fewer moves'
 );
 select lives_ok(
   $sql$ select public.record_level_completion(
-    '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 'rR') $sql$,
+    '00000000-0000-0000-0000-000000000002', 'test-level', 'rR') $sql$,
   'anonymous users can have completions'
 );
 select throws_ok(
   $sql$ select public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'rx') $sql$,
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'rx') $sql$,
   '23514', null, 'rejects letters outside LURD'
 );
 select throws_ok(
   $sql$ select public.record_level_completion(
-    '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000b', 'rR') $sql$,
-  '23503', null, 'rejects unknown levels'
+    '00000000-0000-0000-0000-000000000002', 'Not A Slug', 'rR') $sql$,
+  '23514', null, 'rejects a level id that is not a slug'
 );
 
 -- Direct writes must keep moves and pushes consistent with the solution.
 reset role;
 select throws_ok(
   $sql$ insert into public.level_completions (user_id, level_id, moves, pushes, solution)
-        values ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 1, 1, 'rR') $sql$,
+        values ('00000000-0000-0000-0000-000000000002', 'test-level', 1, 1, 'rR') $sql$,
   '23514', null, 'moves must match the solution length'
 );
 select throws_ok(
   $sql$ insert into public.level_completions (user_id, level_id, moves, pushes, solution)
-        values ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-00000000000a', 2, 0, 'rR') $sql$,
+        values ('00000000-0000-0000-0000-000000000002', 'test-level', 2, 0, 'rR') $sql$,
   '23514', null, 'pushes must match the uppercase letters'
 );
 
@@ -81,12 +79,12 @@ select results_eq(
 );
 select throws_ok(
   $sql$ select public.record_level_completion(
-    '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 'R') $sql$,
+    '00000000-0000-0000-0000-000000000001', 'test-level', 'R') $sql$,
   '42501', null, 'users cannot call record_level_completion'
 );
 select throws_ok(
   $sql$ insert into public.level_completions (user_id, level_id, moves, pushes, solution)
-        values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-00000000000a', 1, 1, 'R') $sql$,
+        values ('00000000-0000-0000-0000-000000000001', 'test-level', 1, 1, 'R') $sql$,
   '42501', null, 'users cannot insert completions'
 );
 select throws_ok(

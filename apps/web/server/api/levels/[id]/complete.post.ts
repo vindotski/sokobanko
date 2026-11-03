@@ -22,42 +22,24 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Invalid solution" });
   }
 
-  // As the user, so RLS decides which levels exist for them.
+  // Levels, and their play order, come from Spotcraft.
   const id = getRouterParam(event, "id") ?? "";
-  const supabase = await serverSupabaseClient(event);
-  const { data: level, error } = await supabase
-    .from("levels")
-    .select("id, title, map")
-    .eq("id", id)
-    .maybeSingle();
-  // An id that is not a uuid fails the query; treat it as not found.
-  if (error && error.code !== "22P02") {
-    throw createError({ statusCode: 500, message: error.message });
-  }
+  const levels = await getLevels();
+  const level = levels.find((l) => l.id === id);
   if (!level) {
     throw createError({ statusCode: 404, message: "Level not found" });
   }
 
   // Levels unlock in play order: only solved levels and the first unsolved
-  // one can be completed.
-  const [order, done] = await Promise.all([
-    // Same order as useLevels() in app/composables/levels.ts.
-    supabase
-      .from("levels")
-      .select("id")
-      .eq("status", "published")
-      .order("position", { nullsFirst: false })
-      .order("created_at"),
-    // RLS limits this to the user's own completions.
-    supabase.from("level_completions").select("level_id"),
-  ]);
-  const queryError = order.error ?? done.error;
-  if (queryError) {
-    throw createError({ statusCode: 500, message: queryError.message });
+  // one can be completed. RLS limits this to the user's own completions.
+  const supabase = await serverSupabaseClient(event);
+  const done = await supabase.from("level_completions").select("level_id");
+  if (done.error) {
+    throw createError({ statusCode: 500, message: done.error.message });
   }
-  const solved = new Set((done.data ?? []).map((c) => c.level_id));
+  const solved = new Set(done.data.map((c) => c.level_id));
   const states = levelStates(
-    (order.data ?? []).map((l) => l.id),
+    levels.map((l) => l.id),
     (levelId) => solved.has(levelId),
   );
   if (states.get(level.id) === "locked") {

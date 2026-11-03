@@ -1,49 +1,17 @@
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
- * Published levels in play order. The completion route in
- * server/api/levels/[id]/complete.post.ts uses the same order for unlocking.
+ * Published levels in play order, from Spotcraft through server/api/levels.
+ * The completion route in server/api/levels/[id]/complete.post.ts uses the
+ * same list and order for unlocking.
  */
 export function useLevels() {
-  const supabase = useSupabaseClient();
-  return useAsyncData("levels", async () => {
-    const { data, error } = await supabase
-      .from("levels")
-      .select("id, title, map")
-      .eq("status", "published")
-      .order("position", { nullsFirst: false })
-      .order("created_at");
-    if (error) throw createError({ statusCode: 500, message: error.message });
-    return data;
-  });
+  return useFetch("/api/levels", { key: "levels" });
 }
 
-/** Ids of published levels, without their maps. */
+/** Ids of published levels, in play order. */
 export function useLevelIds() {
-  const supabase = useSupabaseClient();
-  return useAsyncData("level-ids", async () => {
-    const { data, error } = await supabase
-      .from("levels")
-      .select("id")
-      .eq("status", "published");
-    if (error) throw createError({ statusCode: 500, message: error.message });
-    return data.map((level) => level.id);
-  });
-}
-
-/** One level the viewer can see, or `null` if there is none with that id. */
-export function useLevel(id: string) {
-  const supabase = useSupabaseClient();
-  return useAsyncData(`level-${id}`, async () => {
-    // Postgres rejects malformed uuids instead of returning nothing.
-    if (!UUID.test(id)) return null;
-    const { data, error } = await supabase
-      .from("levels")
-      .select("id, title, map")
-      .eq("id", id)
-      .maybeSingle();
-    if (error) throw createError({ statusCode: 500, message: error.message });
-    return data;
+  return useFetch("/api/levels", {
+    key: "level-ids",
+    transform: (levels) => levels.map((level) => level.id),
   });
 }
 
@@ -57,7 +25,7 @@ export function useCompletions() {
       if (!user.value) return [];
       const { data, error } = await supabase
         .from("level_completions")
-        .select("moves, pushes, completed_at, level:levels (id, title)")
+        .select("level_id, moves, pushes, completed_at")
         .order("completed_at", { ascending: false });
       if (error) {
         throw createError({ statusCode: 500, message: error.message });

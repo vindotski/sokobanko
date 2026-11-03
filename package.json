@@ -13,7 +13,10 @@
     "typecheck": "pnpm -r typecheck",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "db:types": "supabase gen types typescript --local > apps/web/app/types/database.types.ts && biome check --write apps/web/app/types"
+    "db:types": "supabase gen types typescript --local > apps/web/app/types/database.types.ts && biome check --write apps/web/app/types",
+    "levels:check": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts check content",
+    "levels:import": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts import content --project sokobanko",
+    "levels:export": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts export content --project sokobanko --force"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",

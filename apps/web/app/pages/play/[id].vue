@@ -17,8 +17,8 @@ import { usePreferredReducedMotion } from "@vueuse/core";
 definePageMeta({ layout: "play" });
 
 const route = useRoute();
-const { data } = await useLevel(String(route.params.id));
-const level = data.value;
+const { data: levels } = await useLevels();
+const level = levels.value?.find((l) => l.id === route.params.id);
 if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
@@ -40,7 +40,6 @@ type Verification =
 const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
 const user = useSupabaseUser();
-const { data: levels } = await useLevels();
 // Completions, so "New best!" knows the previous best even on a direct visit.
 await useAsyncData("completions", () => store.load(), {
   watch: [() => user.value?.sub],
