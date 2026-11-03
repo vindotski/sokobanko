@@ -200,12 +200,12 @@ app/
   - No hydration warnings appear.
 
 ## Phase 6: Docs
-- [ ] `README.md`:
-  - Remove Supabase and Docker.
-  - Show the single-package tree.
-  - Explain the levels as Markdown, how to add one, and progress in IndexedDB.
-  - Explain the `../spotcraft-main` worktree setup, and link `docs/roadmap.md` and `docs/decisions/`.
-  - Retake the screenshots from the live site.
+- [ ] Update `README.md` (rewritten before Phase 0) to the state after Phase 4:
+  - Drop the "until Phase 4" notes, Docker and the Supabase scripts.
+  - Layout: the single-package tree (`app/`, `app/lib/sokoban`, `app/lib/game`, `server/`, `content/levels/`, `docs/`).
+  - Getting started: the `../spotcraft-main` worktree setup, and the `docs:check` and `levels:check` scripts.
+  - Explain how to add a level, and that progress is kept in IndexedDB.
+  - Add the live URL and screenshots from the live site.
 - [ ] `faq.vue`: update the tech stack, and add that progress is saved in this browser only.
 - [ ] `../SOKOBANKO_CASE_STUDY.md`: why the backend and the monorepo were dropped.
 
