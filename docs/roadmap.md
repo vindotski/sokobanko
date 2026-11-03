@@ -20,13 +20,13 @@ description: The proof of concept (levels from Spotcraft, then a deploy), then t
 
 ### Step 2: Deploy, on Vercel for now
 The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VPS that runs api.vin.ski comes later.
-- [ ] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins on (no CAPTCHA yet), and the Site URL.
-- [ ] The Vercel project: Root Directory `apps/web`, Node 26, Corepack for pnpm 12, the Supabase variables, and the domain `sokobanko.vin.ski`.
-- [ ] The smoke test on the live site.
+- [x] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins on (no CAPTCHA yet), and the Site URL.
+- [x] The Vercel project: Root Directory `apps/web`, Node 26, Corepack for pnpm 12, the Supabase variables, and the domain `sokobanko.vin.ski`.
+- [x] The smoke test on the live site.
 
 ### Done when
-- [ ] The live URL works: guest play, levels unlocking in order, verified bests saved, the profile.
-- [x] The levels come from Spotcraft (locally, against api.vin.ski).
+- [x] The live URL works (https://sokobanko.vin.ski): guest play, levels unlocking in order, verified bests saved, the profile.
+- [x] The levels come from Spotcraft, locally and on the live site.
 - [ ] A level edited and published in the Spotcraft dashboard shows in the game within a minute. That's Spotcraft's step 13 check. Then `pnpm levels:export` brings the edit back into git, since git is the levels' source.
 
 ### Later, for the integration

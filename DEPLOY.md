@@ -2,8 +2,8 @@
 
 Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase Cloud** project. These steps are done by hand, once. The levels keep coming from Spotcraft's hosted API (https://api.vin.ski), so the build doesn't need the `../spotcraft-main` worktree. Moving to the VPS comes later ([roadmap](docs/roadmap.md)).
 
-- [ ] **1. The Supabase project:** in the Supabase dashboard, create a project in an EU region. Save its database password in your password manager.
-- [ ] **2. The database:** apply this repository's migrations to it. From the repository's root:
+- [x] **1. The Supabase project:** in the Supabase dashboard, create a project in an EU region. Save its database password in your password manager.
+- [x] **2. The database:** apply this repository's migrations to it. From the repository's root:
   ```bash
   pnpm supabase login
   pnpm supabase link --project-ref <ref>     # the ref is in the project's URL
@@ -13,20 +13,20 @@ Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase C
   ```
   - `db push` doesn't run `supabase/seed.sql`, so the demo user (`admin@example.com`) stays local.
   - **Don't run `supabase config push`.** It would overwrite the project's auth settings with the local `config.toml`, whose Site URL is `http://127.0.0.1:3000`.
-- [ ] **3. Auth**, in the dashboard:
+- [x] **3. Auth**, in the dashboard:
   - Turn on **Allow anonymous sign-ins** (Authentication → Sign In / Providers). Every visitor gets a guest account in the background, as they do locally.
   - Set **Site URL** to `https://sokobanko.vin.ski` (Authentication → URL Configuration).
   - **CAPTCHA stays off** for the proof of concept. Guest sign-in doesn't send a CAPTCHA token yet, so turning it on would break sign-in. Supabase's rate limit on anonymous sign-ins (per IP, per hour) covers it until then.
-- [ ] **4. The keys:** from Settings → API Keys, copy:
+- [x] **4. The keys:** from Settings → API Keys, copy:
   - the project URL (`https://<ref>.supabase.co`);
   - the **publishable** key (`sb_publishable_…`);
   - the **secret** key (`sb_secret_…`). It bypasses Row Level Security, so it only ever goes into Vercel's server-side environment.
-- [ ] **5. The Vercel project:** import `vindotski/sokoban`, then set:
+- [x] **5. The Vercel project:** import `vindotski/sokoban`, then set:
   - **Root Directory:** `apps/web`, with "Include files outside the root directory" on, since the app builds `packages/core` and `packages/game`;
   - **Framework Preset:** Nuxt;
   - **Node.js version:** 26.x (also what `engines` asks for);
   - **Production branch:** `main`.
-- [ ] **6. Environment variables**, in the Vercel project:
+- [x] **6. Environment variables**, in the Vercel project:
 
   | Name | Value | Environments |
   | --- | --- | --- |
@@ -37,9 +37,9 @@ Taking https://sokobanko.vin.ski live, for now on **Vercel** with a **Supabase C
   | `NUXT_SPOTCRAFT_URL` | Optional; `https://api.vin.ski` by default | — |
 
   The Supabase module reads these variables when the app is built too, so they must be set before the first deploy.
-- [ ] **7. The domain:** add `sokobanko.vin.ski` in the Vercel project (Settings → Domains), and create the DNS record it shows, a `CNAME` to Vercel, wherever vin.ski's DNS is managed. On Cloudflare, set it to **DNS only**, so that Vercel issues the certificate.
-- [ ] **8. The first deploy:** push `main`, or press Redeploy in Vercel. The build log should show pnpm 12 and Node 26.
-- [ ] **9. The smoke test,** on https://sokobanko.vin.ski in a fresh private window:
+- [x] **7. The domain:** add `sokobanko.vin.ski` in the Vercel project (Settings → Domains), and create the DNS record it shows, a `CNAME` to Vercel, wherever vin.ski's DNS is managed. On Cloudflare, set it to **DNS only**, so that Vercel issues the certificate.
+- [x] **8. The first deploy:** push `main`, or press Redeploy in Vercel. The build log should show pnpm 12 and Node 26.
+- [x] **9. The smoke test,** on https://sokobanko.vin.ski in a fresh private window:
   - The home page and `/levels` load. First Push is up next, and the other levels are locked.
   - `/play/two-boxes` shows the lock screen.
   - Solving First Push (→ → →) opens the dialog with "Your best: 3 moves". After a reload, `/levels` shows it as solved, and Big Room as up next.
