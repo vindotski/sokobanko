@@ -15,8 +15,8 @@
     "format": "biome check --write .",
     "db:types": "supabase gen types typescript --local > apps/web/app/types/database.types.ts && biome check --write apps/web/app/types",
     "levels:check": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts check content",
-    "levels:import": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts import content --project sokobanko",
-    "levels:export": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts export content --project sokobanko --force"
+    "levels:import": "pnpm levels:check && node bin/levels-import.ts",
+    "levels:export": "node bin/levels-export.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
