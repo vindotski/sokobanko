@@ -50,9 +50,18 @@ export default defineNuxtConfig({
     componentDir: "./app/components/ui",
   },
   runtimeConfig: {
-    // Where the levels come from (server/utils/levels.ts): the sokobanko
-    // project on Spotcraft. Server-only; NUXT_SPOTCRAFT_URL overrides it.
+    // Spotcraft, for levels (server/utils/levels.ts) and for checking a
+    // player's session (server/utils/user.ts). NUXT_SPOTCRAFT_URL overrides it.
     spotcraftUrl: "https://api.vin.ski",
+    // The completions database, used only by the server, with the secret key
+    // (server/utils/supabase.ts). NUXT_SUPABASE_URL and NUXT_SUPABASE_SECRET_KEY.
+    supabaseUrl: "",
+    supabaseSecretKey: "",
+    public: {
+      // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
+      // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.
+      spotcraftUrl: "https://api.vin.ski",
+    },
   },
   supabase: {
     // Signed-out visitors can still play; there is no login page to send them to.
