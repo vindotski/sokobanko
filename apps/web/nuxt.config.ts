@@ -52,9 +52,6 @@ export default defineNuxtConfig({
     // levels and players' files, and saving results (server/utils/credentials.ts).
     // Server-only; NUXT_SPOTCRAFT_KEY.
     spotcraftKey: "",
-    // Spotcraft's ADMIN_SECRET: the fallback until the key is deployed.
-    // Server-only; NUXT_SPOTCRAFT_ADMIN_SECRET.
-    spotcraftAdminSecret: "",
     public: {
       // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
       // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.

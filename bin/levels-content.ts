@@ -41,23 +41,18 @@ export function localFiles(): Map<string, string> {
 
 /**
  * The management client, from SPOTCRAFT_API_URL and Sokobanko's key
- * (SPOTCRAFT_KEY), or else SPOTCRAFT_ADMIN_SECRET.
+ * (SPOTCRAFT_KEY). Its commits are authored as `sokobanko`.
  */
 export function client() {
   const url = process.env.SPOTCRAFT_API_URL ?? "https://api.vin.ski";
   const key = process.env.SPOTCRAFT_KEY;
-  const secret = process.env.SPOTCRAFT_ADMIN_SECRET;
-  const credentials: Credentials | null = key
-    ? { key }
-    : secret
-      ? { secret }
-      : null;
-  if (!credentials) {
+  if (!key) {
     console.error(
-      "Set SPOTCRAFT_KEY (or SPOTCRAFT_ADMIN_SECRET), and SPOTCRAFT_API_URL if not https://api.vin.ski.",
+      "Set SPOTCRAFT_KEY (Sokobanko's key, sc_…), and SPOTCRAFT_API_URL if not https://api.vin.ski.",
     );
     process.exit(1);
   }
+  const credentials: Credentials = { key };
   const call = <T>(procedure: string, input: unknown) =>
     rpc<T>(url, credentials, procedure, input);
   return {

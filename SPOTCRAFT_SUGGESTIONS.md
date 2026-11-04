@@ -37,6 +37,7 @@ What integrating Sokobanko with Spotcraft (its `main` at `a814a62`, and https://
 - **Suggestion:** have the deploy write the image it deployed into the server's `.env` (`IMAGE=…:<sha>`), so a manual `up -d` restarts the same version. Or note it in Spotcraft's DEPLOY.md ("Adding a product").
 
 ## 9. Scoped keys, so a product's server needn't hold the admin secret
+**Done (Spotcraft's decision 50).** Sokobanko's server uses its own key, `files:read,files:write,files:publish` on `sokobanko` only, and the project is private (`SPOTCRAFT_KEY_INTEGRATION.md`).
 - **What happened:** Sokobanko keeps each player's best results as content (`progress/<id>.md`). Players are `user`s, who can't write content (decision 45), and API keys aren't built, so Sokobanko's server writes with the instance's `ADMIN_SECRET`. That key can edit and publish every project on api.vin.ski.
 - **Suggestion:** the designed secret keys (decision 9), with a scope like `files:write` limited to one project, or one folder (`sokobanko:progress/`).
 

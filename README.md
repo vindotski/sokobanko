@@ -33,7 +33,7 @@ You need Node 26, pnpm 12 (`corepack enable`), and, for the `levels:*` scripts, 
 
 ```sh
 pnpm install
-cp apps/web/.env.example apps/web/.env      # then set NUXT_SPOTCRAFT_ADMIN_SECRET to save results
+cp apps/web/.env.example apps/web/.env      # then set NUXT_SPOTCRAFT_KEY (Sokobanko's key)
 pnpm dev                                    # http://localhost:3000
 ```
 
@@ -45,11 +45,11 @@ pnpm dev                                    # http://localhost:3000
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm lint` / `pnpm format` | Biome: check, or fix and format |
 | `pnpm levels:check` | Checks `content/levels` against its schema, with Spotcraft's CLI |
-| `pnpm levels:import` | Publishes `content/levels` and the progress schema to the `sokobanko` project, never touching players' files (needs `SPOTCRAFT_ADMIN_SECRET`) |
+| `pnpm levels:import` | Publishes `content/levels` and the progress schema to the `sokobanko` project, never touching players' files (needs `SPOTCRAFT_KEY`) |
 | `pnpm levels:export` | Writes the project's levels back into `content/levels`, after an edit in the dashboard |
 | `pnpm progress:export` | Writes the players' results (`progress/<id>.md`) from the project into `content/progress`, removing ones no longer there. Read-only on Spotcraft. |
 
-Deploying (Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). To save results locally, set `NUXT_SPOTCRAFT_ADMIN_SECRET` in `apps/web/.env`; they go to api.vin.ski, unless `NUXT_SPOTCRAFT_URL` points at a local Spotcraft. The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
+Deploying (Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). The project is private, so the app needs Sokobanko's key, `NUXT_SPOTCRAFT_KEY` in `apps/web/.env`, to read levels and save results; results go to api.vin.ski, unless `NUXT_SPOTCRAFT_URL` points at a local Spotcraft. The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
 
 ## Stack
 
