@@ -11,7 +11,8 @@ const PROJECT = "sokobanko";
 
 /**
  * The player's best results, from `progress/<id>.md` in the sokobanko project,
- * through Spotcraft's open delivery API. No file yet means no results.
+ * through Spotcraft's delivery API (with the key, once the project is
+ * private). No file yet means no results.
  */
 export async function readProgress(userId: string): Promise<Completion[]> {
   const { spotcraftUrl } = useRuntimeConfig();
@@ -19,9 +20,7 @@ export async function readProgress(userId: string): Promise<Completion[]> {
   try {
     const doc = await $fetch<{ data: unknown }>(
       `/v1/projects/${PROJECT}/content/${path}`,
-      {
-        baseURL: spotcraftUrl,
-      },
+      { baseURL: spotcraftUrl, headers: deliveryHeaders() },
     );
     return completionsFrom(doc.data);
   } catch (error) {
@@ -33,22 +32,23 @@ export async function readProgress(userId: string): Promise<Completion[]> {
 /**
  * Records a run, already replayed and verified, and answers the player's best
  * for that level. Only a run with fewer moves than the best is saved, as one
- * commit on main (with the admin secret: players can't write content). Every
+ * commit on main, with Sokobanko's key (players can't write content). Every
  * player's save moves main, so a save that finds it moved is retried.
  */
 export async function recordBest(
   userId: string,
   run: Completion,
 ): Promise<Completion> {
-  const { spotcraftUrl, spotcraftAdminSecret } = useRuntimeConfig();
-  if (!spotcraftAdminSecret) {
+  const { spotcraftUrl } = useRuntimeConfig();
+  const credentials = spotcraftCredentials();
+  if (!credentials) {
     throw createError({
       statusCode: 500,
       message: "Saving results isn't configured",
     });
   }
   const call = <T>(procedure: string, input: unknown) =>
-    rpc<T>(spotcraftUrl, spotcraftAdminSecret, procedure, input);
+    rpc<T>(spotcraftUrl, credentials, procedure, input);
 
   for (let attempt = 1; attempt <= 5; attempt++) {
     // main first, then the file: if main moves after this, the save conflicts.

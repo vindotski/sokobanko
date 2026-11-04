@@ -8,7 +8,7 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { rpc } from "../apps/web/server/spotcraft/rpc.ts";
+import { type Credentials, rpc } from "../apps/web/server/spotcraft/rpc.ts";
 
 export const PROJECT = "sokobanko";
 export const CONTENT = fileURLToPath(new URL("../content/", import.meta.url));
@@ -39,18 +39,27 @@ export function localFiles(): Map<string, string> {
   return files;
 }
 
-/** The management client, from SPOTCRAFT_API_URL and SPOTCRAFT_ADMIN_SECRET. */
+/**
+ * The management client, from SPOTCRAFT_API_URL and Sokobanko's key
+ * (SPOTCRAFT_KEY), or else SPOTCRAFT_ADMIN_SECRET.
+ */
 export function client() {
   const url = process.env.SPOTCRAFT_API_URL ?? "https://api.vin.ski";
+  const key = process.env.SPOTCRAFT_KEY;
   const secret = process.env.SPOTCRAFT_ADMIN_SECRET;
-  if (!secret) {
+  const credentials: Credentials | null = key
+    ? { key }
+    : secret
+      ? { secret }
+      : null;
+  if (!credentials) {
     console.error(
-      "Set SPOTCRAFT_ADMIN_SECRET (and SPOTCRAFT_API_URL if not https://api.vin.ski).",
+      "Set SPOTCRAFT_KEY (or SPOTCRAFT_ADMIN_SECRET), and SPOTCRAFT_API_URL if not https://api.vin.ski.",
     );
     process.exit(1);
   }
   const call = <T>(procedure: string, input: unknown) =>
-    rpc<T>(url, secret, procedure, input);
+    rpc<T>(url, credentials, procedure, input);
   return {
     url,
     main: async () => {

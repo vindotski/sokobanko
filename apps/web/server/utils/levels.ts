@@ -11,7 +11,7 @@ export const getLevels = defineCachedFunction(
     const { spotcraftUrl } = useRuntimeConfig();
     const { items } = await $fetch<{ items: ContentItem[] }>(
       "/v1/projects/sokobanko/content/levels/",
-      { baseURL: spotcraftUrl },
+      { baseURL: spotcraftUrl, headers: deliveryHeaders() },
     );
     return levelsFromItems(items);
   },
