@@ -42,17 +42,19 @@ What integrating Sokobanko with Spotcraft (its `main` at `a814a62`, and https://
 - **Suggestion:** the designed secret keys (decision 9), with a scope like `files:write` limited to one project, or one folder (`sokobanko:progress/`).
 
 ## 10. An import that leaves other paths alone
+**Mostly moot (Spotcraft's decision 62).** Results are records now, so the project holds only the levels; Sokobanko keeps its own `bin/` scripts, which publish only `levels/`. A path filter would still help any project with content from more than one source.
 - **What happened:** `spotcraft import` makes the project match the folder, so it deletes every file missing from it (`transfer.ts`: `if (!(path in files)) changes.push({ path, delete: true })`). Sokobanko's `sokobanko` project holds both levels from git and players' files written by its server. The CLI's import would have deleted every player's results, and its export would have copied them into git. Sokobanko now has its own `bin/levels-import.ts` and `bin/levels-export.ts`, which touch only `levels/` and `progress/_schema.yaml`.
 - **Suggestion:** a path filter, `spotcraft import content --only levels/`, or a mode that writes and never deletes outside the given paths.
 
 ## 11. App data for results
+**Done (Spotcraft's decision 62).** Each result is a `progress` record owned by the player, written by Sokobanko's key plus the player's token (`SPOTCRAFT_APP_DATA_INTEGRATION.md`). One limit noticed: a key reaches one player's records at a time, so Sokobanko can't export or back up everyone's results itself (its `progress:export` went). An owner-wide read for a key with an explicit scope would allow that, and leaderboards.
 - **What happened:** results as content means every new best is a commit on `main`, everyone's results are public, and concurrent saves retry on `CONFLICT`. It works for a demo.
 - **Suggestion:** the planned app data (Spotcraft's roadmap, "App data"): private records per player, written by a product's server without a commit each, would replace `progress/` here. Sokobanko would be the first user.
 
 ## 12. Roadmap step 13's wording
 How Sokobanko is built differs from step 13's text in three places:
 - **The client:** levels are read with `fetch`, not the SDK (see 1).
-- **Completions:** Supabase is gone. Each player's best results are Spotcraft content in the same project (`progress/<spotcraft-id>.md`), keyed by level slug (`first-push`), the last segment of the level's path.
+- **Completions:** Supabase is gone. Each player's best results are Spotcraft app data in the same project (collection `progress`), keyed by level slug (`first-push`), the last segment of the level's path.
 - **The source of the levels:** they're authored in git and imported, with dashboard edits exported back. Step 13 implies the dashboard is the source.
 
 Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.

@@ -34,6 +34,14 @@ Instead of Supabase, each player's best results are Spotcraft content: `progress
 - [x] Supabase is removed: the folder, the CLI, the client and the variables.
 - [x] Deployed: [`DEPLOY.md`](../DEPLOY.md), "Results on Spotcraft: the rollout", then "Sokobanko's key, and a private project".
 
+### Results as app data
+Spotcraft's reset keeps content as published versions with one draft (its decision 61), and products' own data as records (decision 62). This follows `SPOTCRAFT_APP_DATA_INTEGRATION.md`.
+- [x] Each result is a record: collection `progress`, key the level's id, value `{ moves, pushes, completedAt }`. The server reads and writes it with Sokobanko's key plus the player's session token, which makes the player its owner (`server/utils/progress.ts`). A new best is a compare-and-swap on that one record, and an unimproved run writes nothing.
+- [x] `levels:import` publishes `levels/` as the project's next version, against the version it read (`expect`), and `levels:export` reads the published files. No branches.
+- [x] `content/progress/` and `progress:export` are gone: a key reaches one player's records at a time, and Spotcraft's backups hold them.
+- [x] Checked against a local Spotcraft: a first solve creates the record, a better run replaces it, a worse one doesn't, and the server render, `/play` and the profile show it.
+- [ ] Deployed right after Spotcraft's reset: [`DEPLOY.md`](../DEPLOY.md), "App data (Spotcraft's reset)".
+
 ### Step 2: Deploy, on Vercel for now
 The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VPS that runs api.vin.ski comes later.
 - [x] A Supabase Cloud project: `supabase link`, `db push`, anonymous sign-ins on (no CAPTCHA yet), and the Site URL.
@@ -50,8 +58,8 @@ The runbook is [`DEPLOY.md`](../DEPLOY.md), done by hand, once. Moving to the VP
 - ETag or conditional requests to the API.
 - Cache invalidation from a publish webhook (see the suggestions).
 - `@spotcraft/sdk` instead of `fetch`, once it's published.
-- Sign-up and sign-in that keep a guest's progress, after `SPOTCRAFT_AUTH_INTEGRATION.md`, section 8: the server moves `progress/<guest>.md` to the new account's id, keeping the better result per level when both have solved it.
-- Move results to Spotcraft's app data once it exists (its roadmap, "App data"): records per player, with no commit per save, in place of the private `progress/` files.
+- Sign-up and sign-in. Spotcraft moves a guest's records to the account, but on a level both have solved the account's own record wins, even when the guest's was better. If that matters, the server can read both before signing in and keep the better one.
+- ~~Move results to Spotcraft's app data~~: done, above.
 - Cache Spotcraft's `get-session` answer per token for a minute, if checking every request ever matters.
 - Protecting guest sign-in from abuse, such as CAPTCHA, is now on Spotcraft's side.
 
