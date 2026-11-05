@@ -1,7 +1,6 @@
-// `pnpm levels:export`: writes the sokobanko project's levels (and the
-// progress schema) from main into content/, after they were edited in
-// Spotcraft's dashboard, so git keeps being their source. Players' files
-// (progress/<id>.md) are never copied.
+// `pnpm levels:export`: writes the sokobanko project's published levels into
+// content/levels, after they were edited in Spotcraft's dashboard, so git keeps
+// being their source. Nothing outside levels/ is copied.
 
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -27,7 +26,7 @@ for (const path of remote) {
 }
 let removed = 0;
 for (const path of local.keys()) {
-  if (!remote.includes(path) && path.startsWith("levels/")) {
+  if (!remote.includes(path)) {
     rmSync(join(CONTENT, path));
     console.log(`removed content/${path}`);
     removed++;

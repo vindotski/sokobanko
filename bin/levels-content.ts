@@ -1,9 +1,7 @@
-// What bin/levels-import.ts, bin/levels-export.ts and bin/progress-export.ts
-// share: which paths in the sokobanko project this repository owns, and the
-// management client. The project also holds players' results,
-// `progress/<id>.md`, written by Sokobanko's server, so the levels scripts
-// never touch them (unlike `spotcraft import`, which deletes every file missing
-// from the folder); only bin/progress-export.ts reads them.
+// What bin/levels-import.ts and bin/levels-export.ts share: which paths in the
+// sokobanko project this repository owns (the levels), and the management
+// client. Unlike `spotcraft import`, which deletes every file missing from the
+// folder, they never touch anything outside levels/.
 
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
@@ -13,9 +11,8 @@ import { type Credentials, rpc } from "../apps/web/server/spotcraft/rpc.ts";
 export const PROJECT = "sokobanko";
 export const CONTENT = fileURLToPath(new URL("../content/", import.meta.url));
 
-/** The levels and their schema, and the progress schema; never a player's file. */
+/** The levels and their schema. */
 export function isManaged(path: string): boolean {
-  if (path === "progress/_schema.yaml") return true;
   return (
     path.startsWith("levels/") &&
     (path.endsWith(".md") || path.endsWith("/_schema.yaml"))
@@ -41,7 +38,7 @@ export function localFiles(): Map<string, string> {
 
 /**
  * The management client, from SPOTCRAFT_API_URL and Sokobanko's key
- * (SPOTCRAFT_KEY). Its commits are authored as `sokobanko`.
+ * (SPOTCRAFT_KEY). Its versions are published as `sokobanko`.
  */
 export function client() {
   const url = process.env.SPOTCRAFT_API_URL ?? "https://api.vin.ski";
@@ -57,29 +54,22 @@ export function client() {
     rpc<T>(url, credentials, procedure, input);
   return {
     url,
-    main: async () => {
-      const refs = await call<{ name: string; commit: string }[]>("refs.list", {
-        project: PROJECT,
-      });
-      const main = refs.find((r) => r.name === "main");
-      if (!main) throw new Error(`${PROJECT} has no main branch`);
-      return main.commit;
-    },
-    list: () =>
-      call<{ path: string }[]>("files.list", { project: PROJECT, ref: "main" }),
-    read: async (path: string) =>
+    /** The published version, which a publish is made against (null: none yet). */
+    published: async () =>
       (
-        await call<{ text: string }>("files.read", {
-          project: PROJECT,
-          ref: "main",
-          path,
-        })
-      ).text,
-    save: (base: string, message: string, changes: unknown[]) =>
-      call<{ commit: string; check: { ok: boolean } }>("files.save", {
+        await call<{ slug: string; publishedVersion: number | null }[]>(
+          "projects.list",
+          {},
+        )
+      ).find((p) => p.slug === PROJECT)?.publishedVersion ?? null,
+    list: () => call<{ path: string }[]>("files.list", { project: PROJECT }),
+    read: async (path: string) =>
+      (await call<{ text: string }>("files.read", { project: PROJECT, path }))
+        .text,
+    publish: (expect: number | null, message: string, changes: unknown[]) =>
+      call<{ version: number }>("files.publish", {
         project: PROJECT,
-        ref: "main",
-        base,
+        expect,
         message,
         changes,
         author: { name: "Sokobanko", email: "levels@sokobanko.vin.ski" },

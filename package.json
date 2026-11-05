@@ -15,8 +15,7 @@
     "format": "biome check --write .",
     "levels:check": "node --conditions=source ../spotcraft-main/packages/spotcraft/src/index.ts check content",
     "levels:import": "pnpm levels:check && node bin/levels-import.ts",
-    "levels:export": "node bin/levels-export.ts",
-    "progress:export": "node bin/progress-export.ts"
+    "levels:export": "node bin/levels-export.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
