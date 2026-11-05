@@ -1,89 +1,93 @@
-import {
-  type Completion,
-  completionsFrom,
-  playerPath,
-  toMarkdown,
-  withBest,
-} from "../spotcraft/progress";
+import { type Completion, completionsFrom } from "../spotcraft/progress";
 import { rpc, SpotcraftRpcError } from "../spotcraft/rpc";
 
 const PROJECT = "sokobanko";
+/** One record per player and level, keyed by the level's id (Spotcraft's decision 62). */
+const COLLECTION = "progress";
+
+type Best = { moves: number; pushes: number; completedAt: string };
+type Stored = { key: string; value: Best; version: number };
 
 /**
- * The player's best results, from `progress/<id>.md` in the sokobanko project,
- * through Spotcraft's delivery API (with the key, once the project is
- * private). No file yet means no results.
+ * A call for the player's own records: Sokobanko's key with the player's
+ * session token, which tells Spotcraft whose records they are.
  */
-export async function readProgress(userId: string): Promise<Completion[]> {
-  const { spotcraftUrl } = useRuntimeConfig();
-  const path = playerPath(userId).replace(/\.md$/, "");
-  try {
-    const doc = await $fetch<{ data: unknown }>(
-      `/v1/projects/${PROJECT}/content/${path}`,
-      { baseURL: spotcraftUrl, headers: deliveryHeaders() },
-    );
-    return completionsFrom(doc.data);
-  } catch (error) {
-    if ((error as { statusCode?: number }).statusCode === 404) return [];
-    throw error;
-  }
-}
-
-/**
- * Records a run, already replayed and verified, and answers the player's best
- * for that level. Only a run with fewer moves than the best is saved, as one
- * commit on main, with Sokobanko's key (players can't write content). Every
- * player's save moves main, so a save that finds it moved is retried.
- */
-export async function recordBest(
-  userId: string,
-  run: Completion,
-): Promise<Completion> {
-  const { spotcraftUrl } = useRuntimeConfig();
-  const credentials = spotcraftCredentials();
-  if (!credentials) {
+function call<T>(token: string, procedure: string, input: unknown): Promise<T> {
+  const { spotcraftUrl, spotcraftKey } = useRuntimeConfig();
+  if (!spotcraftKey) {
     throw createError({
       statusCode: 500,
       message: "Saving results isn't configured",
     });
   }
-  const call = <T>(procedure: string, input: unknown) =>
-    rpc<T>(spotcraftUrl, credentials, procedure, input);
+  return rpc<T>(spotcraftUrl, { key: spotcraftKey, token }, procedure, input);
+}
 
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    // main first, then the file: if main moves after this, the save conflicts.
-    const refs = await call<{ name: string; commit: string }[]>("refs.list", {
-      project: PROJECT,
-    });
-    const base = refs.find((r) => r.name === "main")?.commit;
-    if (!base)
-      throw createError({ statusCode: 500, message: `${PROJECT} has no main` });
-
-    const { completions, best, improved } = withBest(
-      await readProgress(userId),
-      run,
-    );
-    if (!improved) return best;
-    try {
-      await call("files.save", {
+/** The player's best results, one record per level. None yet is an empty list. */
+export async function readProgress(token: string): Promise<Completion[]> {
+  const found: unknown[] = [];
+  let after: string | undefined;
+  do {
+    const page = await call<{ records: Stored[]; next: string | null }>(
+      token,
+      "data.list",
+      {
         project: PROJECT,
-        ref: "main",
-        base,
-        message: `progress: ${run.level} in ${run.moves} moves`,
-        changes: [
-          { path: playerPath(userId), content: toMarkdown(completions) },
-        ],
-        author: { name: "Sokobanko", email: "progress@sokobanko.vin.ski" },
+        collection: COLLECTION,
+        limit: 100,
+        ...(after ? { after } : {}),
+      },
+    );
+    found.push(...page.records.map((r) => ({ level: r.key, ...r.value })));
+    after = page.next ?? undefined;
+  } while (after);
+  // Malformed records are dropped, as malformed progress files were.
+  return completionsFrom({ completions: found });
+}
+
+/**
+ * Records a run, already replayed and verified, if it beats the player's best
+ * for that level (fewer moves), and answers the best. A compare-and-swap on
+ * that one record: if it changed meanwhile (the same player, in another tab),
+ * it's read again.
+ */
+export async function recordBest(
+  token: string,
+  run: Completion,
+): Promise<Completion> {
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    let current: Stored | null = null;
+    try {
+      current = await call<Stored>(token, "data.get", {
+        project: PROJECT,
+        collection: COLLECTION,
+        key: run.level,
       });
-      return best;
     } catch (error) {
-      if (error instanceof SpotcraftRpcError && error.code === "CONFLICT")
+      if (!(error instanceof SpotcraftRpcError && error.code === "NOT_FOUND")) {
+        throw error;
+      }
+    }
+    if (current && current.value.moves <= run.moves) {
+      return { level: run.level, ...current.value };
+    }
+    try {
+      await call(token, "data.put", {
+        project: PROJECT,
+        collection: COLLECTION,
+        key: run.level,
+        value: {
+          moves: run.moves,
+          pushes: run.pushes,
+          completedAt: run.completedAt,
+        },
+        // 0 only creates; n only replaces version n.
+        version: current?.version ?? 0,
+      });
+      return run;
+    } catch (error) {
+      if (error instanceof SpotcraftRpcError && error.code === "CONFLICT") {
         continue;
-      if (error instanceof SpotcraftRpcError && error.code === "INVALID") {
-        console.error(
-          "Spotcraft refused a progress file:",
-          JSON.stringify(error.data),
-        );
       }
       throw error;
     }

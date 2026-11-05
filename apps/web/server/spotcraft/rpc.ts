@@ -20,20 +20,30 @@ export class SpotcraftRpcError extends Error {
 
 /**
  * Who's calling: Sokobanko's own key (`sc_…`, Spotcraft's decision 50), sent
- * as `X-Spotcraft-Key`, or a secret (the admin secret, or a session token),
- * sent as `Authorization: Bearer`. Keys are for servers only.
+ * as `X-Spotcraft-Key`; a secret (the admin secret, or a session token), sent
+ * as `Authorization: Bearer`; or the key together with a player's session
+ * token, for that player's records (decision 62). Keys are for servers only.
  */
-export type Credentials = { key: string } | { secret: string };
+export type Credentials =
+  | { key: string }
+  | { secret: string }
+  | { key: string; token: string };
 
 export function credentialHeaders(
   credentials: Credentials,
 ): Record<string, string> {
+  if ("token" in credentials) {
+    return {
+      "x-spotcraft-key": credentials.key,
+      authorization: `Bearer ${credentials.token}`,
+    };
+  }
   return "key" in credentials
     ? { "x-spotcraft-key": credentials.key }
     : { authorization: `Bearer ${credentials.secret}` };
 }
 
-/** Calls one procedure, such as `files.save`, as whoever `credentials` belong to. */
+/** Calls one procedure, such as `data.put`, as whoever `credentials` belong to. */
 export async function rpc<T>(
   url: string,
   credentials: Credentials,

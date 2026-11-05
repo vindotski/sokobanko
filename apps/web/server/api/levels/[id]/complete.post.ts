@@ -9,7 +9,9 @@ const SOLUTION = /^[lurdLURD]{1,20000}$/;
  * clients cannot write completions themselves.
  */
 export default defineEventHandler(async (event) => {
-  const user = await requireUser(event);
+  await requireUser(event);
+  // requireUser has checked it: it says whose records they are.
+  const token = sessionToken(event) as string;
 
   const body = await readBody<{ solution?: unknown }>(event);
   const solution = body?.solution;
@@ -27,7 +29,7 @@ export default defineEventHandler(async (event) => {
 
   // Levels unlock in play order: only solved levels and the first unsolved
   // one can be completed.
-  const solved = new Set((await readProgress(user.id)).map((c) => c.level));
+  const solved = new Set((await readProgress(token)).map((c) => c.level));
   const states = levelStates(
     levels.map((l) => l.id),
     (levelId) => solved.has(levelId),
@@ -49,8 +51,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: "Level is not solved" });
   }
 
-  // Kept in the player's progress file on Spotcraft, if it's a new best.
-  const best = await recordBest(user.id, {
+  // Kept as the player's record on Spotcraft, if it's a new best.
+  const best = await recordBest(token, {
     level: level.id,
     moves: result.moves,
     pushes: result.pushes,

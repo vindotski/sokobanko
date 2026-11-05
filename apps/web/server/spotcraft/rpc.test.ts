@@ -44,6 +44,25 @@ describe("rpc", () => {
     expect(headers.authorization).toBeUndefined();
   });
 
+  it("sends the key and a player's token together, for their records", async () => {
+    const fetcher = answer(200, { records: [], next: null });
+    await rpc(
+      "https://api.vin.ski",
+      { key: "sc_abc_secret", token: "player-token" },
+      "data.list",
+      { project: "sokobanko", collection: "progress" },
+      fetcher,
+    );
+    const [url, init] = fetcher.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    const headers = init.headers as Record<string, string>;
+    expect(url).toBe("https://api.vin.ski/v1/rpc/data/list");
+    expect(headers["x-spotcraft-key"]).toBe("sc_abc_secret");
+    expect(headers.authorization).toBe("Bearer player-token");
+  });
+
   it("throws Spotcraft's code, status and details", async () => {
     const fetcher = answer(409, {
       defined: false,

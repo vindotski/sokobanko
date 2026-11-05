@@ -5,15 +5,23 @@ import { type SessionUser, sessionUser } from "../spotcraft/session";
 export const SESSION_COOKIE = "sokobanko-token";
 
 /**
- * The account behind the request, as Spotcraft says, or a 401. The token comes
- * from `Authorization: Bearer …`, or else the session cookie, which the
- * browser sends with every request to this server (server renders included).
+ * The player's Spotcraft session token: `Authorization: Bearer …`, or else the
+ * session cookie, which the browser sends with every request to this server
+ * (server renders included).
+ */
+export function sessionToken(event: H3Event): string | undefined {
+  const bearer = getHeader(event, "authorization")?.match(/^Bearer (.+)$/)?.[1];
+  return bearer ?? getCookie(event, SESSION_COOKIE);
+}
+
+/**
+ * The account behind the request's session token (sessionToken), as Spotcraft
+ * says, or a 401.
  * Each call is one request to Spotcraft's `/v1/auth/get-session`; if Spotcraft
  * can't be reached, it's a 503 rather than a 401.
  */
 export async function requireUser(event: H3Event): Promise<SessionUser> {
-  const bearer = getHeader(event, "authorization")?.match(/^Bearer (.+)$/)?.[1];
-  const token = bearer ?? getCookie(event, SESSION_COOKIE);
+  const token = sessionToken(event);
   if (!token) throw createError({ statusCode: 401, message: "No session" });
   const { spotcraftUrl } = useRuntimeConfig(event);
   const user = await sessionUser(token, (t) =>
