@@ -18,7 +18,7 @@ const { data: levelIds } = await useLevelIds();
     >
       A classic box-pushing puzzle
     </p>
-    <h1 class="text-display">Sokoban</h1>
+    <h1 class="text-display">Sokobanko</h1>
     <p class="max-w-xl text-lead text-muted-foreground">
       Push every box onto a goal. You can't pull, so every move counts.
     </p>

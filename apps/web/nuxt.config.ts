@@ -9,6 +9,7 @@ export default defineNuxtConfig({
   modules: ["@pinia/nuxt", "@nuxtjs/color-mode", "shadcn-nuxt"],
   app: {
     head: {
+      title: "Sokobanko",
       // Native scrollbars and form controls follow the theme too.
       meta: [{ name: "color-scheme", content: "light dark" }],
     },

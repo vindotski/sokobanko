@@ -54,7 +54,7 @@ watch(
         <SheetContent side="left" class="w-64">
           <SheetHeader>
             <SheetTitle>
-              <NuxtLink to="/" @click="menuOpen = false">Sokoban</NuxtLink>
+              <NuxtLink to="/" @click="menuOpen = false">Sokobanko</NuxtLink>
             </SheetTitle>
           </SheetHeader>
           <div class="flex flex-col px-2">
@@ -93,7 +93,7 @@ watch(
         to="/"
         class="col-start-2 row-start-1 justify-self-center font-semibold md:col-start-1 md:justify-self-start"
       >
-        Sokoban
+        Sokobanko
       </NuxtLink>
 
       <div class="col-start-2 row-start-1 hidden gap-4 md:flex">
