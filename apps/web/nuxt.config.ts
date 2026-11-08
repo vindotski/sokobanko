@@ -45,6 +45,9 @@ export default defineNuxtConfig({
     componentDir: "./app/components/ui",
   },
   nitro: {
+    // A plain Node server (`node .output/server/index.mjs`), run in a
+    // container on Spotcraft; see the Dockerfile.
+    preset: "node-server",
     // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL from the
     // environment (server/utils/backend.ts); none of them reach the browser.
     // Bundled into the server, so the image needs nothing beside .output:

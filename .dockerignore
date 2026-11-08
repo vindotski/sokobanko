@@ -1,0 +1,14 @@
+**/node_modules
+**/.nuxt
+**/.output
+**/.data
+**/coverage
+.git
+.claude
+.agents
+
+# Secrets and local state: never in a build context, even a local one.
+.env
+**/.env
+**/.env.*
+!**/.env.example
