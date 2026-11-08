@@ -10,7 +10,7 @@ description: The demo (on Vercel, with Spotcraft's old hosted API), the proof of
 ## Demo: Sokobanko on Spotcraft
 Done and tagged `demo` ("Spotcraft Content Integration"). **Superseded by the proof of concept below:** Spotcraft 0.2.0 replaced the hosted API this section integrates with, so its levels import, keys and app data are gone. It's kept as history; the integration docs it cites are in git history.
 
-**The goal:** Sokobanko's levels are defined in Spotcraft, as Markdown with typed front matter, and the game is deployed. Everything else stays as it is: Supabase (guest accounts, server-verified bests), Pinia, the monorepo and every feature. This follows Spotcraft's own plan for Sokobanko, its roadmap, stage 2, step 13. Changes Spotcraft could make to support this better go in [`SPOTCRAFT_SUGGESTIONS.md`](../SPOTCRAFT_SUGGESTIONS.md). The Spotcraft repository isn't changed from here.
+**The goal:** Sokobanko's levels are defined in Spotcraft, as Markdown with typed front matter, and the game is deployed. Everything else stays as it is: Supabase (guest accounts, server-verified bests), Pinia, the monorepo and every feature. This follows Spotcraft's own plan for Sokobanko, its roadmap, stage 2, step 13. The Spotcraft repository isn't changed from here.
 
 ### Step 1: Levels from Spotcraft
 - [x] `content/levels/`: `_schema.yaml` (`title` and `map` required, up to 50 rows of up to 50 XSB glyphs, and `order`) and one Markdown file per level, named by slug: `first-push`, `big-room`, `two-boxes` and `hello-world`. The files are in git and imported into the `sokobanko` project on https://api.vin.ski. The `levels:check`, `levels:import` and `levels:export` scripts run Spotcraft's CLI from the `../spotcraft-main` worktree.
@@ -60,8 +60,8 @@ Spotcraft 0.2.0 (https://spotcraft.dev) is a self-hosted deployment platform: ap
 - [x] **Results:** one row per player and level. A new best is a single upsert that keeps the fewest moves.
 - [x] **The image:** distroless Node 26, read-only, healthy once `/api/health` answers (`Dockerfile`).
 - [x] **CI:** verify (with Postgres), then publish `vindotski/sokobanko` for amd64 and arm64 to Docker Hub (`.github/workflows/ci.yml`).
-- [ ] **Deployed:** [`DEPLOY.md`](../DEPLOY.md), "The rollout": a temporary domain first, then `sokobanko.vin.ski` moves from Vercel to the apps server.
-- [ ] **Done when** https://sokobanko.vin.ski is served by Spotcraft and the smoke test passes there.
+- [x] **Deployed** (2026-11-08) at https://sokobanko.app, its own domain: [`DEPLOY.md`](../DEPLOY.md), "The rollout".
+- [x] **Done when** https://sokobanko.app is served by Spotcraft and the smoke test passes there. Still open: the browser check, redirecting or retiring sokobanko.vin.ski, and removing the Vercel project.
 
 ### Later, for the integration
 - Sign-up and sign-in, once the kit has them. Spotcraft's decision 0016 plans to move a guest's data to the new account (Better Auth's `onLinkAccount`). On a level both have solved, keep the better result.

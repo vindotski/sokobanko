@@ -1,8 +1,8 @@
 # Sokobanko
 
-The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, kept in this repository, and your best results are checked and saved by the server.
+The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.app**. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, kept in this repository, and your best results are checked and saved by the server.
 
-**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own Postgres database. The levels are synced into it from `content/levels` when the server starts. A visitor becomes a guest, through Spotcraft's kit, the first time they solve a level, and their best result per level is kept in the database. [DEPLOY.md](DEPLOY.md) has the setup, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
+**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own Postgres database. The levels are synced into it from `content/levels` when the server starts. A visitor becomes a guest, through Spotcraft's kit, the first time they solve a level, and their best result per level is kept in the database. [DEPLOY.md](DEPLOY.md) has the setup, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps.
 
 ## What it does
 
