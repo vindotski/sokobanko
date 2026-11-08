@@ -1,60 +1,56 @@
 # Suggestions for Spotcraft
 
-What integrating Sokobanko with Spotcraft (its `main` at `a814a62`, and https://api.vin.ski) turned up that Spotcraft could support better. This repository doesn't change Spotcraft. Each entry says what happened here and what could change there.
+What integrating Sokobanko with Spotcraft turned up that Spotcraft could support better. This repository doesn't change Spotcraft. Each entry says what happened here and what could change there.
 
-## 1. Publish the SDK and the CLI
-- **What happened:** neither `@spotcraft/sdk` nor `spotcraft` is on npm.
-  - The game's server reads the levels with a plain `fetch` (`apps/web/server/utils/levels.ts`) rather than the SDK that step 13 describes.
-  - The `levels:*` scripts run the CLI from a `../spotcraft-main` worktree, so any machine that imports levels needs that worktree, with `pnpm install` run in it.
-- **Suggestion:** publish them, even as `0.x`. The `fetch` would then become `createClient().content.list()`.
+## Spotcraft 0.2.0 (self-hosted, with the kit)
+From moving Sokobanko onto Spotcraft 0.2.0 (`v0.2.0`, `a74a6d3`) as a Nuxt 4 app with `@spotcraft/kit`.
 
-## 2. A CLI that runs without a build
-- **What happened:** the CLI's `bin` points at `dist/index.js`, which isn't built in the repository, so the scripts call `node --conditions=source …/src/index.ts`.
-- **Suggestion:** a `bin` that runs the TypeScript source directly (Node 26 strips the types), or a published build (see 1).
+### 1. A guide for Nuxt (Nitro and H3)
+- **What happened:** the backend-kit guide covers only SvelteKit, and the kit's browser error names SvelteKit paths. The Nuxt version took some working out (`apps/web/server/middleware/guest.ts`):
+  - **The request:** `new Request(getRequestURL(event), { headers: event.headers })`. Avoid `toWebRequest`, which may take the body stream that `readBody` needs later.
+  - **The client address:** `getRequestIP(event, { xForwardedFor: true })`.
+  - **Cookies:** each `headers.getSetCookie()` goes out through `appendResponseHeader`.
+  - **Rate limit:** `GuestLimitError` becomes a 429 with `retry-after`.
+  - **Static assets** skip the kit.
+- **Suggestion:** a short Nuxt section, or a framework-neutral one with Nuxt as the second example, in `docs/guides/backend-kit.md`.
 
-## 3. `spotcraft import` overwrites dashboard edits
-- **What happened:** Sokobanko keeps its levels in git and imports them. An import writes the folder as one commit on `main`, so a level edited in the dashboard since the last import is silently replaced. The workaround is a manual rule: `pnpm levels:export` and commit before every import.
-- **Suggestion:** `import` refuses when `main` has commits it didn't make since the last import, unless `--force` is given (as `export` does for folders that aren't empty). Or a sync mode that shows the diff.
+### 2. The kit reads its migrations folder when imported
+- **What happened:** `schema.ts` runs `readdirSync(new URL('./migrations/', import.meta.url))` at import, and the root export pulls it in through `provision.ts`. An app's server only works if its bundler leaves the kit external and copies `dist/migrations/*.sql`. Nitro's tracing does, so Sokobanko is fine, but an inlining bundler would crash at boot.
+- **Suggestion:** have the root export not import `provision`, or embed the SQL as strings at build time, so `@spotcraft/kit` reads no files.
 
-## 4. `ref`, `commit` and ETags in the SDK
-- **What happened:** delivery supports `?ref=`, `?commit=` and `ETag`, but `content.get` and `content.list` don't expose them. A consumer can't preview a draft, or revalidate cheaply.
-- **Suggestion:** an options argument with `ref` and `commit`, and a way to send `If-None-Match`.
+### 3. App migrations at boot
+- **What happened:** the kit leaves the app's own tables to it, and the guide suggests drizzle-kit. Sokobanko applies its migrations when the server starts. Drizzle's migrator reads a folder, so the bundled migrations are written to `/tmp` first, since the filesystem is read-only.
+- **Suggestion:** a documented pattern, or a kit helper that takes the migrations as data, such as `migrateApp(db, migrations)`.
 
-## 5. Knowing when content is published
-- **What happened:** the game's server caches the levels for a minute, so a published edit shows only after the cache refreshes.
-- **Suggestion:** a publish webhook (already on Spotcraft's roadmap), so consumers can drop their cache when content changes.
+### 4. No way to deploy from CI
+- **What happened:** CI publishes `vindotski/sokobanko`, but releasing still means picking the tag in the dashboard. The agent only listens on the private network, and the dashboard has no API tokens.
+- **Suggestion:** a scoped deploy token for one app, such as "set this app's tag", callable from CI. Or let an app follow a moving tag and redeploy on a webhook from the registry.
 
-## 6. Rules JSON Schema can't express
-- **What happened:** "exactly one player" and "as many goals as boxes" can't be written in `_schema.yaml`. A level that breaks them passes Spotcraft's checks and gets published, and the game's server skips it (`parseLevel`).
-- **Suggestion:** validators (Spotcraft's decision 18) for content folders as well as app collections, so these rules are checked before publishing.
+### 5. Public images only
+- **What happened:** the agent pulls without logging in, so an app's image has to be public.
+- **Suggestion:** per-app registry credentials (or one for the server), for apps that aren't open source.
 
-## 7. Token storage in the SDK for server-rendered apps
-- **What happened:** the auth guide (`SPOTCRAFT_AUTH_INTEGRATION.md`), like the SDK's token mode, keeps the session token in `localStorage`. A server-rendered app like Sokobanko's can't read that while rendering, so the server would render every page as a brand-new guest. `/play` would redirect to the first level, and the lock states would flash. Sokobanko keeps the token in a cookie instead (`sokobanko-token`), which its server forwards to Spotcraft as a bearer token.
-- **Suggestion:** a pluggable token store in the SDK's token mode, such as `createClient({ auth: "token", storage: { get, set } })`, with `localStorage` as the default. The guide could mention the cookie route for SSR apps. Exposing `set-auth-token` to browsers worked as-is.
+### 6. Postgres backups
+- **What happened:** players' results live only in the app database, and decision 0015 leaves backups as "the next decision". Today the fallback is Hetzner's whole-server backups (`apps_server_backups`, off by default).
+- **Suggestion:** nightly `pg_dump` per app database, kept off the server, with a restore command. Or at least the backups variable on by default.
 
-## 8. A restart can bring back an old image
-- **What happened:** after Sokobanko's origins were added to `AUTH_TRUSTED_ORIGINS`, `docker compose up -d api` started an `api` image without the auth routes (`No route for GET /v1/auth/get-session`), until it was pulled again. Compose falls back to `${IMAGE:-…:main}`, and CI sets `IMAGE` only while it deploys.
-- **Suggestion:** have the deploy write the image it deployed into the server's `.env` (`IMAGE=…:<sha>`), so a manual `up -d` restarts the same version. Or note it in Spotcraft's DEPLOY.md ("Adding a product").
+### 7. Small doc fixes
+- The dashboard's empty Users tab still says every visitor becomes a guest on their first request. Since `9dfb2a0`, guests are made on the first save.
+- ADR 0017's body gives the local Postgres port as 54322, but its notes and the CLI use 54340.
+- `spotcraft dev` names the app after `package.json`. In a monorepo that's the workspace package (`@sokoban/web` gives `web`), so `--name` is needed every time. A `spotcraft.name` field in `package.json`, or a hint when the name looks generic, would help.
+- `spotcraft dev env --write` writes `DATABASE_URL` and `AUTH_SECRET`, but not `PUBLIC_URL`, which the kit also requires. It could write `http://localhost:3000` or ask for it.
 
-## 9. Scoped keys, so a product's server needn't hold the admin secret
-**Done (Spotcraft's decision 50).** Sokobanko's server uses its own key, `files:read,files:write,files:publish` on `sokobanko` only, and the project is private (`SPOTCRAFT_KEY_INTEGRATION.md`).
-- **What happened:** Sokobanko keeps each player's best results as content (`progress/<id>.md`). Players are `user`s, who can't write content (decision 45), and API keys aren't built, so Sokobanko's server writes with the instance's `ADMIN_SECRET`. That key can edit and publish every project on api.vin.ski.
-- **Suggestion:** the designed secret keys (decision 9), with a scope like `files:write` limited to one project, or one folder (`sokobanko:progress/`).
-
-## 10. An import that leaves other paths alone
-**Mostly moot (Spotcraft's decision 62).** Results are records now, so the project holds only the levels; Sokobanko keeps its own `bin/` scripts, which publish only `levels/`. A path filter would still help any project with content from more than one source.
-- **What happened:** `spotcraft import` makes the project match the folder, so it deletes every file missing from it (`transfer.ts`: `if (!(path in files)) changes.push({ path, delete: true })`). Sokobanko's `sokobanko` project holds both levels from git and players' files written by its server. The CLI's import would have deleted every player's results, and its export would have copied them into git. Sokobanko now has its own `bin/levels-import.ts` and `bin/levels-export.ts`, which touch only `levels/` and `progress/_schema.yaml`.
-- **Suggestion:** a path filter, `spotcraft import content --only levels/`, or a mode that writes and never deletes outside the given paths.
-
-## 11. App data for results
-**Done (Spotcraft's decision 62).** Each result is a `progress` record owned by the player, written by Sokobanko's key plus the player's token (`SPOTCRAFT_APP_DATA_INTEGRATION.md`). One limit noticed: a key reaches one player's records at a time, so Sokobanko can't export or back up everyone's results itself (its `progress:export` went). An owner-wide read for a key with an explicit scope would allow that, and leaderboards.
-- **What happened:** results as content means every new best is a commit on `main`, everyone's results are public, and concurrent saves retry on `CONFLICT`. It works for a demo.
-- **Suggestion:** the planned app data (Spotcraft's roadmap, "App data"): private records per player, written by a product's server without a commit each, would replace `progress/` here. Sokobanko would be the first user.
-
-## 12. Roadmap step 13's wording
-How Sokobanko is built differs from step 13's text in three places:
-- **The client:** levels are read with `fetch`, not the SDK (see 1).
-- **Completions:** Supabase is gone. Each player's best results are Spotcraft app data in the same project (collection `progress`), keyed by level slug (`first-push`), the last segment of the level's path.
-- **The source of the levels:** they're authored in git and imported, with dashboard edits exported back. Step 13 implies the dashboard is the source.
-
-Everything else in step 13 holds as written: `levels/_schema.yaml` with `title`, `map` and `order`, one file per level, the official levels imported, the Nuxt server reading at runtime with nothing called from the browser, the solution check reading the map from Spotcraft, and the remaining rules kept in `parseLevel`.
+## The earlier hosted API (api.vin.ski)
+From the demo, which used Spotcraft's hosted content and app data API. Spotcraft 0.2.0 replaced that API, so these no longer apply. The details are in git history (this file before November 8, 2026):
+1. Publish the SDK and the CLI
+2. A CLI that runs without a build
+3. `spotcraft import` overwrites dashboard edits
+4. `ref`, `commit` and ETags in the SDK
+5. Knowing when content is published
+6. Rules JSON Schema can't express
+7. Token storage in the SDK for server-rendered apps
+8. A restart can bring back an old image
+9. Scoped keys, so a product's server needn't hold the admin secret
+10. An import that leaves other paths alone
+11. App data for results
+12. Roadmap step 13's wording

@@ -1,8 +1,8 @@
 # Sokobanko
 
-The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, published in [Spotcraft](https://github.com/vindotski/spotcraft), and your best results are checked and saved by the server.
+The classic box-pushing puzzle, in the browser. You push boxes onto goals, one at a time, and every move is counted and can be undone. Levels are Markdown files with typed front matter, kept in this repository, and your best results are checked and saved by the server.
 
-**A demo on Spotcraft.** Everything it stores is on Spotcraft's hosted API (https://api.vin.ski), in the `sokobanko` project. The levels are Markdown in this repository, imported into it, and the game's server reads them from there. Every visitor is signed in as a Spotcraft guest. Each player's best results are saved by the server as Spotcraft app data: one record per player and level. There's no database of its own. Hosting it on the Hetzner VPS that runs api.vin.ski is the proof of concept, next on the [roadmap](docs/roadmap.md), and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
+**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own Postgres database. The levels are synced into it from `content/levels` when the server starts. A visitor becomes a guest, through Spotcraft's kit, the first time they solve a level, and their best result per level is kept in the database. [DEPLOY.md](DEPLOY.md) has the setup, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps. [SPOTCRAFT_SUGGESTIONS.md](SPOTCRAFT_SUGGESTIONS.md) lists what Spotcraft could support better.
 
 ## What it does
 
@@ -19,39 +19,41 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 
 | Folder | What's in it |
 | --- | --- |
-| `apps/web` | The Nuxt 4 app: pages, layouts, shadcn-vue components, the levels route (from Spotcraft), and the route that checks a solution |
+| `apps/web` | The Nuxt 4 app: pages, layouts, shadcn-vue components, and its server: guests (Spotcraft's kit), the database (Drizzle and its migrations), the levels and the route that checks a solution |
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
-| `content/levels` | One Markdown file per level, typed by `_schema.yaml`, imported into Spotcraft |
-| `bin/` | `levels:import` and `levels:export`, which touch only the levels |
+| `content/levels` | One Markdown file per level (`title`, `map`, `order`), built into the server and synced into the database at boot |
 | `docs/` | The roadmap and the parity comparison |
 
 ## Getting started
 
-You need Node 26, pnpm 12 (`corepack enable`), and, for the `levels:*` scripts, Spotcraft's main branch as a worktree next to this repository: `git -C ../spotcraft worktree add ../spotcraft-main main && pnpm -C ../spotcraft-main install`.
+You need Node 26, pnpm 12 (`corepack enable`) and Docker, for Spotcraft's local Postgres.
 
 ```sh
 pnpm install
-cp apps/web/.env.example apps/web/.env      # then set NUXT_SPOTCRAFT_KEY (Sokobanko's key)
-pnpm dev                                    # http://localhost:3000
+cd apps/web
+npx spotcraft dev start --name sokobanko       # local Postgres, and the app's database
+npx spotcraft dev env --write --name sokobanko # DATABASE_URL and AUTH_SECRET in .env
+echo PUBLIC_URL=http://localhost:3000 >> .env
+cd ../.. && pnpm dev                           # http://localhost:3000
 ```
+
+The server applies the migrations and syncs the levels when it starts. `npx spotcraft dev reset --name sokobanko` empties the database again, and `npx spotcraft dev stop` stops Postgres; its data stays.
 
 | Script | What it does |
 | --- | --- |
 | `pnpm dev` | Runs the web app |
 | `pnpm build` | Builds every package |
-| `pnpm test` | Unit tests (Vitest) |
+| `pnpm test` | Unit tests (Vitest). With `DATABASE_URL` set (e.g. `set -a; . apps/web/.env; set +a`), the database tests run too. |
 | `pnpm typecheck` | Type-checks every package |
 | `pnpm lint` / `pnpm format` | Biome: check, or fix and format |
-| `pnpm levels:check` | Checks `content/levels` against its schema, with Spotcraft's CLI |
-| `pnpm levels:import` | Publishes `content/levels` as the `sokobanko` project's next version, never touching anything else (needs `SPOTCRAFT_KEY`) |
-| `pnpm levels:export` | Writes the project's levels back into `content/levels`, after an edit in the dashboard |
+| `pnpm --filter @sokoban/web db:generate` | Writes a new migration after a change to `apps/web/server/db/schema.ts` |
 
-Deploying (Vercel, at https://sokobanko.vin.ski) is described in [DEPLOY.md](DEPLOY.md). The project is private, so the app needs Sokobanko's key, `NUXT_SPOTCRAFT_KEY` in `apps/web/.env`, to read levels and to read and save players' records; results go to api.vin.ski, unless `NUXT_SPOTCRAFT_URL` points at a local Spotcraft. The levels come from https://api.vin.ski by default. Set `NUXT_SPOTCRAFT_URL` to read them from another Spotcraft API, such as one running locally. The server caches them for a minute.
+A new level is a Markdown file in `content/levels`; the tests check that every one parses and, for the official ones, that a known solution solves it. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
 
 ## Stack
 
-Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Spotcraft for levels, guest accounts and results.
+Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Postgres with Drizzle · Spotcraft for hosting and guest sessions.
 
 ## Author
 

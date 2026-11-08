@@ -1,73 +1,78 @@
-# Deploying the demo (Vercel and Spotcraft)
+# Deploying Sokobanko on Spotcraft
 
-https://sokobanko.vin.ski runs on **Vercel** for now. Everything it stores is on Spotcraft's hosted API (https://api.vin.ski), in the `sokobanko` project:
-- **the levels:** `levels/*.md`, imported from this repository;
-- **the guests:** Spotcraft accounts (Spotcraft's decisions 45 and 47);
-- **each player's best results:** app data records (collection `progress`, one per player and level), written by Sokobanko's server.
+Sokobanko runs as an app on [Spotcraft](https://spotcraft.dev) 0.2.0, on our own Hetzner servers. Spotcraft runs the app's container behind Caddy on HTTPS, gives it its own Postgres database, and watches it from the dashboard.
 
-There's no database of its own. Moving to the VPS that runs api.vin.ski is the proof of concept ([roadmap](docs/roadmap.md)).
+- **The image:** `vindotski/sokobanko` on Docker Hub. CI builds it for amd64 and arm64 and publishes it (`.github/workflows/ci.yml`). It has to be public, because Spotcraft's agent doesn't log in to registries.
+- **The database:** the app's own, `app_sokobanko`, given to it as `DATABASE_URL`.
+  - **Spotcraft's `auth` schema:** guests and sessions, used through `@spotcraft/kit`.
+  - **Sokobanko's `public` tables:** `levels` and `progress`.
+  - **At boot** the app applies its migrations and syncs `levels` from the `content/levels/*.md` built into the image (`apps/web/server/utils/database.ts`).
+- **Guests:** a visitor becomes a guest on their first save, which is a solved level. The session is an HttpOnly cookie that the kit sets, and it lasts a year.
 
-The demo first ran with Supabase for guests and results (tagged `demo`). Both moved to Spotcraft on 2026-11-04, and the rollout is at the end of this file.
+It replaced the demo, which ran on Vercel against Spotcraft's old hosted API at api.vin.ski. The rollout below covers the switch.
 
-## The setup
-- **Spotcraft:**
-  - Sokobanko's origins are trusted: `https://sokobanko.vin.ski` and `http://localhost:3000` are in `AUTH_TRUSTED_ORIGINS`, in `/srv/spotcraft/.env` on its server. After changing it, run `docker compose up -d api`, then check that `curl -s https://api.vin.ski/v1/auth/get-session` still prints `null`. If it says "No route", the restart picked up an older image: run `docker compose pull api` and start it again.
-  - **The `sokobanko` project is `private`:** only its key, an editor or the admin secret can read its levels. Players' records are reached only with the key plus that player's session token. The key is made, listed and revoked with Spotcraft's CLI, from `../spotcraft` (`keys create|list|revoke`, `access sokobanko private|open`), using the admin secret, which Sokobanko itself never holds. See `SPOTCRAFT_KEY_INTEGRATION.md`.
-  - The levels are published with `pnpm levels:import` (with `SPOTCRAFT_KEY`), as the project's next version. Players' records are written only by the server, and Spotcraft's nightly backups hold them.
-- **The Vercel project** (`vindotski/sokoban`):
-  - Root Directory `apps/web`, with "Include files outside the root directory" on, since the app builds `packages/core` and `packages/game`;
-  - Framework Preset Nuxt;
-  - Node.js 26.x;
-  - Production branch `main`;
-  - the domain `sokobanko.vin.ski`: a `CNAME` to Vercel, DNS only on Cloudflare.
-- **Environment variables,** in Vercel:
+## The app in Spotcraft's dashboard
 
-  | Name | Value | Environments |
-  | --- | --- | --- |
-  | `ENABLE_EXPERIMENTAL_COREPACK` | `1`. Without it, Vercel picks pnpm 9 or 10 from the lockfile, not the `pnpm@12.4.1` in `package.json`, and pnpm 10 doesn't read `allowBuilds`. | All |
-  | `NUXT_SPOTCRAFT_KEY` | Sokobanko's own key (`sc_…`, Spotcraft's decision 50), marked **Sensitive**. It reaches only the `sokobanko` project, with `files:read` and `files:publish` (the levels) and `data:read` and `data:write` (players' records). It lives only here, in `apps/web/.env` locally, and in your password manager. | Production (and Preview, if previews should save results) |
-  | `NUXT_SPOTCRAFT_URL`, `NUXT_PUBLIC_SPOTCRAFT_URL` | Optional; `https://api.vin.ski` by default | — |
+**Add app** (or edit it later) with:
 
-## Results on Spotcraft: the rollout (2026-11-04)
-In this order, so the live site keeps working until the new version is deployed:
-- [x] **1. Add the admin secret in Vercel** (Production, Sensitive). It was replaced by the key the same day (below).
-- [x] **2. Deploy:** merge `dev` into `main` and push. The build log should show pnpm 12 and Node 26, and no Supabase.
-- [x] **3. The smoke test,** in a fresh private window on https://sokobanko.vin.ski:
-  - The first visit sets the `sokobanko-token` cookie, and the profile says "Guest".
-  - `/play/two-boxes` shows the lock screen.
-  - Solving First Push (→ five times) shows "Your best: 5 moves". After a reload, `/levels` shows it as solved, and `/play` opens Big Room.
-  - In Spotcraft's dashboard, the `sokobanko` project has a new `progress/<id>.md`, and **Users** counts the guest.
-  - The browser console shows no errors.
-- [ ] **4. Remove the Supabase variables from Vercel:** `NUXT_SUPABASE_URL`, `NUXT_SUPABASE_SECRET_KEY`, and `NUXT_PUBLIC_SUPABASE_URL` and `NUXT_PUBLIC_SUPABASE_KEY` if they're still there.
-- [ ] **5. The Supabase project** (`xqnxptzlzsiwdqxyehvt`): nothing uses it any more. Pause or delete it, whichever you prefer. Its old completions belong to Supabase guests no one can sign in as again.
+| Field | Value |
+| --- | --- |
+| Name | `sokobanko` |
+| Image | `vindotski/sokobanko` |
+| Tag | a `sha-abc1234` tag from CI. `latest` works, but pinning a tag makes rolling back simply picking the previous one. |
+| Domain | `sokobanko.vin.ski`. Its `A` and `AAAA` records point at the **apps** server, DNS only on Cloudflare. |
+| Port | `3000` |
+| Memory, CPUs | `512m`, `1` |
+| Read-only | on (only `/tmp` is writable, which the app needs for nothing but its migrations) |
+| Database | **ticked**; Spotcraft sets `DATABASE_URL` |
+| Env | `AUTH_SECRET=<openssl rand -hex 32>` and `PUBLIC_URL=https://sokobanko.vin.ski` |
 
-## Sokobanko's key, and a private project (2026-11-04)
-Following `SPOTCRAFT_KEY_INTEGRATION.md`:
-- [x] **1. Keys are live** on api.vin.ski: a bad `x-spotcraft-key` gets `401`.
-- [x] **2. The key is made** (`keys create sokobanko --projects sokobanko --scopes files:read,files:write,files:publish`), and kept in the password manager.
-- [x] **3. Deployed with `NUXT_SPOTCRAFT_KEY`** in Vercel. The newest result's commit is authored by `sokobanko`, the key's name.
-- [x] **4. The project is private** (`access sokobanko private`). Without a key, `levels/` and `progress/` answer `401`, and the game still loads levels and saves results.
-- [x] **5. The admin secret is gone** from Vercel, the code and `apps/web/.env`.
+- **`AUTH_SECRET`** signs the session cookies. Keep it in the password manager. Changing it signs every guest out, and they lose their progress.
+- **`PUBLIC_URL`** must be the address players use. On https the cookie is `Secure`.
 
-**Rotating the key:** `keys create` a new one, switch `NUXT_SPOTCRAFT_KEY` in Vercel, deploy, then `keys revoke <old id>`. **If it leaks:** `keys revoke <id>` at once. Results stop saving and levels stop loading until a new key is deployed.
+The container is healthy once `/api/health` answers, which means the database is migrated, the levels are synced and Postgres responds. Spotcraft's deploy waits for that, and if it doesn't happen within two minutes it restores the previous version. The container is replaced in place, so expect a few seconds of downtime per release.
 
-## App data (Spotcraft's reset)
-Following `SPOTCRAFT_APP_DATA_INTEGRATION.md`. The code is ready on `dev`. In this order, right after Spotcraft's reset ([its DEPLOY.md](../spotcraft/DEPLOY.md), "Content as versions, and app data: the reset"); from its step 7 until this is deployed, completing a level fails and results don't show:
-- [ ] **1. Spotcraft's reset, up to its step 11:** existing results are converted into records.
-- [ ] **2. The new key**, from `../spotcraft` with `SPOTCRAFT_API_URL=https://api.vin.ski` and the admin secret: `keys create sokobanko --projects sokobanko --scopes files:read,files:publish,data:read,data:write`. Keep it in the password manager. A key's scopes can't change, so it's a new one.
-- [ ] **3. Switch `NUXT_SPOTCRAFT_KEY`** in Vercel (Production, Sensitive), and `SPOTCRAFT_KEY` wherever the level scripts run.
-- [ ] **4. Deploy:** merge `dev` into `main` and push.
-- [ ] **5. Check,** on https://sokobanko.vin.ski:
-  - as a player who had results: they show, a new best is saved and an unimproved run isn't;
-  - as a new guest: solving First Push shows the result, after a reload too, and `/play` opens Big Room;
-  - the browser console shows no errors;
-  - `pnpm levels:import` answers "levels unchanged", or "published version N".
-- [ ] **6. Keep the old key until Spotcraft's reset is settled** (its step 16), since rolling back means the previous Sokobanko with the old key. Then `keys list` and `keys revoke <old id>`.
+## Releasing
 
-## Notes
-- **Caching:** each Vercel function instance caches the levels in memory for a minute (`apps/web/server/utils/levels.ts`), so instances can briefly disagree after a publish. Results aren't cached.
-- **Every new best rewrites one record,** the player's for that level, and an unimproved run writes nothing. It's a compare-and-swap on that record, retried up to 5 times if the same player saved meanwhile (another tab).
-- **Results are private:** a record is reached only with the key plus its player's token. They hold best moves and pushes, never solutions.
-- **Previews** need their origin in Spotcraft's `AUTH_TRUSTED_ORIGINS` before guests can sign in, and they save into the same project, unless they're given another `NUXT_SPOTCRAFT_URL`.
-- **Rolling back:** promote an earlier deployment in Vercel.
-- **Node versions:** Nitro builds Vercel's functions for Node 24 (`nodejs24.x`), while the build runs on Node 26. The output is plain JavaScript, so that's fine.
+1. Merge into `main` and push. CI verifies, then pushes `latest` and `sha-<short>`. A `v1.2.3` tag also pushes `1.2.3` and `1.2`.
+2. In the dashboard, edit `sokobanko` and pick the new `sha-…` tag. Spotcraft pulls it, restarts the container and waits until it's healthy. If the new one fails, it puts the previous one back.
+3. Smoke test (below).
+
+- **Rolling back:** pick the previous tag. Migrations only ever add, so an older image runs on a newer database. Keep it that way: a migration that renames or drops something needs its own plan.
+- **Levels:** edit `content/levels/*.md`, then release. A removed level's results are deleted with it.
+- **Spotcraft upgrades:** `@spotcraft/kit` X.Y needs Spotcraft X.Y or later (Spotcraft's ADR 0019). Upgrade Spotcraft first, then the kit.
+
+## Smoke test
+
+In a fresh private window:
+- **The first visit sets no cookie.** `/play/two-boxes` shows the lock screen.
+- **Solving First Push** (→ five times) shows "Your best: 5 moves" and sets the HttpOnly session cookie.
+- **After a reload:**
+  - `/levels` shows First Push as solved, and `/play` opens Big Room.
+  - The profile says "Playing since …".
+- **In the dashboard,** the app is healthy and its **Users** tab counts the guest.
+- **The browser console** shows no errors.
+
+## Backups
+
+Spotcraft 0.2.0 doesn't back up Postgres yet; its decision 0015 says that's the next decision. Until then the only copy is the apps server's disk, so turn on Hetzner's server backups (`apps_server_backups` in Spotcraft's `infra/hetzner`). The levels are in git; the players' results are what would be lost.
+
+## The rollout (2026-11)
+
+From the demo on Vercel to the app on Spotcraft. Results start fresh: the old guests' sessions belonged to api.vin.ski and can't carry over.
+- [ ] **1. Docker Hub:** create the public repository `vindotski/sokobanko`. In GitHub (`vindotski/sokoban`), add the variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN` (a Docker Hub access token with read and write).
+- [ ] **2. Publish:** merge into `main` and push. CI publishes `latest` and `sha-…`.
+- [ ] **3. Add the app on a temporary domain:**
+  - Use the dashboard fields above, but with `sokobanko-next.vin.ski` as the domain and in `PUBLIC_URL`.
+  - Its `A` and `AAAA` records point at the apps server, DNS only.
+  - The certificate arrives on the first request.
+- [ ] **4. Smoke test on the temporary domain.**
+- [ ] **5. Switch:**
+  - Set the app's domain and `PUBLIC_URL` to `sokobanko.vin.ski`.
+  - Replace the domain's `CNAME` to Vercel with `A` and `AAAA` records for the apps server (DNS only).
+  - Run the smoke test again once DNS has moved. Guests from the temporary domain don't carry over, because a cookie belongs to its domain.
+- [ ] **6. Retire:**
+  - Remove the `sokobanko-next.vin.ski` records and the Vercel project.
+  - On the old Spotcraft at api.vin.ski, revoke Sokobanko's key and remove the `sokobanko` project. Also remove Sokobanko's origins from its `AUTH_TRUSTED_ORIGINS`, if that server keeps running.
+
+The demo on Vercel was tagged `demo`. Its runbook is in git history (this file before the switch).
