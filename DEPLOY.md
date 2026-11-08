@@ -60,7 +60,7 @@ Spotcraft 0.2.0 doesn't back up Postgres yet; its decision 0015 says that's the 
 ## The rollout (2026-11)
 
 From the demo on Vercel to the app on Spotcraft. Results start fresh: the old guests' sessions belonged to api.vin.ski and can't carry over.
-- [ ] **1. Docker Hub:** create the public repository `vindotski/sokobanko`. In GitHub (`vindotski/sokoban`), add the variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN` (a Docker Hub access token with read and write).
+- [ ] **1. Docker Hub:** create the public repository `vindotski/sokobanko`. In GitHub (`vindotski/sokobanko`), add the variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN` (a Docker Hub access token with read and write).
 - [ ] **2. Publish:** merge into `main` and push. CI publishes `latest` and `sha-…`.
 - [ ] **3. Add the app on a temporary domain:**
   - Use the dashboard fields above, but with `sokobanko-next.vin.ski` as the domain and in `PUBLIC_URL`.
