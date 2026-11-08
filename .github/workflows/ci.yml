@@ -91,6 +91,7 @@ jobs:
           labels: |
             org.opencontainers.image.title=sokobanko
             org.opencontainers.image.description=Sokobanko, a box-pushing puzzle, hosted on Spotcraft
+            org.opencontainers.image.licenses=MIT
             org.opencontainers.image.source=https://github.com/vindotski/sokobanko
 
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0

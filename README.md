@@ -58,3 +58,7 @@ Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (
 ## Author
 
 [Ivan Vinski](https://www.vin.ski) · [ivan@vin.ski](mailto:ivan@vin.ski)
+
+## License
+
+[MIT](LICENSE). The Hello World! level is from [DoctorLai/sokoban-web](https://github.com/DoctorLai/sokoban-web), also MIT licensed.

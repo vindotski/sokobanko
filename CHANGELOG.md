@@ -24,6 +24,7 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   and migrations applied when the server starts.
 - A distroless Docker image (amd64 and arm64), published to Docker Hub by CI, and the runbook
   in `DEPLOY.md`.
+- The MIT license.
 
 [Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/vindotski/sokobanko/releases/tag/v0.1.0
