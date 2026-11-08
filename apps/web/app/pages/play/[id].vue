@@ -39,11 +39,8 @@ type Verification =
   | { state: "failed"; message: string };
 const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
-const token = useSessionToken();
 // Completions, so "New best!" knows the previous best even on a direct visit.
-await useAsyncData("completions", () => store.load(), {
-  watch: [token],
-});
+await useAsyncData("completions", () => store.load());
 
 // Completion dialog: this run's numbers, and whether they beat the old best.
 const solvedOpen = ref(false);
@@ -113,6 +110,8 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
       { method: "POST", body: { solution } },
     );
     store.markCompleted(levelId, result.best);
+    // The first save is what makes the visitor a guest.
+    if (!previousBest) refreshNuxtData("account");
     verification.value = { state: "verified", best: result.best };
     isNewBest.value = !previousBest || moves < previousBest.moves;
   } catch (error) {

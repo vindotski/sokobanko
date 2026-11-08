@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { UserIcon } from "@lucide/vue";
 
-const account = useAccount();
+const { data: guest } = await useAccount();
 const { data: completed } = await useCompletions();
 const { data: levels } = await useLevels();
 
-// Bests with their level's title, from Spotcraft. A level that has since
-// been unpublished is left out.
+// Bests with their level's title. A level that has since been removed is
+// left out.
 const completions = computed(() => {
   const titles = new Map((levels.value ?? []).map((l) => [l.id, l.title]));
   return (completed.value ?? []).flatMap((c) => {
@@ -14,11 +14,6 @@ const completions = computed(() => {
     return title ? [{ ...c, title }] : [];
   });
 });
-
-const isGuest = computed(() => account.value?.isAnonymous !== false);
-const name = computed(() =>
-  isGuest.value ? "Guest" : (account.value?.email ?? "Player"),
-);
 
 const stats = computed(() => {
   const done = completions.value;
@@ -40,12 +35,15 @@ const stats = computed(() => {
         <AvatarFallback><UserIcon /></AvatarFallback>
       </Avatar>
       <div class="flex min-w-0 flex-col gap-1">
-        <h1 class="truncate text-title">
-          {{ name }}
-        </h1>
-        <p v-if="isGuest" class="text-sm text-muted-foreground">
-          Clearing site data will lose all your progress. Accounts are coming
-          soon.
+        <h1 class="truncate text-title">Guest</h1>
+        <p v-if="guest" class="text-sm text-muted-foreground">
+          Playing since
+          <NuxtTime :datetime="guest.since" date-style="medium" />. Clearing
+          site data will lose all your progress. Accounts are coming soon.
+        </p>
+        <p v-else class="text-sm text-muted-foreground">
+          Nothing saved yet: solve a level and your progress is kept in this
+          browser. Accounts are coming soon.
         </p>
       </div>
     </div>

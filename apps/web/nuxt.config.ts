@@ -45,6 +45,8 @@ export default defineNuxtConfig({
     componentDir: "./app/components/ui",
   },
   nitro: {
+    // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL from the
+    // environment (server/utils/backend.ts); none of them reach the browser.
     // Bundled into the server, so the image needs nothing beside .output:
     // the levels are synced into Postgres and the migrations applied at boot
     // (server/utils/database.ts).
@@ -58,14 +60,5 @@ export default defineNuxtConfig({
         dir: fileURLToPath(new URL("./server/db/migrations", import.meta.url)),
       },
     ],
-  },
-  runtimeConfig: {
-    // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL directly
-    // (server/utils/backend.ts); none of them reach the browser.
-    public: {
-      // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
-      // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.
-      spotcraftUrl: "https://api.vin.ski",
-    },
   },
 });

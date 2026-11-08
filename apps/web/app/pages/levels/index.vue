@@ -3,12 +3,8 @@ import { CheckIcon, LockIcon, PlayIcon } from "@lucide/vue";
 import { levelStates, parseLevel } from "@sokoban/core";
 
 const progress = useProgressStore();
-const token = useSessionToken();
 const { data: levels } = await useLevels();
-// Reload when the session changes, e.g. once anonymous sign-in finishes.
-await useAsyncData("completions", () => progress.load(), {
-  watch: [token],
-});
+await useAsyncData("completions", () => progress.load());
 
 // Levels unlock in play order; the server enforces the same rule.
 const states = computed(() =>

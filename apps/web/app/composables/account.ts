@@ -1,19 +1,12 @@
-import type { Account } from "~/lib/spotcraft-auth";
-
-/** The signed-in Spotcraft account (a guest at first), or null until the plugin has one. */
-export const useAccount = () => useState<Account | null>("account", () => null);
-
 /**
- * The Spotcraft session token, in a cookie so that Sokobanko's server sees it
- * too (server/utils/user.ts). 400 days, the longest browsers allow, so guests
- * don't lose their progress.
+ * The visitor's guest, or null until they've saved something: the server
+ * makes one on their first save (server/middleware/guest.ts), and keeps it in
+ * an HttpOnly cookie the browser can't read. Refresh it after saving.
  */
-export const useSessionToken = () =>
-  useCookie<string | null>("sokobanko-token", {
-    maxAge: 60 * 60 * 24 * 400,
-    sameSite: "lax",
-    secure: !import.meta.dev,
-    default: () => null,
+export const useAccount = () =>
+  useFetch("/api/me", {
+    key: "account",
+    transform: (me) => me.guest,
   });
 
 /**

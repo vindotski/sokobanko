@@ -1,5 +1,5 @@
 /**
- * Published levels in play order, from Spotcraft through server/api/levels.
+ * Levels in play order, from server/api/levels.
  * The completion route in server/api/levels/[id]/complete.post.ts uses the
  * same list and order for unlocking.
  */
@@ -17,15 +17,8 @@ export function useLevelIds() {
 
 /** The player's best completions, newest first. */
 export function useCompletions() {
-  const token = useSessionToken();
   const api = useApi();
-  return useAsyncData(
-    "my-completions",
-    () =>
-      token.value
-        ? api("/api/me/completions").catch(() => [])
-        : Promise.resolve([]),
-    // Reload when the session changes, e.g. once guest sign-in finishes.
-    { watch: [token] },
+  return useAsyncData("my-completions", () =>
+    api("/api/me/completions").catch(() => []),
   );
 }

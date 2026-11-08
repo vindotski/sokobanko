@@ -2,10 +2,8 @@
 import { MenuIcon, UserIcon } from "@lucide/vue";
 
 const route = useRoute();
-const account = useAccount();
-const accountName = computed(() =>
-  account.value?.isAnonymous === false ? account.value.email : "Guest",
-);
+// Everyone plays as a guest for now; accounts come later.
+const accountName = "Guest";
 
 const links = [
   { to: "/play", label: "Play" },

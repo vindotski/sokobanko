@@ -24,7 +24,7 @@ const questions = [
   {
     question: "Is my progress saved?",
     answer:
-      "Yes. You get a guest account automatically, and every solved level is checked and saved with your best result. Signing up to keep it across devices is coming soon.",
+      "Yes, in this browser. Your first solved level makes you a guest, and every solved level is checked and saved with your best result. Signing up to keep it across devices is coming soon.",
   },
   {
     question: "Can I make my own levels?",
@@ -33,7 +33,7 @@ const questions = [
   {
     question: "Which technologies were used to make this?",
     answer:
-      "TypeScript throughout: Nuxt and Vue for the site, PixiJS for drawing the game, Tailwind CSS and shadcn-vue for the interface, and Spotcraft for the levels, guest accounts and saved results.",
+      "TypeScript throughout: Nuxt and Vue for the site, PixiJS for drawing the game, Tailwind CSS and shadcn-vue for the interface, Postgres for the levels and saved results, and Spotcraft to host it on our own servers, with its kit for guest sessions.",
   },
   {
     question: "I didn't find my answer here. What do I do?",
