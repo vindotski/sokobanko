@@ -44,6 +44,21 @@ export default defineNuxtConfig({
     prefix: "",
     componentDir: "./app/components/ui",
   },
+  nitro: {
+    // Bundled into the server, so the image needs nothing beside .output:
+    // the levels are synced into Postgres and the migrations applied at boot
+    // (server/utils/database.ts).
+    serverAssets: [
+      {
+        baseName: "levels",
+        dir: fileURLToPath(new URL("../../content/levels", import.meta.url)),
+      },
+      {
+        baseName: "migrations",
+        dir: fileURLToPath(new URL("./server/db/migrations", import.meta.url)),
+      },
+    ],
+  },
   runtimeConfig: {
     // Spotcraft, for levels (server/utils/levels.ts) and for checking a
     // player's session (server/utils/user.ts). NUXT_SPOTCRAFT_URL overrides it.
