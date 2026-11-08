@@ -1,2 +1,2 @@
-/** Published levels in play order, from Spotcraft. */
+/** Levels in play order. */
 export default defineEventHandler(() => getLevels());

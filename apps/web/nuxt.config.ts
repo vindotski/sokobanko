@@ -60,13 +60,8 @@ export default defineNuxtConfig({
     ],
   },
   runtimeConfig: {
-    // Spotcraft, for levels (server/utils/levels.ts) and for checking a
-    // player's session (server/utils/user.ts). NUXT_SPOTCRAFT_URL overrides it.
-    spotcraftUrl: "https://api.vin.ski",
-    // Sokobanko's own key for Spotcraft (sc_…, its decision 50): reading the
-    // levels and players' files, and saving results (server/utils/credentials.ts).
-    // Server-only; NUXT_SPOTCRAFT_KEY.
-    spotcraftKey: "",
+    // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL directly
+    // (server/utils/backend.ts); none of them reach the browser.
     public: {
       // The browser signs guests in against Spotcraft (app/lib/spotcraft-auth.ts).
       // NUXT_PUBLIC_SPOTCRAFT_URL overrides it, e.g. for a local Spotcraft.

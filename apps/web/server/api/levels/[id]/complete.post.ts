@@ -5,13 +5,13 @@ const SOLUTION = /^[lurdLURD]{1,20000}$/;
 
 /**
  * Verifies a solution by replaying it, then records it as the player's
- * completion. The player is whoever Spotcraft says the session belongs to;
- * clients cannot write completions themselves.
+ * completion. The player is the session's guest, made on their first save
+ * (server/middleware/guest.ts); clients cannot write completions themselves.
  */
 export default defineEventHandler(async (event) => {
-  await requireUser(event);
-  // requireUser has checked it: it says whose records they are.
-  const token = sessionToken(event) as string;
+  const guest = event.context.guest;
+  if (!guest) throw createError({ statusCode: 401, message: "No session" });
+  const db = backend().db;
 
   const body = await readBody<{ solution?: unknown }>(event);
   const solution = body?.solution;
@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: "Invalid solution" });
   }
 
-  // Levels, and their play order, come from Spotcraft.
   const id = getRouterParam(event, "id") ?? "";
   const levels = await getLevels();
   const level = levels.find((l) => l.id === id);
@@ -29,7 +28,9 @@ export default defineEventHandler(async (event) => {
 
   // Levels unlock in play order: only solved levels and the first unsolved
   // one can be completed.
-  const solved = new Set((await readProgress(token)).map((c) => c.level));
+  const solved = new Set(
+    (await readProgress(db, guest.id)).map((c) => c.level),
+  );
   const states = levelStates(
     levels.map((l) => l.id),
     (levelId) => solved.has(levelId),
@@ -51,8 +52,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 422, message: "Level is not solved" });
   }
 
-  // Kept as the player's record on Spotcraft, if it's a new best.
-  const best = await recordBest(token, {
+  // Kept as the player's result, if it's a new best.
+  const best = await recordBest(db, guest.id, {
     level: level.id,
     moves: result.moves,
     pushes: result.pushes,

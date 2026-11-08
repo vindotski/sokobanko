@@ -1,19 +1,13 @@
-import { type ContentItem, levelsFromItems } from "../spotcraft/levels";
+import { levels } from "../db/schema";
+import { type Level, sortLevels } from "../levels/content";
 
-/**
- * Published levels in play order, from the `sokobanko` project on Spotcraft
- * (runtimeConfig.spotcraftUrl, overridden by NUXT_SPOTCRAFT_URL). Cached for a
- * minute and refreshed in the background; a failed refresh keeps serving the
- * last levels it got.
- */
-export const getLevels = defineCachedFunction(
-  async () => {
-    const { spotcraftUrl } = useRuntimeConfig();
-    const { items } = await $fetch<{ items: ContentItem[] }>(
-      "/v1/projects/sokobanko/content/levels/",
-      { baseURL: spotcraftUrl, headers: deliveryHeaders() },
-    );
-    return levelsFromItems(items);
-  },
-  { name: "levels", maxAge: 60 },
-);
+/** Levels in play order, from the `levels` table (synced from content/levels). */
+export async function getLevels(): Promise<Level[]> {
+  await databaseReady();
+  const rows = await backend().db.select().from(levels);
+  return sortLevels(
+    rows.map(({ id, title, order, map }) =>
+      order === null ? { id, title, map } : { id, title, order, map },
+    ),
+  );
+}

@@ -38,7 +38,9 @@
   },
   "devDependencies": {
     "@types/canvas-confetti": "1.9.0",
+    "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.11",
+    "pg": "8.23.1",
     "shadcn-nuxt": "^2.8.2",
     "spotcraft": "0.2.0",
     "typescript": "^6.0.3",

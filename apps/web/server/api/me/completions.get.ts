@@ -1,8 +1,9 @@
-/** The signed-in player's best result per level, newest first. */
+/** The player's best result per level, newest first; none before their first save. */
 export default defineEventHandler(async (event) => {
-  await requireUser(event);
-  // requireUser has checked it: it says whose records they are.
-  const completions = await readProgress(sessionToken(event) as string);
+  const guest = event.context.guest;
+  if (!guest) return [];
+  await databaseReady();
+  const completions = await readProgress(backend().db, guest.id);
   return completions
     .map((c) => ({
       level_id: c.level,

@@ -1,99 +1,71 @@
-import { type Completion, completionsFrom } from "../spotcraft/progress";
-import { rpc, SpotcraftRpcError } from "../spotcraft/rpc";
+import { and, eq, sql } from "drizzle-orm";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import { progress } from "../db/schema";
 
-const PROJECT = "sokobanko";
-/** One record per player and level, keyed by the level's id (Spotcraft's decision 62). */
-const COLLECTION = "progress";
-
-type Best = { moves: number; pushes: number; completedAt: string };
-type Stored = { key: string; value: Best; version: number };
-
-/**
- * A call for the player's own records: Sokobanko's key with the player's
- * session token, which tells Spotcraft whose records they are.
- */
-function call<T>(token: string, procedure: string, input: unknown): Promise<T> {
-  const { spotcraftUrl, spotcraftKey } = useRuntimeConfig();
-  if (!spotcraftKey) {
-    throw createError({
-      statusCode: 500,
-      message: "Saving results isn't configured",
-    });
-  }
-  return rpc<T>(spotcraftUrl, { key: spotcraftKey, token }, procedure, input);
+/** One level's best result. Only moves and pushes, never the solution. */
+export interface Completion {
+  level: string;
+  moves: number;
+  pushes: number;
+  /** ISO 8601. */
+  completedAt: string;
 }
 
-/** The player's best results, one record per level. None yet is an empty list. */
-export async function readProgress(token: string): Promise<Completion[]> {
-  const found: unknown[] = [];
-  let after: string | undefined;
-  do {
-    const page = await call<{ records: Stored[]; next: string | null }>(
-      token,
-      "data.list",
-      {
-        project: PROJECT,
-        collection: COLLECTION,
-        limit: 100,
-        ...(after ? { after } : {}),
-      },
-    );
-    found.push(...page.records.map((r) => ({ level: r.key, ...r.value })));
-    after = page.next ?? undefined;
-  } while (after);
-  // Malformed records are dropped, as malformed progress files were.
-  return completionsFrom({ completions: found });
+type Row = typeof progress.$inferSelect;
+
+const completion = (row: Row): Completion => ({
+  level: row.levelId,
+  moves: row.moves,
+  pushes: row.pushes,
+  completedAt: row.completedAt.toISOString(),
+});
+
+/** A player's best results, one per level they've solved. */
+export async function readProgress(
+  db: NodePgDatabase,
+  userId: string,
+): Promise<Completion[]> {
+  const rows = await db
+    .select()
+    .from(progress)
+    .where(eq(progress.userId, userId));
+  return rows.map(completion);
 }
 
 /**
  * Records a run, already replayed and verified, if it beats the player's best
- * for that level (fewer moves), and answers the best. A compare-and-swap on
- * that one record: if it changed meanwhile (the same player, in another tab),
- * it's read again.
+ * for that level (fewer moves; a tie keeps the older one), and answers the
+ * best. One statement, so two tabs saving at once can't lose the better run.
  */
 export async function recordBest(
-  token: string,
+  db: NodePgDatabase,
+  userId: string,
   run: Completion,
 ): Promise<Completion> {
-  for (let attempt = 1; attempt <= 5; attempt++) {
-    let current: Stored | null = null;
-    try {
-      current = await call<Stored>(token, "data.get", {
-        project: PROJECT,
-        collection: COLLECTION,
-        key: run.level,
-      });
-    } catch (error) {
-      if (!(error instanceof SpotcraftRpcError && error.code === "NOT_FOUND")) {
-        throw error;
-      }
-    }
-    if (current && current.value.moves <= run.moves) {
-      return { level: run.level, ...current.value };
-    }
-    try {
-      await call(token, "data.put", {
-        project: PROJECT,
-        collection: COLLECTION,
-        key: run.level,
-        value: {
-          moves: run.moves,
-          pushes: run.pushes,
-          completedAt: run.completedAt,
-        },
-        // 0 only creates; n only replaces version n.
-        version: current?.version ?? 0,
-      });
-      return run;
-    } catch (error) {
-      if (error instanceof SpotcraftRpcError && error.code === "CONFLICT") {
-        continue;
-      }
-      throw error;
-    }
-  }
-  throw createError({
-    statusCode: 503,
-    message: "Spotcraft is busy; try again",
-  });
+  const [saved] = await db
+    .insert(progress)
+    .values({
+      userId,
+      levelId: run.level,
+      moves: run.moves,
+      pushes: run.pushes,
+      completedAt: new Date(run.completedAt),
+    })
+    .onConflictDoUpdate({
+      target: [progress.userId, progress.levelId],
+      set: {
+        moves: sql`excluded.moves`,
+        pushes: sql`excluded.pushes`,
+        completedAt: sql`excluded.completed_at`,
+      },
+      setWhere: sql`excluded.moves < ${progress.moves}`,
+    })
+    .returning();
+  if (saved) return completion(saved);
+  const [best] = await db
+    .select()
+    .from(progress)
+    .where(and(eq(progress.userId, userId), eq(progress.levelId, run.level)));
+  if (!best) throw new Error(`No result for ${run.level} after saving one`);
+  return completion(best);
 }
