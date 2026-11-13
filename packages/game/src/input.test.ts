@@ -1,9 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  actionFromKey,
   directionFromKey,
   directionFromVector,
   StepRepeater,
 } from "./input.ts";
+
+describe("actionFromKey", () => {
+  it("maps Z and U to undo, Y to redo and R to restart", () => {
+    expect(actionFromKey("z")).toBe("undo");
+    expect(actionFromKey("u")).toBe("undo");
+    expect(actionFromKey("y")).toBe("redo");
+    expect(actionFromKey("r")).toBe("restart");
+  });
+
+  it("ignores Caps Lock", () => {
+    expect(actionFromKey("Z")).toBe("undo");
+    expect(actionFromKey("R")).toBe("restart");
+  });
+
+  it("ignores other keys", () => {
+    expect(actionFromKey("KeyZ")).toBeNull();
+    expect(actionFromKey("w")).toBeNull();
+    expect(actionFromKey("Enter")).toBeNull();
+    expect(actionFromKey("constructor")).toBeNull();
+  });
+});
 
 describe("directionFromKey", () => {
   it("maps arrow keys to directions", () => {

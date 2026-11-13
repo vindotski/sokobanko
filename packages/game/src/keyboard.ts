@@ -1,18 +1,20 @@
 import type { Direction } from "@sokoban/core";
-import { directionFromKey } from "./input.ts";
+import { actionFromKey, directionFromKey, type KeyAction } from "./input.ts";
 
 export interface KeyHandlers {
   /** Arrow and WASD keys, including the keyboard's auto-repeat while held. */
   onStep: (direction: Direction) => void;
   /** Space held down (true) and released (false). */
   onPeek: (peeking: boolean) => void;
+  /** Z or U (undo), Y (redo) and R (restart). Undo and redo auto-repeat. */
+  onAction: (action: KeyAction) => void;
 }
 
 /**
  * Listens for game keys anywhere on the page. Returns a function that stops
  * listening.
  */
-export function listenToKeys({ onStep, onPeek }: KeyHandlers) {
+export function listenToKeys({ onStep, onPeek, onAction }: KeyHandlers) {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
     if (isTyping(e.target) || inDialog(e.target)) return;
@@ -24,9 +26,17 @@ export function listenToKeys({ onStep, onPeek }: KeyHandlers) {
       return;
     }
     const direction = directionFromKey(e.code);
-    if (!direction) return;
+    if (direction) {
+      e.preventDefault();
+      onStep(direction);
+      return;
+    }
+    const action = actionFromKey(e.key);
+    if (!action) return;
     e.preventDefault();
-    onStep(direction);
+    // Holding R shouldn't keep restarting; holding Z walks back step by step.
+    if (action === "restart" && e.repeat) return;
+    onAction(action);
   };
   const handleKeyUp = (e: KeyboardEvent) => {
     if (e.code === "Space") onPeek(false);

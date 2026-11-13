@@ -5,6 +5,7 @@ import {
   ChevronRightIcon,
   LockIcon,
   PlayIcon,
+  Redo2Icon,
   RotateCcwIcon,
   ScanSearchIcon,
   TrophyIcon,
@@ -35,6 +36,7 @@ const progress = ref<GameProgress>({
   pushes: 0,
   solution: "",
   solved: false,
+  canRedo: false,
 });
 const overview = ref<OverviewState>({ available: false, active: false });
 
@@ -289,10 +291,13 @@ function replay() {
         >
           <Item variant="outline" size="sm" class="bg-background">
             <ItemContent>
-              <ItemDescription>
-                Drag the board or use arrow keys / WASD
-                <!-- Phones have no Space key; they use the Overview toggle. -->
-                <span v-if="overview.available" class="hidden sm:inline">
+              <!-- Phones have no keyboard; they get the drag hint alone. -->
+              <ItemDescription class="sm:hidden">
+                Drag the board to move
+              </ItemDescription>
+              <ItemDescription class="hidden sm:block">
+                Drag the board or use arrow keys / WASD · Z undo · R restart
+                <span v-if="overview.available">
                   · hold Space for overview
                 </span>
               </ItemDescription>
@@ -306,23 +311,39 @@ function replay() {
             class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
           >
             <div class="flex gap-2">
+              <!-- Keys in the tooltips; the starting hint names Z and R too. -->
               <Button
                 variant="outline"
                 size="sm"
+                title="Undo (Z)"
+                aria-keyshortcuts="Z U"
                 :disabled="progress.moves === 0"
                 @click="game?.undo()"
               >
                 <Undo2Icon data-icon="inline-start" />
-                <span class="sr-only sm:not-sr-only">Undo</span>
+                <span class="sr-only md:not-sr-only">Undo</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
+                title="Redo (Y)"
+                aria-keyshortcuts="Y"
+                :disabled="!progress.canRedo"
+                @click="game?.redo()"
+              >
+                <Redo2Icon data-icon="inline-start" />
+                <span class="sr-only md:not-sr-only">Redo</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                title="Restart (R)"
+                aria-keyshortcuts="R"
                 :disabled="progress.moves === 0"
                 @click="game?.restart()"
               >
                 <RotateCcwIcon data-icon="inline-start" />
-                <span class="sr-only sm:not-sr-only">Restart</span>
+                <span class="sr-only md:not-sr-only">Restart</span>
               </Button>
             </div>
 
@@ -337,6 +358,8 @@ function replay() {
               variant="outline"
               size="sm"
               class="justify-self-end"
+              title="Overview (hold Space)"
+              aria-keyshortcuts="Space"
               :disabled="!overview.available"
               :model-value="overview.active"
               @update:model-value="game?.setOverview($event)"
