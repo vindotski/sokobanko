@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { parseLevel } from "./level.ts";
-import { insideCells, isSolved, move, ReplayError, replay } from "./moves.ts";
+import {
+  deadSquares,
+  insideCells,
+  isSolved,
+  move,
+  ReplayError,
+  replay,
+} from "./moves.ts";
 
 const level = (...map: string[]) =>
   parseLevel({ id: "test", title: "Test", map });
@@ -139,5 +146,57 @@ describe("replay", () => {
 
   it("rejects blocked moves", () => {
     expect(() => replay(helloWorld, "dd")).toThrow("move 'd' at 0 is blocked");
+  });
+});
+
+describe("deadSquares", () => {
+  /** The dead squares drawn as a map: `x` dead, `.` live floor. */
+  const deadMap = (...map: string[]) => {
+    const l = level(...map);
+    const dead = deadSquares(l);
+    const inside = insideCells(l);
+    return map.map((row, y) =>
+      [...row]
+        .map((glyph, x) => {
+          const i = cell(l, x, y);
+          if (glyph === "#") return "#";
+          if (!inside[i]) return " ";
+          return dead[i] ? "x" : ".";
+        })
+        .join(""),
+    );
+  };
+
+  it("marks corners and walls with no goal along them", () => {
+    expect(deadMap("######", "#@   #", "# $  #", "#   .#", "######")).toEqual([
+      "######",
+      "#xxxx#",
+      "#x...#",
+      "#x...#",
+      "######",
+    ]);
+  });
+
+  it("keeps a goal live, even in a corner", () => {
+    expect(deadMap("#####", "#@$.#", "#####")).toEqual([
+      "#####",
+      "#x..#",
+      "#####",
+    ]);
+  });
+
+  it("marks both ends of a corridor without a goal there", () => {
+    expect(deadMap("#######", "#@$. ##", "#######")).toEqual([
+      "#######",
+      "#x..x##",
+      "#######",
+    ]);
+  });
+
+  it("leaves floor outside the walls unmarked", () => {
+    const l = level("  ####", "###@.#", "#  $ #", "######");
+    const dead = deadSquares(l);
+    expect(dead[cell(l, 0, 0)]).toBe(0);
+    expect(dead[cell(l, 0, 1)]).toBe(0);
   });
 });

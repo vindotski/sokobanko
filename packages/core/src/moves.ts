@@ -42,6 +42,44 @@ export function insideCells(level: ParsedLevel): Uint8Array {
   return inside;
 }
 
+/**
+ * Marks the dead squares: floor inside the walls from which a box can never
+ * be pushed onto any goal, such as corners and walls with no goal along
+ * them. Works back from every goal, pulling a box wherever the player would
+ * have room to stand behind it, and ignores other boxes and whether the
+ * player can get there, so a square marked dead is always dead.
+ */
+export function deadSquares(level: ParsedLevel): Uint8Array {
+  const inside = insideCells(level);
+  const live = new Uint8Array(level.walls.length);
+  const queue: number[] = [];
+  for (let i = 0; i < level.goals.length; i++) {
+    if (level.goals[i] && inside[i]) {
+      live[i] = 1;
+      queue.push(i);
+    }
+  }
+  const floor = (cell: number | null): cell is number =>
+    cell !== null && inside[cell] === 1 && !level.walls[cell];
+
+  for (let cell = queue.pop(); cell !== undefined; cell = queue.pop()) {
+    for (const direction of ["U", "D", "L", "R"] as const) {
+      // The box came from `from`, pushed by a player standing one further.
+      const from = neighbor(level, cell, direction);
+      if (!floor(from) || live[from]) continue;
+      if (!floor(neighbor(level, from, direction))) continue;
+      live[from] = 1;
+      queue.push(from);
+    }
+  }
+
+  const dead = new Uint8Array(level.walls.length);
+  for (let i = 0; i < dead.length; i++) {
+    if (inside[i] && !level.walls[i] && !live[i]) dead[i] = 1;
+  }
+  return dead;
+}
+
 export interface MoveResult {
   level: ParsedLevel;
   pushed: boolean;

@@ -35,7 +35,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Time counter | ✖ on purpose | ? | ✅ | ? | ? | ? |
 | Resume a half-played level | ✅ kept in the browser | ✖ | ✖ | ✅ | ✖ | ✅ |
 | Replay a solution | ⏳ 8, from the stored best | ✖ | ✖ | ✅ | ? | ? |
-| Deadlock warnings | ⏳ 8, simple dead squares (17) | ✖ | ✖ | ? | ? | ? |
+| Deadlock warnings | ✅ a box on a dead square is crossed out, never blocked (17) | ✖ | ✖ | ? | ? | ? |
 | Reverse (pull) mode | ✖ | ✖ | ✖ | ✖ | ? | ? |
 | Variants (Hexoban, Trioban, Multiban) | ✖ | ✖ | ✖ | ✖ | ✖ | ✖ |
 

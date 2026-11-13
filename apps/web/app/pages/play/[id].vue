@@ -60,6 +60,7 @@ const progress = ref<GameProgress>({
   canRedo: false,
   boxes: 0,
   boxesOnGoals: 0,
+  deadBoxes: 0,
 });
 const overview = ref<OverviewState>({ available: false, active: false });
 
@@ -121,18 +122,27 @@ let started = false;
 function announce(prev: GameProgress, next: GameProgress) {
   const counts = `${count(next.moves, "move", "moves")}, ${count(next.pushes, "push", "pushes")}`;
   const goals = `${next.boxesOnGoals} of ${count(next.boxes, "box", "boxes")} on goals`;
+  // The notice above the toolbar is hidden from screen readers, so every
+  // announcement that leaves a box stuck says so. A warning only; the move
+  // stands until undone.
+  const stuck =
+    next.deadBoxes === 0
+      ? ""
+      : next.deadBoxes === 1
+        ? " A box can't reach a goal from where it is; undo with Z."
+        : ` ${next.deadBoxes} boxes can't reach a goal from where they are; undo with Z.`;
   let text = "";
   if (!started) {
     started = true;
-    if (next.moves > 0) text = `Resumed at ${counts}. ${goals}.`;
+    if (next.moves > 0) text = `Resumed at ${counts}. ${goals}.${stuck}`;
   } else if (next.solved && !prev.solved) {
     text = `Solved in ${counts}.`;
   } else if (next.moves === 0 && prev.moves > 0) {
     text = `Back at the start. ${goals}.`;
   } else if (next.moves < prev.moves) {
-    text = `Undone. ${counts}. ${goals}.`;
+    text = `Undone. ${counts}. ${goals}.${stuck}`;
   } else if (next.pushes > prev.pushes) {
-    text = `Pushed. ${goals}.`;
+    text = `Pushed. ${goals}.${stuck}`;
   }
   if (!text) return;
   // Cleared first, so the same words twice in a row are read again.
@@ -360,6 +370,26 @@ function replay() {
                 <span v-if="overview.available">
                   · hold Space for overview
                 </span>
+              </ItemDescription>
+            </ItemContent>
+          </Item>
+        </div>
+        <!--
+          A stuck box (drawn with a cross) is a warning, not a dead end for
+          the run: the move stands until undone. The live region says the
+          same, so this one stays silent.
+        -->
+        <div
+          v-else-if="!progress.solved && progress.deadBoxes > 0"
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
+        >
+          <Item variant="outline" size="sm" class="bg-background">
+            <ItemContent>
+              <ItemDescription>
+                A crossed box can't reach a goal any more ·
+                <span class="sm:hidden">tap Undo</span>
+                <span class="hidden sm:inline">Z to undo</span>
               </ItemDescription>
             </ItemContent>
           </Item>
