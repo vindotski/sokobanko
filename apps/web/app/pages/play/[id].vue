@@ -60,6 +60,7 @@ const progress = ref<GameProgress>({
   canRedo: false,
   boxes: 0,
   boxesOnGoals: 0,
+  deadBoxes: 0,
 });
 const overview = ref<OverviewState>({ available: false, active: false });
 
@@ -132,7 +133,12 @@ function announce(prev: GameProgress, next: GameProgress) {
   } else if (next.moves < prev.moves) {
     text = `Undone. ${counts}. ${goals}.`;
   } else if (next.pushes > prev.pushes) {
-    text = `Pushed. ${goals}.`;
+    // A warning only; the move stands until undone.
+    const stuck =
+      next.deadBoxes > prev.deadBoxes
+        ? " That box can't reach a goal from there; undo with Z."
+        : "";
+    text = `Pushed. ${goals}.${stuck}`;
   }
   if (!text) return;
   // Cleared first, so the same words twice in a row are read again.
@@ -360,6 +366,26 @@ function replay() {
                 <span v-if="overview.available">
                   · hold Space for overview
                 </span>
+              </ItemDescription>
+            </ItemContent>
+          </Item>
+        </div>
+        <!--
+          A stuck box (drawn with a cross) is a warning, not a dead end for
+          the run: the move stands until undone. The live region says the
+          same, so this one stays silent.
+        -->
+        <div
+          v-else-if="!progress.solved && progress.deadBoxes > 0"
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
+        >
+          <Item variant="outline" size="sm" class="bg-background">
+            <ItemContent>
+              <ItemDescription>
+                A crossed box can't reach a goal any more ·
+                <span class="sm:hidden">tap Undo</span>
+                <span class="hidden sm:inline">Z to undo</span>
               </ItemDescription>
             </ItemContent>
           </Item>

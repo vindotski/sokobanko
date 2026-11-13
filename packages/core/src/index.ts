@@ -6,6 +6,7 @@ export {
 export type { LevelJson, ParsedLevel } from "./level.ts";
 export { LevelParseError, parseLevel } from "./level.ts";
 export {
+  deadSquares,
   insideCells,
   isSolved,
   type MoveResult,

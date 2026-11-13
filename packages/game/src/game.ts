@@ -1,5 +1,6 @@
 import {
   type Direction,
+  deadSquares,
   directionToLetter,
   insideCells,
   isSolved,
@@ -51,6 +52,8 @@ export interface GameProgress {
   /** Boxes in the level, and how many of them are on goals. */
   boxes: number;
   boxesOnGoals: number;
+  /** Boxes on dead squares, which can never reach a goal from there. */
+  deadBoxes: number;
 }
 
 export interface GamePadding {
@@ -117,6 +120,8 @@ export async function createGame(
   options: GameOptions = {},
 ): Promise<Game> {
   let start = parseLevel(level);
+  // Where a box can never reach a goal; the level's walls and goals never change.
+  let dead = deadSquares(start);
   let palette = { ...DEFAULT_PALETTE, ...options.palette };
   let history: Step[] = [];
   // Undone steps, the most recently undone last.
@@ -248,13 +253,15 @@ export async function createGame(
 
   const update = () => {
     const level = current();
-    drawLevel(board, level, palette);
+    drawLevel(board, level, dead, palette);
     let boxes = 0;
     let boxesOnGoals = 0;
+    let deadBoxes = 0;
     for (let i = 0; i < level.boxes.length; i++) {
       if (!level.boxes[i]) continue;
       boxes++;
       if (level.goals[i]) boxesOnGoals++;
+      if (dead[i]) deadBoxes++;
     }
     const progress: GameProgress = {
       moves: history.length,
@@ -264,6 +271,7 @@ export async function createGame(
       canRedo: future.length > 0,
       boxes,
       boxesOnGoals,
+      deadBoxes,
     };
     options.onChange?.(progress);
     return progress;
@@ -342,6 +350,7 @@ export async function createGame(
   return {
     setLevel(next) {
       start = parseLevel(next);
+      dead = deadSquares(start);
       history = [];
       future = [];
       toggled = false;
@@ -357,7 +366,7 @@ export async function createGame(
     },
     setPalette(next) {
       palette = { ...DEFAULT_PALETTE, ...next };
-      drawLevel(board, current(), palette);
+      drawLevel(board, current(), dead, palette);
       joystick.setColor(palette.player);
     },
     destroy() {
@@ -398,8 +407,15 @@ function replaySteps(start: ParsedLevel, solution: string): Step[] {
 /**
  * Square pieces on a 64-unit tile, told apart by shape and fill, not color.
  * apps/web/app/components/LevelPreview.vue draws the same shapes in SVG.
+ * A box on a dead square gets a cross for its centre: a warning only, since
+ * the move stays allowed and undo takes it back.
  */
-function drawLevel(g: Graphics, level: ParsedLevel, colors: GamePalette) {
+function drawLevel(
+  g: Graphics,
+  level: ParsedLevel,
+  dead: Uint8Array,
+  colors: GamePalette,
+) {
   const cellX = (i: number) => (i % level.width) * TILE;
   const cellY = (i: number) => Math.floor(i / level.width) * TILE;
 
@@ -419,9 +435,17 @@ function drawLevel(g: Graphics, level: ParsedLevel, colors: GamePalette) {
       // Box on goal: solid.
       g.rect(x + 7, y + 7, 50, 50).fill(colors.boxOnGoal);
     } else if (level.boxes[i]) {
-      // Box: thick frame with a solid centre.
+      // Box: thick frame with a solid centre, or a cross once it's stuck.
       g.rect(x + 10, y + 10, 44, 44).stroke({ width: 6, color: colors.box });
-      g.rect(x + 26, y + 26, 12, 12).fill(colors.box);
+      if (dead[i]) {
+        g.moveTo(x + 20, y + 20)
+          .lineTo(x + 44, y + 44)
+          .moveTo(x + 44, y + 20)
+          .lineTo(x + 20, y + 44)
+          .stroke({ width: 5, color: colors.box });
+      } else {
+        g.rect(x + 26, y + 26, 12, 12).fill(colors.box);
+      }
     } else if (level.goals[i]) {
       // Goal: small thin frame.
       g.rect(x + 22, y + 22, 20, 20).stroke({ width: 3, color: colors.goal });

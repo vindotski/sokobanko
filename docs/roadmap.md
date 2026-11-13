@@ -116,7 +116,7 @@ The plan below was written before the demo was scoped. It covers dropping Supaba
     | 14 | Levels come from Spotcraft's hosted API through the SDK, read by the Nuxt server and cached; git is their source, imported by CI | Designed |
     | 15 | Accounts, verified bests and leaderboards wait for server validation (Spotcraft Apps/Validators, or another way) | Principle |
     | 16 | Tap to walk and drag a box to push it: pathfinding in the engine, turned into ordinary LURD moves | Designed |
-    | 17 | Deadlock warnings: simple dead squares, computed once per level, shown and never enforced | Designed |
+    | 17 | Deadlock warnings: simple dead squares, computed once per level, shown and never enforced | Built |
     | 18 | Level collections: only freely redistributable sets (Microban first), credited in `author` and the body | Designed |
 
   - The phase titles below cite these numbers.
@@ -301,7 +301,7 @@ Roughly in order of value for the effort. Cheap items come first; they touch onl
 - [ ] **Replay and copy a solution:** the progress page plays back a stored best step by step through `replay`, and copies it as LURD. (Parity: replay; copy a solution.)
 - [ ] **Paste an XSB level to play it:** a "Play your own" page parses pasted XSB (`-` and `_` accepted as floor, in `parseLevel`). It's played locally and never stored as an official level or result. (Parity: paste an XSB level; XSB floor characters.)
 - [ ] **Tap to walk, drag a box to push it (16):** a breadth-first search over floor cells for the player, and over box positions for a push, in `app/lib/sokoban`, returning LURD. The game plays it as ordinary steps, so counters, undo and replay don't change. (Parity: tap to walk; drag a box.)
-- [ ] **Deadlock warnings (17):** precompute the dead squares, where a box can never reach a goal (corners and dead edges), when the level loads. Mark a box pushed onto one, without blocking the move. (Parity: deadlock warnings.)
+- [x] **Deadlock warnings (17):** precompute the dead squares, where a box can never reach a goal (corners and dead edges), when the level loads (`deadSquares` in core, pulling back from every goal). Mark a box pushed onto one with a cross, without blocking the move, and say so above the toolbar and to screen readers. (Parity: deadlock warnings.)
 - [x] **Screen readers:** a polite live region announces pushes, undos, restarts and solves (warnings once they exist; plain walking stays quiet), and the canvas gets a label. (Parity: screen readers.)
 - [ ] **Sound:** step, push, goal and solve sounds, muted by default, with a toggle that remembers its setting. (Parity: sound.)
 - [ ] **Microban (18):** add an `author` field to `content/levels/_schema.yaml`, credit David W. Skinner on each level (author and body), and import a first set through `levels:import`. This needs `-`/`_` floors to be accepted (above), and level grouping (`order` ranges or a `collection` field), which is decided in 18. (Parity: well-known collections.)
