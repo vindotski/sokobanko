@@ -30,6 +30,27 @@ const collection = computed(() =>
   collections.value?.find((c) => c.id === level.collection),
 );
 
+// A half-played run is kept in the browser, so a reload or a visit to
+// another level doesn't lose it. Storage can be missing or blocked (private
+// windows), in which case runs simply aren't kept. Read on the client only:
+// the server renders a fresh board either way.
+const runKey = `sokobanko:run:${levelId}`;
+function readRun() {
+  try {
+    return localStorage.getItem(runKey) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+function saveRun({ solution, solved }: GameProgress) {
+  try {
+    // Nothing to resume at the start, or once solved.
+    if (solution && !solved) localStorage.setItem(runKey, solution);
+    else localStorage.removeItem(runKey);
+  } catch {}
+}
+const savedRun = import.meta.client ? readRun() : undefined;
+
 const game = useTemplateRef("game");
 const progress = ref<GameProgress>({
   moves: 0,
@@ -90,6 +111,7 @@ onBeforeUnmount(() => clearTimeout(dialogTimer));
 
 function onChange(next: GameProgress) {
   progress.value = next;
+  saveRun(next);
   if (!next.solved) {
     // An undo or restart during the burst cancels the dialog.
     clearTimeout(dialogTimer);
@@ -276,6 +298,7 @@ function replay() {
           <SokobanGame
             ref="game"
             :level="level"
+            :solution="savedRun"
             :padding="{ bottom: 136 }"
             class="size-full touch-none select-none"
             @change="onChange"

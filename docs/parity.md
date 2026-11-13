@@ -33,7 +33,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Redo | ✅ until the next move | ✖ | ✖ | ✅ | ? | ? |
 | Restart | ✅ | ◐ 4 per level | ✅ | ✅ | ? | ? |
 | Time counter | ✖ on purpose | ? | ✅ | ? | ? | ? |
-| Resume a half-played level | ⏳ 8 | ✖ | ✖ | ✅ | ✖ | ✅ |
+| Resume a half-played level | ✅ kept in the browser | ✖ | ✖ | ✅ | ✖ | ✅ |
 | Replay a solution | ⏳ 8, from the stored best | ✖ | ✖ | ✅ | ? | ? |
 | Deadlock warnings | ⏳ 8, simple dead squares (17) | ✖ | ✖ | ? | ? | ? |
 | Reverse (pull) mode | ✖ | ✖ | ✖ | ✖ | ? | ? |

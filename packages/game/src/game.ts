@@ -4,6 +4,7 @@ import {
   insideCells,
   isSolved,
   type LevelJson,
+  letterToDirection,
   move,
   type ParsedLevel,
   parseLevel,
@@ -68,6 +69,11 @@ export interface GameOptions {
   padding?: GamePadding;
   /** Board colors; light ones by default. */
   palette?: Partial<GamePalette>;
+  /**
+   * Moves to start from, as LURD, e.g. a half-played run saved earlier. The
+   * level starts fresh if they don't replay or already solve it.
+   */
+  initialSolution?: string;
   /** Called after every move, undo, restart and level change. */
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
@@ -311,6 +317,7 @@ export async function createGame(
     ]);
   }
 
+  history = replaySteps(start, options.initialSolution ?? "");
   update();
   snapCamera();
   app.renderer.on("resize", snapCamera);
@@ -352,6 +359,27 @@ export async function createGame(
       celebration.destroy();
     },
   };
+}
+
+/**
+ * The steps for a LURD string from `start`, or none if a move is blocked or
+ * the moves solve the level.
+ */
+function replaySteps(start: ParsedLevel, solution: string): Step[] {
+  const steps: Step[] = [];
+  let level = start;
+  for (const letter of solution) {
+    const direction = letterToDirection(letter);
+    const result = direction && move(level, direction);
+    if (!direction || !result) return [];
+    level = result.level;
+    steps.push({
+      level,
+      letter: directionToLetter(direction, result.pushed),
+      pushed: result.pushed,
+    });
+  }
+  return isSolved(level) ? [] : steps;
 }
 
 /**
