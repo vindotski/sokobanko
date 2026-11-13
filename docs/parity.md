@@ -69,22 +69,22 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
-| Bundled levels | 4 | 20 | 50 | a free set and paid packs | about 600 (?) | 2,950 in 34 collections |
-| Well-known collections | ⏳ 8: Microban, credited (18) | Original | Original | Falcon's official sets | Original, Extra and its own | Original, Microban, Maelstrom, … |
+| Bundled levels | 159 in 2 collections | 20 | 50 | a free set and paid packs | about 600 (?) | 2,950 in 34 collections |
+| Well-known collections | ✅ Microban, credited (18) | Original | Original | Falcon's official sets | Original, Extra and its own | Original, Microban, Maelstrom, … |
 | XSB maps | ✅ (3) | ✖ | ✖ | ? | ? | ? |
 | LURD solutions | ✅ stored for every best (3) | ✖ | ✖ | ◐ share results | ? | ? |
 | Paste an XSB level to play it | ⏳ 8, played locally, never saved as official | ✖ | ✖ | ✖ | ? | ? |
 | Copy a solution as LURD | ⏳ 8 | ✖ | ✖ | ◐ | ? | ? |
 | Level metadata (author, description) | ◐ description in the body (11), shown ⏳ 8; `author` ⏳ 8 | ✖ | ✖ | ? | ? | ◐ difficulty |
-| Levels editable without a release | ✅ Markdown in git, imported into Spotcraft; editable in its dashboard | ✖ | ✖ | ✖ | ✖ | ✖ |
+| Levels editable without a release | ◐ they live in Postgres, written by migrations; no editor yet | ✖ | ✖ | ✖ | ✖ | ✖ |
 | Level editor | ✖ for now (Later, 15) | ✖ (*Sokoban 2*, 1984, had one) | ✖ | ✖ | ? | ? |
 
 **On purpose:**
 - **No Original or Extra levels:** they're © 1982 Thinking Rabbit, and the trademark now belongs to Falcon. Nothing grants permission to redistribute them, and the same goes for XSokoban's 90, which derive from them.
-- **Microban and Sasquatch** (David W. Skinner) "may be freely distributed provided they remain properly credited". They're the first candidates (18).
+- **Microban and Sasquatch** (David W. Skinner) "may be freely distributed provided they remain properly credited". Microban is in, all 155, and Sasquatch is a candidate for a harder collection (18).
 
 **Worth knowing:**
-- **XSB floor characters:** standard XSB also accepts `-` and `_` for floor, and needs at least one of them on an empty row inside a puzzle. Run-length encoding (`4#|…`) and the SOK format with its `Title:`/`Author:` headers are common when exchanging levels. The game's parser (3) accepts only the space today, so importing collections means turning `-` and `_` into spaces, or accepting them.
+- **XSB floor characters:** standard XSB also accepts `-` and `_` for floor, and needs at least one of them on an empty row inside a puzzle. Run-length encoding (`4#|…`) and the SOK format with its `Title:`/`Author:` headers are common when exchanging levels. The game's parser (3) accepts only the space; `bin/import-collection.ts` turns `-` and `_` into spaces.
 
 ## Progress, community and tools
 

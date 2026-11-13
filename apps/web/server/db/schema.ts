@@ -15,12 +15,29 @@ import {
  * foreign key target and is not exported, so drizzle-kit leaves it alone.
  */
 
-/** Levels, synced from content/levels/*.md at startup (server/plugins/database.ts). */
-export const levels = pgTable("levels", {
-  /** The file's slug, such as `first-push`. */
+/**
+ * Level collections, such as Basics and Microban, in play order. Postgres is
+ * their source: they're written by migrations (bin/import-collection.ts).
+ */
+export const collections = pgTable("collections", {
+  /** A slug, such as `microban`. */
   id: text("id").primaryKey(),
   title: text("title").notNull(),
-  /** Play order; levels without one come last. */
+  author: text("author"),
+  /** Where the levels come from and the terms they're shared under. */
+  credit: text("credit"),
+  order: integer("order").notNull(),
+});
+
+/** Levels, each in a collection. Postgres is their source, like collections. */
+export const levels = pgTable("levels", {
+  /** A slug, such as `first-push` or `microban-001`. */
+  id: text("id").primaryKey(),
+  collectionId: text("collection_id")
+    .notNull()
+    .references(() => collections.id),
+  title: text("title").notNull(),
+  /** Position within the collection; levels without one come last. */
   order: integer("order"),
   map: jsonb("map").$type<string[]>().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })

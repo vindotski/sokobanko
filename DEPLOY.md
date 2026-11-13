@@ -5,8 +5,8 @@ Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://sp
 - **The image:** `vindotski/sokobanko` on Docker Hub. CI builds it for amd64 and arm64 and publishes it (`.github/workflows/ci.yml`). It has to be public, because Spotcraft's agent doesn't log in to registries.
 - **The database:** the app's own, `app_sokobanko`, given to it as `DATABASE_URL`.
   - **Spotcraft's `auth` schema:** guests and sessions, used through `@spotcraft/kit`.
-  - **Sokobanko's `public` tables:** `levels` and `progress`.
-  - **At boot** the app applies its migrations and syncs `levels` from the `content/levels/*.md` built into the image (`apps/web/server/utils/database.ts`).
+  - **Sokobanko's `public` tables:** `collections`, `levels` and `progress`.
+  - **At boot** the app applies its migrations, built into the image (`apps/web/server/utils/database.ts`). They also write the levels: Postgres is the levels' only source.
 - **Guests:** a visitor becomes a guest on their first save, which is a solved level. The session is an HttpOnly cookie that the kit sets, and it lasts a year.
 
 It replaced the demo, which ran on Vercel against Spotcraft's old hosted API at api.vin.ski. The rollout below covers the switch.
@@ -31,7 +31,7 @@ It replaced the demo, which ran on Vercel against Spotcraft's old hosted API at 
 - **`PUBLIC_URL`** must be the address players use, exactly the domain with `https://`. On https the cookie is `Secure`. Saving fails if it doesn't match.
 - **Database** must be ticked before the first deploy. Without it there's no `DATABASE_URL`: the container never turns healthy, and the log says "DATABASE_URL must be a postgres:// URL".
 
-The container is healthy once `/api/health` answers, which means the database is migrated, the levels are synced and Postgres responds. Spotcraft's deploy waits for that, and if it doesn't happen within two minutes it restores the previous version. The container is replaced in place, so expect a few seconds of downtime per release.
+The container is healthy once `/api/health` answers, which means the database is migrated and Postgres responds. Spotcraft's deploy waits for that, and if it doesn't happen within two minutes it restores the previous version. The container is replaced in place, so expect a few seconds of downtime per release.
 
 ## Releasing
 
@@ -40,7 +40,7 @@ The container is healthy once `/api/health` answers, which means the database is
 3. Smoke test (below).
 
 - **Rolling back:** pick the previous tag. Migrations only ever add, so an older image runs on a newer database. Keep it that way: a migration that renames or drops something needs its own plan.
-- **Levels:** edit `content/levels/*.md`, then release. A removed level's results are deleted with it.
+- **Levels:** a migration adds or changes them (README, "Getting started"), then release. Deleting a level deletes its results with it.
 - **Spotcraft upgrades:** `@spotcraft/kit` X.Y needs Spotcraft X.Y or later (Spotcraft's ADR 0019). Upgrade Spotcraft first, then the kit.
 
 ## Smoke test
@@ -56,7 +56,7 @@ In a fresh private window:
 
 ## Backups
 
-Spotcraft 0.2.0 doesn't back up Postgres yet; its decision 0015 says that's the next decision. Until then the only copy is the apps server's disk, so turn on Hetzner's server backups (`apps_server_backups` in Spotcraft's `infra/hetzner`). The levels are in git; the players' results are what would be lost.
+Spotcraft 0.2.0 doesn't back up Postgres yet; its decision 0015 says that's the next decision. Until then the only copy is the apps server's disk, so turn on Hetzner's server backups (`apps_server_backups` in Spotcraft's `infra/hetzner`). The levels could be rebuilt from the migrations in git, as long as nobody edits them in the database directly; the players' results are what would be lost.
 
 ## The rollout (2026-11-08)
 

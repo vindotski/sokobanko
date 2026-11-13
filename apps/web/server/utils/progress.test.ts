@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { fileURLToPath } from "node:url";
 import { sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { levels } from "../db/schema";
@@ -30,14 +28,12 @@ describe.skipIf(!url)("progress in Postgres", () => {
     ({ level, moves, pushes, completedAt: at }) satisfies Completion;
 
   beforeAll(async () => {
-    await migrate(db, {
-      migrationsFolder: fileURLToPath(
-        new URL("../db/migrations", import.meta.url),
-      ),
+    await db.insert(levels).values({
+      id: level,
+      collectionId: "basics",
+      title: "Test",
+      map: ["#@$.#"],
     });
-    await db
-      .insert(levels)
-      .values({ id: level, title: "Test", map: ["#@$.#"] });
   });
 
   afterAll(async () => {

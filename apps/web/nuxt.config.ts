@@ -52,13 +52,9 @@ export default defineNuxtConfig({
     // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL from the
     // environment (server/utils/backend.ts); none of them reach the browser.
     // Bundled into the server, so the image needs nothing beside .output:
-    // the levels are synced into Postgres and the migrations applied at boot
+    // the migrations, which also hold the levels, are applied at boot
     // (server/utils/database.ts).
     serverAssets: [
-      {
-        baseName: "levels",
-        dir: fileURLToPath(new URL("../../content/levels", import.meta.url)),
-      },
       {
         baseName: "migrations",
         dir: fileURLToPath(new URL("./server/db/migrations", import.meta.url)),

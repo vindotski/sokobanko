@@ -1,6 +1,7 @@
 /**
- * Migrates the database and syncs the levels at boot, so the first player
- * doesn't wait for it; requests wait on the same promise (databaseReady).
+ * Migrates the database at boot (the migrations also write the levels), so
+ * the first player doesn't wait for it; requests wait on the same promise
+ * (databaseReady).
  */
 export default defineNitroPlugin((nitroApp) => {
   databaseReady().then(

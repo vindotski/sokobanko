@@ -77,14 +77,16 @@ export function isSolved(level: ParsedLevel): boolean {
   return level.boxes.every((box, i) => !box || level.goals[i] === 1);
 }
 
+// Fields are declared rather than parameter properties, so plain Node can run
+// this file (bin/ scripts).
 export class ReplayError extends Error {
-  constructor(
-    /** Zero-based position of the offending letter. */
-    readonly index: number,
-    message: string,
-  ) {
+  /** Zero-based position of the offending letter. */
+  readonly index: number;
+
+  constructor(index: number, message: string) {
     super(message);
     this.name = "ReplayError";
+    this.index = index;
   }
 }
 

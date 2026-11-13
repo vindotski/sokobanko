@@ -63,11 +63,18 @@ Spotcraft 0.2.0 (https://spotcraft.dev) is a self-hosted deployment platform: ap
 - [x] **Deployed** (2026-11-08) at https://sokobanko.app, its own domain: [`DEPLOY.md`](../DEPLOY.md), "The rollout".
 - [x] **Done when** https://sokobanko.app is served by Spotcraft and the smoke test passes there. Still open: the browser check, redirecting or retiring sokobanko.vin.ski, and removing the Vercel project.
 
+### Levels: Microban, with Postgres as their source (18)
+- [x] **Collections:** a `collections` table (title, author, credit, play order); every level belongs to one. Basics holds the four levels that were there, with their ids, so saved results stay.
+- [x] **Postgres is the source:** migrations write the levels, and the boot sync from `content/levels/*.md` is gone, with the folder.
+- [x] **Microban,** all 155 levels by David W. Skinner, credited (`bin/import-collection.ts` writes its migration from the plain-text XSB).
+- [x] **Known solutions** for all 159 levels in `apps/web/server/utils/solutions.json` (`bin/solve-levels.ts`), replayed by the database tests.
+- [x] **The gallery** has a section per collection, and the play page names the collection. Unlocking is still one level at a time, across all collections.
+
 ### Later, for the integration
 - Sign-up and sign-in, once the kit has them. Spotcraft's decision 0016 plans to move a guest's data to the new account (Better Auth's `onLinkAccount`). On a level both have solved, keep the better result.
 - Postgres backups, once Spotcraft has them (its decision 0015). Until then, Hetzner's server backups.
 - Deploying from CI, if Spotcraft gets a deploy hook. Today a release is picking the tag in the dashboard.
-- A dashboard-editable level, if that's ever wanted: today git is the levels' only source, and the database is rebuilt from it at every boot.
+- Editing levels without a migration, if that's ever wanted: Postgres is their only source, written by migrations, and there's no editor yet.
 
 ## After the proof of concept
 The plan below was written before the demo was scoped. It covers dropping Supabase, Dexie, flattening, decision records, CI and parity, and it comes after the proof of concept, to be revisited and reordered then. Parts are already moot: Supabase is gone, and progress lives in Postgres on Spotcraft rather than Dexie. Its phase numbers stay, since [parity.md](parity.md) cites them.
