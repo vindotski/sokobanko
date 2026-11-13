@@ -11,7 +11,7 @@ The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.a
 - **Undo, redo and restart,** from the toolbar or with Z, Y and R, with moves and pushes counted. A half-played level picks up where you left it. Every solution is kept as LURD (`rRRuL…`) and replayed to check it.
 - **Big levels:** the camera follows the player, and an overview (hold Space) shows the whole level.
 - **Light and dark,** following the system. The monochrome board tells pieces apart by shape, and the celebrations respect reduced motion.
-- **Your bests,** per level, on the profile page.
+- **Your bests,** per level, on the profile page, and under the counter while you play.
 
 Planned features, and what the others have that this doesn't yet, are in [parity.md](docs/parity.md).
 

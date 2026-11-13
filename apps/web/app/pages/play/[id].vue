@@ -98,6 +98,9 @@ const currentLevel = computed(() =>
   levels.value?.find((l) => states.value.get(l.id) === "current"),
 );
 
+/** The saved best, once the level is solved. */
+const best = computed(() => store.best[levelId]);
+
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
 
@@ -370,12 +373,25 @@ function replay() {
               </Button>
             </div>
 
-            <p
-              class="min-w-0 max-w-48 truncate text-center font-mono text-sm text-muted-foreground sm:max-w-sm"
-            >
-              {{ count(progress.moves, "move", "moves") }} ·
-              {{ count(progress.pushes, "push", "pushes") }}
-            </p>
+            <!-- This run, and the best to beat once the level is solved. -->
+            <div class="flex min-w-0 max-w-48 flex-col items-center sm:max-w-sm">
+              <p
+                class="max-w-full truncate font-mono text-sm text-muted-foreground"
+              >
+                {{ count(progress.moves, "move", "moves") }} ·
+                {{ count(progress.pushes, "push", "pushes") }}
+              </p>
+              <p
+                v-if="best"
+                class="max-w-full truncate font-mono text-xs text-muted-foreground"
+              >
+                <!-- Bests are ranked by moves; phones have room for those only. -->
+                Best {{ count(best.moves, "move", "moves")
+                }}<span class="hidden sm:inline">
+                  · {{ count(best.pushes, "push", "pushes") }}</span
+                >
+              </p>
+            </div>
 
             <Toggle
               variant="outline"
