@@ -58,6 +58,8 @@ const progress = ref<GameProgress>({
   solution: "",
   solved: false,
   canRedo: false,
+  boxes: 0,
+  boxesOnGoals: 0,
 });
 const overview = ref<OverviewState>({ available: false, active: false });
 
@@ -112,7 +114,36 @@ const reducedMotion = usePreferredReducedMotion();
 let dialogTimer: ReturnType<typeof setTimeout> | undefined;
 onBeforeUnmount(() => clearTimeout(dialogTimer));
 
+// Screen readers hear pushes, undos, restarts and solves through a polite
+// live region; plain walking stays quiet, so it doesn't drown them out.
+const announcement = ref("");
+let started = false;
+function announce(prev: GameProgress, next: GameProgress) {
+  const counts = `${count(next.moves, "move", "moves")}, ${count(next.pushes, "push", "pushes")}`;
+  const goals = `${next.boxesOnGoals} of ${count(next.boxes, "box", "boxes")} on goals`;
+  let text = "";
+  if (!started) {
+    started = true;
+    if (next.moves > 0) text = `Resumed at ${counts}. ${goals}.`;
+  } else if (next.solved && !prev.solved) {
+    text = `Solved in ${counts}.`;
+  } else if (next.moves === 0 && prev.moves > 0) {
+    text = `Back at the start. ${goals}.`;
+  } else if (next.moves < prev.moves) {
+    text = `Undone. ${counts}. ${goals}.`;
+  } else if (next.pushes > prev.pushes) {
+    text = `Pushed. ${goals}.`;
+  }
+  if (!text) return;
+  // Cleared first, so the same words twice in a row are read again.
+  announcement.value = "";
+  nextTick(() => {
+    announcement.value = text;
+  });
+}
+
 function onChange(next: GameProgress) {
+  announce(progress.value, next);
   progress.value = next;
   saveRun(next);
   if (!next.solved) {
@@ -302,6 +333,7 @@ function replay() {
             ref="game"
             :level="level"
             :solution="savedRun"
+            :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart.`"
             :padding="{ bottom: 136 }"
             class="size-full touch-none select-none"
             @change="onChange"
@@ -309,6 +341,8 @@ function replay() {
             @overview="overview = $event"
           />
         </div>
+
+        <p class="sr-only" aria-live="polite">{{ announcement }}</p>
 
         <!-- Above the toolbar; clicks and drags pass through to the board. -->
         <div
