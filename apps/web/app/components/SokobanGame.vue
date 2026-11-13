@@ -11,6 +11,8 @@ const props = defineProps<{
   level: LevelJson;
   /** Space to keep free around the board, e.g. for overlays. */
   padding?: GamePadding;
+  /** Moves to start from, as LURD, e.g. a half-played run. */
+  solution?: string;
 }>();
 const emit = defineEmits<{
   change: [progress: GameProgress];
@@ -32,6 +34,7 @@ onMounted(async () => {
   const created = await createGame(el, initialLevel, {
     ...(props.padding && { padding: props.padding }),
     palette: readBoardPalette(),
+    ...(props.solution && { initialSolution: props.solution }),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
     onOverviewChange: (state) => emit("overview", state),
