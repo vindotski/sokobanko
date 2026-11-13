@@ -122,22 +122,26 @@ let started = false;
 function announce(prev: GameProgress, next: GameProgress) {
   const counts = `${count(next.moves, "move", "moves")}, ${count(next.pushes, "push", "pushes")}`;
   const goals = `${next.boxesOnGoals} of ${count(next.boxes, "box", "boxes")} on goals`;
+  // The notice above the toolbar is hidden from screen readers, so every
+  // announcement that leaves a box stuck says so. A warning only; the move
+  // stands until undone.
+  const stuck =
+    next.deadBoxes === 0
+      ? ""
+      : next.deadBoxes === 1
+        ? " A box can't reach a goal from where it is; undo with Z."
+        : ` ${next.deadBoxes} boxes can't reach a goal from where they are; undo with Z.`;
   let text = "";
   if (!started) {
     started = true;
-    if (next.moves > 0) text = `Resumed at ${counts}. ${goals}.`;
+    if (next.moves > 0) text = `Resumed at ${counts}. ${goals}.${stuck}`;
   } else if (next.solved && !prev.solved) {
     text = `Solved in ${counts}.`;
   } else if (next.moves === 0 && prev.moves > 0) {
     text = `Back at the start. ${goals}.`;
   } else if (next.moves < prev.moves) {
-    text = `Undone. ${counts}. ${goals}.`;
+    text = `Undone. ${counts}. ${goals}.${stuck}`;
   } else if (next.pushes > prev.pushes) {
-    // A warning only; the move stands until undone.
-    const stuck =
-      next.deadBoxes > prev.deadBoxes
-        ? " That box can't reach a goal from there; undo with Z."
-        : "";
     text = `Pushed. ${goals}.${stuck}`;
   }
   if (!text) return;
