@@ -61,7 +61,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Themes | ✅ light and dark, following the system | ✖ | ◐ colours | ? | ? | ✅ |
 | Sound | ⏳ 8, optional and muted by default | ? | ✅ | ✅ | ? | ✅ |
 | Reduced motion | ✅ celebrations respect it | ✖ | ✖ | ? | ? | ? |
-| Screen readers | ⏳ 8, moves and solves announced in a live region | ✖ | ✖ | ✖ | ? | ? |
+| Screen readers | ✅ pushes, undos and solves announced in a live region; a labelled board | ✖ | ✖ | ✖ | ? | ? |
 
 **Worth knowing:** the strongest accessibility feature list found was in a smaller app, [Sokoban by Accessible Apps](https://play.google.com/store/search?q=sokoban&c=apps) (5K+ installs). Its listing claims TalkBack support, WCAG AA contrast and tap-to-walk. Sokobanko's monochrome board tells the pieces apart by shape, not colour (6).
 

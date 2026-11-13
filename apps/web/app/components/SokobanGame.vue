@@ -13,6 +13,8 @@ const props = defineProps<{
   padding?: GamePadding;
   /** Moves to start from, as LURD, e.g. a half-played run. */
   solution?: string;
+  /** What screen readers call the board, with its controls. */
+  label?: string;
 }>();
 const emit = defineEmits<{
   change: [progress: GameProgress];
@@ -76,8 +78,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <!--
+    An application, so screen readers pass the arrow keys through to the
+    game once the board has focus; the keys work anywhere on the page.
+  -->
   <div
     ref="container"
-    class="relative overflow-hidden [&>canvas]:absolute [&>canvas]:inset-0"
+    role="application"
+    tabindex="0"
+    :aria-label="label"
+    class="relative overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset [&>canvas]:absolute [&>canvas]:inset-0"
   />
 </template>

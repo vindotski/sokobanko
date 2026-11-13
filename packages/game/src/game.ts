@@ -48,6 +48,9 @@ export interface GameProgress {
   solved: boolean;
   /** Undone moves that redo can bring back; any new move drops them. */
   canRedo: boolean;
+  /** Boxes in the level, and how many of them are on goals. */
+  boxes: number;
+  boxesOnGoals: number;
 }
 
 export interface GamePadding {
@@ -244,13 +247,23 @@ export async function createGame(
   }
 
   const update = () => {
-    drawLevel(board, current(), palette);
+    const level = current();
+    drawLevel(board, level, palette);
+    let boxes = 0;
+    let boxesOnGoals = 0;
+    for (let i = 0; i < level.boxes.length; i++) {
+      if (!level.boxes[i]) continue;
+      boxes++;
+      if (level.goals[i]) boxesOnGoals++;
+    }
     const progress: GameProgress = {
       moves: history.length,
       pushes: history.filter((s) => s.pushed).length,
       solution: history.map((s) => s.letter).join(""),
-      solved: isSolved(current()),
+      solved: isSolved(level),
       canRedo: future.length > 0,
+      boxes,
+      boxesOnGoals,
     };
     options.onChange?.(progress);
     return progress;
