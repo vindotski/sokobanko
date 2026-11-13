@@ -8,10 +8,26 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-13
+
+Microban's 155 levels, and a friendlier play screen: redo, keyboard shortcuts, resuming, deadlock
+warnings, screen-reader announcements and sound.
+
 ### Added
 - Microban by David W. Skinner, all 155 levels, after the four Basics, credited in the gallery.
 - Collections: the gallery has a section per collection, with its author and solved count, and
   the play page names the level's collection.
+- Redo, with a Redo button, and keys for undo (Z or U), redo (Y) and restart (R). Every toolbar
+  button names its key.
+- A half-played level picks up where you left it, kept in the browser until you restart or solve
+  it.
+- Your best result for a solved level shows under the move counter while you play.
+- Screen readers hear pushes, undos, restarts, solves and resumed runs through a live region, and
+  the board is labelled with its keys.
+- Deadlock warnings: a box pushed where it can never reach a goal, like a corner, is crossed out,
+  with a notice to undo. The move is never blocked.
+- Sound: short synthesized tones for steps, pushes, goals, stuck boxes, undo and solves, off
+  until you turn it on, and remembered in the browser.
 
 ### Changed
 - Postgres is now the levels' only source: migrations write them, and the boot sync from
@@ -35,5 +51,6 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/vindotski/sokobanko/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vindotski/sokobanko/releases/tag/v0.1.0
