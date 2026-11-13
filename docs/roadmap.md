@@ -296,7 +296,7 @@ This is Spotcraft's roadmap step 13. Spotcraft already hosts an empty `sokobanko
 Each item closes a ⏳ gap in [parity.md](parity.md) and cites its row. Items that need accounts or server validation are under **Later** instead.
 Roughly in order of value for the effort. Cheap items come first; they touch only the engine and the play page.
 - [ ] **Show each level's description**, its Markdown body. Render core's mdast on the server with `mdast-util-to-hast` + `hast-util-to-html`, the way Spotcraft's `apps/web` does. The "Hello World!" attribution shows through it. (Parity: level metadata.)
-- [ ] **Keyboard undo, redo and restart:** Z or U for undo, Y for redo, R for restart, all ignored while typing or in a dialog, like movement. **Redo** keeps the undone steps until a new move is made. (Parity: redo; keyboard undo, redo and restart.)
+- [x] **Keyboard undo, redo and restart:** Z or U for undo, Y for redo, R for restart, all ignored while typing or in a dialog, like movement. **Redo** keeps the undone steps until a new move is made. (Parity: redo; keyboard undo, redo and restart.)
 - [ ] **Resume a half-played level:** keep the current LURD per level in Dexie, as a second table, `snapshots: "&levelId"`. Replay it when the level opens; it's cleared by restart and by solving. (Parity: resume.)
 - [ ] **Replay and copy a solution:** the progress page plays back a stored best step by step through `replay`, and copies it as LURD. (Parity: replay; copy a solution.)
 - [ ] **Paste an XSB level to play it:** a "Play your own" page parses pasted XSB (`-` and `_` accepted as floor, in `parseLevel`). It's played locally and never stored as an official level or result. (Parity: paste an XSB level; XSB floor characters.)

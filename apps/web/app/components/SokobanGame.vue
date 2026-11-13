@@ -60,6 +60,7 @@ watch(
 
 defineExpose({
   undo: () => game?.undo(),
+  redo: () => game?.redo(),
   restart: () => game?.restart(),
   setOverview: (on: boolean) => game?.setOverview(on),
 });

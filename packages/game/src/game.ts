@@ -45,6 +45,8 @@ export interface GameProgress {
   /** Moves so far as LURD letters; uppercase letters are pushes. */
   solution: string;
   solved: boolean;
+  /** Undone moves that redo can bring back; any new move drops them. */
+  canRedo: boolean;
 }
 
 export interface GamePadding {
@@ -79,6 +81,8 @@ export interface Game {
   setLevel(level: LevelJson): void;
   /** Takes back the last move. */
   undo(): void;
+  /** Plays the last undone move again. */
+  redo(): void;
   /** Returns to the start of the level. */
   restart(): void;
   /** Zooms out to show the whole level, or back to the player. */
@@ -106,6 +110,8 @@ export async function createGame(
   let start = parseLevel(level);
   let palette = { ...DEFAULT_PALETTE, ...options.palette };
   let history: Step[] = [];
+  // Undone steps, the most recently undone last.
+  let future: Step[] = [];
   const current = () => history.at(-1)?.level ?? start;
 
   const app = new Application();
@@ -138,6 +144,11 @@ export async function createGame(
     onStep: (direction) => step(direction),
     onPeek: (on) => {
       peeking = on;
+    },
+    onAction: (action) => {
+      if (action === "undo") undo();
+      else if (action === "redo") redo();
+      else restart();
     },
   });
 
@@ -233,6 +244,7 @@ export async function createGame(
       pushes: history.filter((s) => s.pushed).length,
       solution: history.map((s) => s.letter).join(""),
       solved: isSolved(current()),
+      canRedo: future.length > 0,
     };
     options.onChange?.(progress);
     return progress;
@@ -243,16 +255,41 @@ export async function createGame(
     const result = move(current(), direction);
     if (!result) return;
 
-    history.push({
+    future = [];
+    play({
       level: result.level,
       letter: directionToLetter(direction, result.pushed),
       pushed: result.pushed,
     });
+  }
+
+  function play(next: Step) {
+    history.push(next);
     const progress = update();
     if (progress.solved) {
       celebrate();
       options.onSolved?.(progress);
     }
+  }
+
+  function undo() {
+    const last = history.pop();
+    if (!last) return;
+    future.push(last);
+    celebration.clear();
+    update();
+  }
+
+  function redo() {
+    const next = future.pop();
+    if (next) play(next);
+  }
+
+  function restart() {
+    history = [];
+    future = [];
+    celebration.clear();
+    update();
   }
 
   /** Sparks from every goal, unless the system asks for less motion. */
@@ -286,22 +323,15 @@ export async function createGame(
     setLevel(next) {
       start = parseLevel(next);
       history = [];
+      future = [];
       toggled = false;
       celebration.clear();
       update();
       snapCamera();
     },
-    undo() {
-      if (history.pop()) {
-        celebration.clear();
-        update();
-      }
-    },
-    restart() {
-      history = [];
-      celebration.clear();
-      update();
-    },
+    undo,
+    redo,
+    restart,
     setOverview(on) {
       toggled = on;
     },

@@ -36,6 +36,25 @@ export function directionFromKey(code: string): Direction | null {
   return MOVEMENT_KEYS.get(code) ?? null;
 }
 
+export type KeyAction = "undo" | "redo" | "restart";
+
+// Keyed by the character rather than the physical key, since these are
+// mnemonics: Z for undo stays Z on QWERTZ and AZERTY.
+const ACTION_KEYS = new Map<string, KeyAction>([
+  ["z", "undo"],
+  ["u", "undo"],
+  ["y", "redo"],
+  ["r", "restart"],
+]);
+
+/**
+ * Action for a `KeyboardEvent.key` (Z or U, Y, R, either case), or `null` for
+ * any other key.
+ */
+export function actionFromKey(key: string): KeyAction | null {
+  return ACTION_KEYS.get(key.toLowerCase()) ?? null;
+}
+
 /**
  * Turns a held direction into discrete steps: one step as soon as the
  * direction changes, then one every `intervalMs` while it stays the same.

@@ -30,7 +30,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | --- | --- | --- | --- | --- | --- | --- |
 | Move and push counters | ✅ | ? | ✅ | ? | ✅ | ✅ |
 | Undo | ✅ unlimited (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
-| Redo | ⏳ 8 | ✖ | ✖ | ✅ | ? | ? |
+| Redo | ✅ until the next move | ✖ | ✖ | ✅ | ? | ? |
 | Restart | ✅ | ◐ 4 per level | ✅ | ✅ | ? | ? |
 | Time counter | ✖ on purpose | ? | ✅ | ? | ? | ? |
 | Resume a half-played level | ⏳ 8 | ✖ | ✖ | ✅ | ✖ | ✅ |
@@ -52,7 +52,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Keyboard movement | ✅ arrows and WASD | ✅ numpad | ✅ arrows | ✖ | ? | ? |
-| Keyboard undo, redo and restart | ⏳ 8 (Z, Y, R) | ? | ✅ U, R | ✖ | ? | ? |
+| Keyboard undo, redo and restart | ✅ Z or U, Y, R | ? | ✅ U, R | ✖ | ? | ? |
 | On-screen joystick or D-pad | ✅ a floating joystick wherever you touch | ✖ | ✅ joystick | ? | ✅ D-pad | ✅ |
 | Swipe | ◐ the joystick follows a drag | ✖ | ✖ | ✅ | ✅ | ✅ |
 | Tap to walk (pathfinding) | ⏳ 8 (16) | ✖ | ✖ | ✅ | ? | ◐ double tap |
