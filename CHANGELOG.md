@@ -8,6 +8,14 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-13
+
+### Changed
+- A box on a goal shows a white check, so it no longer looks like a wall, pairing with the cross
+  on a stuck box.
+- A goal under the player shows as an outline inside the player, so no goal is hidden. The gallery
+  previews used to leave it out.
+
 ## [0.2.0] - 2026-11-13
 
 Microban's 155 levels, and a friendlier play screen: redo, keyboard shortcuts, resuming, deadlock
@@ -51,6 +59,7 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/vindotski/sokobanko/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vindotski/sokobanko/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/vindotski/sokobanko/releases/tag/v0.1.0
