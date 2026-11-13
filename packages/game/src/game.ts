@@ -432,8 +432,13 @@ function drawLevel(
       g.rect(x, y, TILE, TILE).fill(colors.floor);
     }
     if (level.boxes[i] && level.goals[i]) {
-      // Box on goal: solid.
+      // Box on goal: solid, with a check cut out in the floor colour, so it
+      // reads as a finished box rather than a wall (a stuck box gets a cross).
       g.rect(x + 7, y + 7, 50, 50).fill(colors.boxOnGoal);
+      g.moveTo(x + 19, y + 33)
+        .lineTo(x + 28, y + 42)
+        .lineTo(x + 45, y + 23)
+        .stroke({ width: 6, color: colors.floor, cap: "round", join: "round" });
     } else if (level.boxes[i]) {
       // Box: thick frame with a solid centre, or a cross once it's stuck.
       g.rect(x + 10, y + 10, 44, 44).stroke({ width: 6, color: colors.box });
@@ -451,7 +456,8 @@ function drawLevel(
       g.rect(x + 22, y + 22, 20, 20).stroke({ width: 3, color: colors.goal });
     }
   }
-  // Player: a solid diamond (a square turned 45°), over any goal beneath it.
+  // Player: a solid diamond (a square turned 45°). A goal beneath it shows as
+  // its own small frame cut out of the diamond, so no goal is ever hidden.
   const px = cellX(level.player);
   const py = cellY(level.player);
   g.poly([
@@ -464,4 +470,7 @@ function drawLevel(
     px + 8,
     py + 32,
   ]).fill(colors.player);
+  if (level.goals[level.player]) {
+    g.rect(px + 22, py + 22, 20, 20).stroke({ width: 3, color: colors.floor });
+  }
 }
