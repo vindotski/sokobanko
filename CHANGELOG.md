@@ -8,6 +8,15 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Added
+- Microban by David W. Skinner, all 155 levels, after the four Basics, credited in the gallery.
+- Collections: the gallery has a section per collection, with its author and solved count, and
+  the play page names the level's collection.
+
+### Changed
+- Postgres is now the levels' only source: migrations write them, and the boot sync from
+  `content/levels/*.md` is gone. The four levels keep their ids, so saved results stay.
+
 ## [0.1.0] - 2026-11-08
 
 The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraft.dev) 0.2.0.

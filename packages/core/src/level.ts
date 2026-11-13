@@ -35,12 +35,14 @@ export interface ParsedLevel {
 }
 
 export class LevelParseError extends Error {
-  constructor(
-    readonly levelId: string,
-    message: string,
-  ) {
+  // A declared field rather than a parameter property, so plain Node can run
+  // this file (bin/ scripts).
+  readonly levelId: string;
+
+  constructor(levelId: string, message: string) {
     super(`Level '${levelId}': ${message}`);
     this.name = "LevelParseError";
+    this.levelId = levelId;
   }
 }
 

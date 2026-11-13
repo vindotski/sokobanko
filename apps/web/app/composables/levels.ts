@@ -7,6 +7,11 @@ export function useLevels() {
   return useFetch("/api/levels", { key: "levels" });
 }
 
+/** Level collections in play order, with their authors and credits. */
+export function useCollections() {
+  return useFetch("/api/collections", { key: "collections" });
+}
+
 /** Ids of published levels, in play order. */
 export function useLevelIds() {
   return useFetch("/api/levels", {

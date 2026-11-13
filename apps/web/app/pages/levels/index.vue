@@ -4,6 +4,7 @@ import { levelStates, parseLevel } from "@sokoban/core";
 
 const progress = useProgressStore();
 const { data: levels } = await useLevels();
+const { data: collections } = await useCollections();
 await useAsyncData("completions", () => progress.load());
 
 // Levels unlock in play order; the server enforces the same rule.
@@ -15,16 +16,30 @@ const states = computed(() =>
 );
 
 const cards = computed(() =>
-  (levels.value ?? []).map((level, index) => {
+  (levels.value ?? []).map((level) => {
     const parsed = parseLevel(level);
     return {
       level,
-      number: index + 1,
       boxes: parsed.boxes.reduce((n, box) => n + box, 0),
       best: progress.best[level.id],
       state: states.value.get(level.id),
     };
   }),
+);
+// One section per collection, in play order.
+const sections = computed(() =>
+  (collections.value ?? [])
+    .map((collection) => {
+      const own = cards.value.filter(
+        (c) => c.level.collection === collection.id,
+      );
+      return {
+        collection,
+        cards: own,
+        solved: own.filter((c) => c.best).length,
+      };
+    })
+    .filter((section) => section.cards.length),
 );
 // Locked cards aren't links.
 const NuxtLink = resolveComponent("NuxtLink");
@@ -51,66 +66,96 @@ const solvedPercent = computed(() =>
       </div>
     </div>
 
-    <ItemGroup
-      v-if="cards.length"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
-    >
-      <!-- The current level stands out; locked ones are dimmed. -->
-      <Item
-        v-for="card in cards"
-        :key="card.level.id"
-        as-child
-        variant="outline"
-        role="listitem"
-        :class="{
-          'ring-2 ring-primary': card.state === 'current',
-          'opacity-50': card.state === 'locked',
-        }"
+    <div v-if="sections.length" class="flex flex-col gap-10">
+      <section
+        v-for="section in sections"
+        :key="section.collection.id"
+        :aria-labelledby="`collection-${section.collection.id}`"
+        class="flex flex-col gap-4"
       >
-        <!-- Pack the wrapped rows at the top, so previews and text line up
-             across cards of equal height. -->
-        <component
-          :is="card.state === 'locked' ? 'div' : NuxtLink"
-          :to="card.state === 'locked' ? undefined : `/play/${card.level.id}`"
-          :aria-disabled="card.state === 'locked' || undefined"
-          class="content-start"
+        <div class="flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+          <div class="flex flex-col gap-1">
+            <h2 :id="`collection-${section.collection.id}`" class="text-lead font-semibold">
+              {{ section.collection.title }}
+            </h2>
+            <p
+              v-if="section.collection.author"
+              class="text-sm text-muted-foreground"
+            >
+              By {{ section.collection.author }}
+            </p>
+          </div>
+          <span class="text-label whitespace-nowrap text-muted-foreground">
+            {{ section.solved }} of {{ section.cards.length }} solved
+          </span>
+        </div>
+        <ItemGroup
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3"
         >
-          <ItemHeader
-            class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-tile-grid p-4"
+          <!-- The current level stands out; locked ones are dimmed. -->
+          <Item
+            v-for="card in section.cards"
+            :key="card.level.id"
+            as-child
+            variant="outline"
+            role="listitem"
+            :class="{
+              'ring-2 ring-primary': card.state === 'current',
+              'opacity-50': card.state === 'locked',
+            }"
           >
-            <LevelPreview :level="card.level" />
-            <Badge v-if="card.best" class="absolute top-2 right-2">
-              <CheckIcon />
-              {{ card.best.moves }} moves
-            </Badge>
-            <Badge
-              v-else-if="card.state === 'current'"
-              class="absolute top-2 right-2"
+            <!-- Pack the wrapped rows at the top, so previews and text line up
+                 across cards of equal height. -->
+            <component
+              :is="card.state === 'locked' ? 'div' : NuxtLink"
+              :to="card.state === 'locked' ? undefined : `/play/${card.level.id}`"
+              :aria-disabled="card.state === 'locked' || undefined"
+              class="content-start"
             >
-              <PlayIcon />
-              Up next
-            </Badge>
-            <Badge
-              v-else-if="card.state === 'locked'"
-              variant="secondary"
-              class="absolute top-2 right-2"
-            >
-              <LockIcon />
-              Locked
-            </Badge>
-          </ItemHeader>
-          <ItemContent class="min-w-0">
-            <ItemTitle class="w-full">
-              <span class="truncate">{{ card.level.title }}</span>
-            </ItemTitle>
-            <ItemDescription class="truncate text-label">
-              Level {{ card.number }} · {{ card.boxes }}
-              {{ card.boxes === 1 ? "box" : "boxes" }}
-            </ItemDescription>
-          </ItemContent>
-        </component>
-      </Item>
-    </ItemGroup>
+              <ItemHeader
+                class="relative flex aspect-4/3 items-center justify-center rounded-sm bg-muted bg-tile-grid p-4"
+              >
+                <LevelPreview :level="card.level" />
+                <Badge v-if="card.best" class="absolute top-2 right-2">
+                  <CheckIcon />
+                  {{ card.best.moves }} moves
+                </Badge>
+                <Badge
+                  v-else-if="card.state === 'current'"
+                  class="absolute top-2 right-2"
+                >
+                  <PlayIcon />
+                  Up next
+                </Badge>
+                <Badge
+                  v-else-if="card.state === 'locked'"
+                  variant="secondary"
+                  class="absolute top-2 right-2"
+                >
+                  <LockIcon />
+                  Locked
+                </Badge>
+              </ItemHeader>
+              <ItemContent class="min-w-0">
+                <ItemTitle class="w-full">
+                  <span class="truncate">{{ card.level.title }}</span>
+                </ItemTitle>
+                <ItemDescription class="truncate text-label">
+                  Level {{ card.level.number }} · {{ card.boxes }}
+                  {{ card.boxes === 1 ? "box" : "boxes" }}
+                </ItemDescription>
+              </ItemContent>
+            </component>
+          </Item>
+        </ItemGroup>
+        <p
+          v-if="section.collection.credit"
+          class="text-xs text-muted-foreground"
+        >
+          {{ section.collection.credit }}
+        </p>
+      </section>
+    </div>
 
     <Empty v-else class="border">
       <EmptyHeader>

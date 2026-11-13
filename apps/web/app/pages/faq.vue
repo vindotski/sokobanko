@@ -27,6 +27,11 @@ const questions = [
       "Yes, in this browser. Your first solved level makes you a guest, and every solved level is checked and saved with your best result. Signing up to keep it across devices is coming soon.",
   },
   {
+    question: "Where do the levels come from?",
+    answer:
+      "The first four were made for Sokobanko, except Hello World!, from DoctorLai's sokoban-web. The rest are David W. Skinner's Microban, 155 small puzzles that each show an idea, shared freely as long as he's credited.",
+  },
+  {
     question: "Can I make my own levels?",
     answer: "Not yet, but it's planned.",
   },

@@ -23,6 +23,11 @@ if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
 const levelId = level.id;
+// The collection and its author, under the title.
+const { data: collections } = await useCollections();
+const collection = computed(() =>
+  collections.value?.find((c) => c.id === level.collection),
+);
 
 const game = useTemplateRef("game");
 const progress = ref<GameProgress>({
@@ -164,9 +169,20 @@ function replay() {
           <span class="sr-only sm:not-sr-only">Prev</span>
         </Button>
 
-        <h1 class="min-w-0 truncate text-center text-sm font-semibold">
-          {{ level.title }}
-        </h1>
+        <div class="flex min-w-0 flex-col items-center">
+          <h1 class="max-w-full truncate text-sm font-semibold">
+            {{ level.title }}
+          </h1>
+          <p
+            v-if="collection"
+            class="max-w-full truncate text-xs text-muted-foreground"
+          >
+            {{ collection.title
+            }}<template v-if="collection.author">
+              · {{ collection.author }}</template
+            >
+          </p>
+        </div>
 
         <Button
           v-if="nextLocked"

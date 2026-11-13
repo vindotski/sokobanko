@@ -19,75 +19,61 @@ const size = computed(() =>
     : { height: "100%" },
 );
 
-type Piece = "goal" | "box" | "boxOnGoal" | "player";
+/** Units per cell; pieces use the same 64-unit shapes as drawLevel(). */
+const CELL = 64;
+/** The gap between tiles, so the board reads as a grid. */
+const GAP = 2;
 
-const cells = computed(() => {
-  const { walls, goals, boxes, player } = parsed.value;
+/**
+ * One SVG path per kind of tile and piece, so a preview is a handful of
+ * elements however big the level is (the gallery shows 159 of them).
+ */
+const paths = computed(() => {
+  const { width, walls, goals, boxes, player } = parsed.value;
   const inside = insideCells(parsed.value);
-  return Array.from(walls, (_, i) => {
+  const square = (x: number, y: number, at: number, side: number) =>
+    `M${x + at} ${y + at}h${side}v${side}h${-side}z`;
+  const d = {
+    wall: "",
+    floor: "",
+    goal: "",
+    box: "",
+    boxCore: "",
+    boxOnGoal: "",
+    player: "",
+  };
+  walls.forEach((wall, i) => {
+    const x = (i % width) * CELL;
+    const y = Math.floor(i / width) * CELL;
+    const tile = square(x, y, GAP / 2, CELL - GAP);
     // Cells outside the walls stay empty, so the board reads as an island.
-    const tile = walls[i] ? "bg-board-wall" : inside[i] ? "bg-board-floor" : "";
-    let piece: Piece | null = null;
-    if (boxes[i]) piece = goals[i] ? "boxOnGoal" : "box";
-    else if (i === player) piece = "player";
-    else if (goals[i]) piece = "goal";
-    return { tile, piece };
+    if (wall) d.wall += tile;
+    else if (inside[i]) d.floor += tile;
+    if (boxes[i] && goals[i]) d.boxOnGoal += square(x, y, 7, 50);
+    else if (boxes[i]) {
+      d.box += square(x, y, 10, 44);
+      d.boxCore += square(x, y, 26, 12);
+    } else if (i === player) {
+      d.player += `M${x + 32} ${y + 8}l24 24l-24 24l-24 -24z`;
+    } else if (goals[i]) d.goal += square(x, y, 22, 20);
   });
+  return d;
 });
 </script>
 
 <template>
-  <div
-    class="grid gap-px"
-    :style="{
-      gridTemplateColumns: `repeat(${parsed.width}, 1fr)`,
-      gridTemplateRows: `repeat(${parsed.height}, 1fr)`,
-      aspectRatio: `${parsed.width} / ${parsed.height}`,
-      ...size,
-    }"
+  <svg
+    :viewBox="`0 0 ${parsed.width * CELL} ${parsed.height * CELL}`"
+    :style="{ aspectRatio: `${parsed.width} / ${parsed.height}`, ...size }"
+    aria-hidden="true"
   >
-    <div
-      v-for="(cell, i) in cells"
-      :key="i"
-      class="flex items-center justify-center"
-      :class="cell.tile"
-    >
-      <!-- Same 64-unit shapes as drawLevel() in packages/game/src/game.ts. -->
-      <svg v-if="cell.piece" viewBox="0 0 64 64" class="size-full">
-        <rect
-          v-if="cell.piece === 'boxOnGoal'"
-          x="7"
-          y="7"
-          width="50"
-          height="50"
-          class="fill-board-box-on-goal"
-        />
-        <template v-else-if="cell.piece === 'box'">
-          <rect
-            x="10"
-            y="10"
-            width="44"
-            height="44"
-            stroke-width="6"
-            class="fill-none stroke-board-box"
-          />
-          <rect x="26" y="26" width="12" height="12" class="fill-board-box" />
-        </template>
-        <polygon
-          v-else-if="cell.piece === 'player'"
-          points="32,8 56,32 32,56 8,32"
-          class="fill-board-player"
-        />
-        <rect
-          v-else
-          x="22"
-          y="22"
-          width="20"
-          height="20"
-          stroke-width="3"
-          class="fill-none stroke-board-goal"
-        />
-      </svg>
-    </div>
-  </div>
+    <!-- Same 64-unit shapes as drawLevel() in packages/game/src/game.ts. -->
+    <path :d="paths.wall" class="fill-board-wall" />
+    <path :d="paths.floor" class="fill-board-floor" />
+    <path :d="paths.goal" stroke-width="3" class="fill-none stroke-board-goal" />
+    <path :d="paths.box" stroke-width="6" class="fill-none stroke-board-box" />
+    <path :d="paths.boxCore" class="fill-board-box" />
+    <path :d="paths.boxOnGoal" class="fill-board-box-on-goal" />
+    <path :d="paths.player" class="fill-board-player" />
+  </svg>
 </template>
