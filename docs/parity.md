@@ -59,7 +59,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Drag a box to push it there | ⏳ 8 (16) | ✖ | ✖ | ◐ long press | ? | ? |
 | Big levels: camera and overview | ✅ the camera follows the player; Space shows the whole level | ✖ | ✖ | ? | ? | ? |
 | Themes | ✅ light and dark, following the system | ✖ | ◐ colours | ? | ? | ✅ |
-| Sound | ⏳ 8, optional and muted by default | ? | ✅ | ✅ | ? | ✅ |
+| Sound | ✅ synthesized, muted by default | ? | ✅ | ✅ | ? | ✅ |
 | Reduced motion | ✅ celebrations respect it | ✖ | ✖ | ? | ? | ? |
 | Screen readers | ✅ pushes, undos and solves announced in a live region; a labelled board | ✖ | ✖ | ✖ | ? | ? |
 

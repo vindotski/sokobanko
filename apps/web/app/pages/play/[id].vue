@@ -10,6 +10,8 @@ import {
   ScanSearchIcon,
   TrophyIcon,
   Undo2Icon,
+  Volume2Icon,
+  VolumeOffIcon,
 } from "@lucide/vue";
 import { levelStates } from "@sokoban/core";
 import type { GameProgress, OverviewState } from "@sokoban/game";
@@ -152,7 +154,23 @@ function announce(prev: GameProgress, next: GameProgress) {
   });
 }
 
+// Sounds follow the same changes; muted until the player turns them on.
+const sound = useSound();
+function playSound(prev: GameProgress, next: GameProgress) {
+  // Loading the level, or a resumed run, makes no sound.
+  if (!started) return;
+  if (next.solved && !prev.solved) sound.play("solve");
+  else if (next.moves === 0 && prev.moves > 0) sound.play("undo");
+  else if (next.moves < prev.moves) sound.play("undo");
+  else if (next.moves === prev.moves) return;
+  else if (next.deadBoxes > prev.deadBoxes) sound.play("stuck");
+  else if (next.boxesOnGoals > prev.boxesOnGoals) sound.play("goal");
+  else if (next.pushes > prev.pushes) sound.play("push");
+  else sound.play("step");
+}
+
 function onChange(next: GameProgress) {
+  playSound(progress.value, next);
   announce(progress.value, next);
   progress.value = next;
   saveRun(next);
@@ -457,19 +475,31 @@ function replay() {
               </p>
             </div>
 
-            <Toggle
-              variant="outline"
-              size="sm"
-              class="justify-self-end"
-              title="Overview (hold Space)"
-              aria-keyshortcuts="Space"
-              :disabled="!overview.available"
-              :model-value="overview.active"
-              @update:model-value="game?.setOverview($event)"
-            >
-              <ScanSearchIcon data-icon="inline-start" />
-              <span class="sr-only sm:not-sr-only">Overview</span>
-            </Toggle>
+            <div class="flex gap-2 justify-self-end">
+              <Toggle
+                variant="outline"
+                size="sm"
+                :title="sound.enabled.value ? 'Sound on' : 'Sound off'"
+                aria-label="Sound"
+                :model-value="sound.enabled.value"
+                @update:model-value="sound.setEnabled($event)"
+              >
+                <Volume2Icon v-if="sound.enabled.value" />
+                <VolumeOffIcon v-else />
+              </Toggle>
+              <Toggle
+                variant="outline"
+                size="sm"
+                title="Overview (hold Space)"
+                aria-keyshortcuts="Space"
+                :disabled="!overview.available"
+                :model-value="overview.active"
+                @update:model-value="game?.setOverview($event)"
+              >
+                <ScanSearchIcon data-icon="inline-start" />
+                <span class="sr-only sm:not-sr-only">Overview</span>
+              </Toggle>
+            </div>
           </div>
         </div>
       </template>
