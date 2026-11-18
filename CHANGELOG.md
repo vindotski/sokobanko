@@ -13,8 +13,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
   security headers. The game loads `pixi.js/unsafe-eval`, so the policy needs no
   `'unsafe-eval'`.
 - CI deploys `main` to Spotcraft through the app's deploy hook and waits until it is live. It
-  stays off until the variable `SPOTCRAFT_HOOK_URL` and the secret `SPOTCRAFT_DEPLOY_TOKEN` are
-  set (DEPLOY.md).
+  stays off until the `production` environment has the variable `SPOTCRAFT_HOOK_URL` and the
+  secret `SPOTCRAFT_DEPLOY_TOKEN` (DEPLOY.md).
 
 ### Changed
 - `@spotcraft/kit` 0.4.0 runs the server's glue: the guest middleware, the start-up check and

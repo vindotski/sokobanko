@@ -47,10 +47,10 @@ Spotcraft starts the new version next to the old one and moves traffic once it i
 
 ### The deploy hook
 
-The `deploy` job runs only on `main`, and only once these are set in GitHub:
+The `deploy` job runs on `main`, and deploys once GitHub's `production` environment has:
 
-- the repository variable `SPOTCRAFT_HOOK_URL`: `https://dash.spotcraft.dev/hooks/deploy/sokobanko`;
-- the secret `SPOTCRAFT_DEPLOY_TOKEN` in the `production` environment. In the dashboard, open `sokobanko`, then **Deploy hook → Turn on**, and copy the token. It is shown only once.
+- the variable `SPOTCRAFT_HOOK_URL`: `https://dash.spotcraft.dev/hooks/deploy/sokobanko`;
+- the secret `SPOTCRAFT_DEPLOY_TOKEN`. In the dashboard, open `sokobanko`, then **Deploy hook → Turn on**, and copy the token. It is shown only once.
 
 **New token** in the dashboard replaces the token at once; update the secret. **Turn off** stops CI deploys. To approve each release, add required reviewers to the `production` environment. The hook can change only the tag, never the image, env or limits.
 

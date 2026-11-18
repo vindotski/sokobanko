@@ -108,11 +108,12 @@ jobs:
           cache-to: type=gha,mode=max
 
   # main → Spotcraft, through the app's deploy hook (DEPLOY.md). Off until the
-  # repository variable SPOTCRAFT_HOOK_URL is set; the token is the secret
-  # SPOTCRAFT_DEPLOY_TOKEN in the production environment.
+  # production environment has the variable SPOTCRAFT_HOOK_URL and the secret
+  # SPOTCRAFT_DEPLOY_TOKEN. A job's `if` can't see an environment's variables,
+  # so the step checks.
   deploy:
     needs: image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.SPOTCRAFT_HOOK_URL != ''
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: production
@@ -127,6 +128,10 @@ jobs:
           # A pull may take 5 minutes and the health check 2, after other apps' deploys.
           WAIT_MINUTES: 15
         run: |
+          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
+            echo "::notice::No deploy: set SPOTCRAFT_HOOK_URL and SPOTCRAFT_DEPLOY_TOKEN in the production environment."
+            exit 0
+          fi
           TAG="sha-${GITHUB_SHA::7}"
           auth="Authorization: Bearer $TOKEN"
           curl -fsS --retry 5 --retry-all-errors -X POST "$URL" -H "$auth" \
