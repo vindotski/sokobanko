@@ -8,6 +8,24 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Added
+- A Content Security Policy on every page, in production. Spotcraft 0.5's Caddy adds the other
+  security headers. The game loads `pixi.js/unsafe-eval`, so the policy needs no
+  `'unsafe-eval'`.
+- CI deploys `main` to Spotcraft through the app's deploy hook and waits until it is live. It
+  stays off until the variable `SPOTCRAFT_HOOK_URL` and the secret `SPOTCRAFT_DEPLOY_TOKEN` are
+  set (DEPLOY.md).
+
+### Changed
+- `@spotcraft/kit` 0.4.0 runs the server's glue: the guest middleware, the start-up check and
+  the health check. A phone on IPv6 now counts as one address (its /64) for the guest limit.
+- Migrations run through the kit's runner and are recorded in `app_migrations`. On its first
+  start, the server takes over the history of Drizzle's migrator without rerunning anything.
+  New migrations still come from `pnpm db:generate`.
+- The server no longer goes live before its migrations have run: if they fail, it exits, and
+  Spotcraft keeps the previous version serving.
+- DEPLOY.md describes Spotcraft 0.5: releases without downtime, the deploy hook and backups.
+
 ## [0.2.1] - 2026-11-13
 
 ### Changed

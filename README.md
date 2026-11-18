@@ -40,7 +40,7 @@ echo PUBLIC_URL=http://localhost:3000 >> .env
 cd ../.. && pnpm dev                           # http://localhost:3000
 ```
 
-The server applies the migrations, and with them the levels, when it starts. `npx spotcraft dev reset --name sokobanko` empties the database again, and `npx spotcraft dev stop` stops Postgres; its data stays.
+The server applies the migrations, and with them the levels, when it starts (in dev, on the first request that needs the database). `npx spotcraft dev reset --name sokobanko` empties the database again, and `npx spotcraft dev stop` stops Postgres; its data stays.
 
 | Script | What it does |
 | --- | --- |

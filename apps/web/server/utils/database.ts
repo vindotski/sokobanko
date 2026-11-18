@@ -1,41 +1,33 @@
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { migrate } from "drizzle-orm/node-postgres/migrator";
-
-let ready: Promise<void> | undefined;
+import { migrationsFromFiles } from "@spotcraft/kit/migrate";
+import { type PrepareOptions, prepare } from "@spotcraft/kit/nuxt";
 
 /**
  * Resolves once the database is migrated; every query waits for it. The
  * migrations also write the levels, since Postgres is their only source.
- * Started at boot (server/plugins/database.ts); a failure is retried by the
- * next caller.
+ * In production the server does it before it goes live
+ * (server/plugins/database.ts); in dev the first query does. The kit runs it
+ * once per backend, and a failure is retried by the next caller.
  */
-export function databaseReady(): Promise<void> {
-  ready ??= migrateDatabase().catch((error: unknown) => {
-    ready = undefined;
-    throw error;
-  });
-  return ready;
+export async function databaseReady(): Promise<void> {
+  await prepare(backend(), await prepareOptions());
 }
 
 /**
- * Applies server/db/migrations. They're bundled as server assets, and
- * Drizzle's migrator reads a folder, so they're written to a temporary one
- * first (/tmp is the only writable place on Spotcraft).
+ * The app's migrations: server/db/migrations, written by `pnpm db:generate`
+ * and bundled as server assets. `adoptDrizzle` takes over the history of
+ * Drizzle's own migrator, which applied them before kit 0.4.0.
  */
-async function migrateDatabase(): Promise<void> {
+export async function prepareOptions(): Promise<PrepareOptions> {
   const storage = useStorage("assets:migrations");
-  const folder = await mkdtemp(join(tmpdir(), "sokobanko-migrations-"));
-  try {
-    for (const key of await storage.getKeys()) {
-      const file = join(folder, ...key.split(":"));
-      await mkdir(dirname(file), { recursive: true });
-      const content = await storage.getItemRaw(key);
-      await writeFile(file, content as Uint8Array | string);
-    }
-    await migrate(backend().db, { migrationsFolder: folder });
-  } finally {
-    await rm(folder, { recursive: true, force: true });
-  }
+  // Drizzle's meta/ folder (meta:…) isn't needed at run time.
+  const names = (await storage.getKeys()).filter(
+    (key) => !key.includes(":") && key.endsWith(".sql"),
+  );
+  const files = await Promise.all(
+    names.map(async (name) => ({
+      name,
+      sql: String(await storage.getItemRaw(name)),
+    })),
+  );
+  return { migrations: migrationsFromFiles(files), adoptDrizzle: true };
 }
