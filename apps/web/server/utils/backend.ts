@@ -12,10 +12,3 @@ export function backend(): Backend {
   instance ??= backendFromEnv();
   return instance;
 }
-
-/** Closes the database connections, if any were opened. */
-export async function closeBackend(): Promise<void> {
-  const open = instance;
-  instance = undefined;
-  await open?.close();
-}

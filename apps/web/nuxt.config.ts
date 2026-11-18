@@ -45,6 +45,30 @@ export default defineNuxtConfig({
     prefix: "",
     componentDir: "./app/components/ui",
   },
+  $production: {
+    routeRules: {
+      // Spotcraft's Caddy adds HSTS, nosniff, Referrer-Policy, X-Frame-Options,
+      // Permissions-Policy and COOP; the CSP is the app's own. Production
+      // only, as Vite's dev server needs more. 'unsafe-inline' is for the
+      // inline scripts and styles Nuxt and color-mode write into the page.
+      "/**": {
+        headers: {
+          "content-security-policy": [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self'",
+            "connect-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'none'",
+          ].join("; "),
+        },
+      },
+    },
+  },
   nitro: {
     // A plain Node server (`node .output/server/index.mjs`), run in a
     // container on Spotcraft; see the Dockerfile.

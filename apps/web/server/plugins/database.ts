@@ -1,12 +1,12 @@
+import { startup } from "@spotcraft/kit/nuxt";
+
 /**
- * Migrates the database at boot (the migrations also write the levels), so
- * the first player doesn't wait for it; requests wait on the same promise
+ * Migrates the database (which also writes the levels) before the server goes
+ * live. If that fails, the server exits, so the deploy fails and the previous
+ * version keeps serving. In dev, the first query does it instead
  * (databaseReady).
  */
-export default defineNitroPlugin((nitroApp) => {
-  databaseReady().then(
-    () => console.info("Database ready"),
-    (error: unknown) => console.error("Database not ready:", error),
-  );
-  nitroApp.hooks.hook("close", closeBackend);
+export default defineNitroPlugin(async (nitroApp) => {
+  if (import.meta.prerender || import.meta.dev) return;
+  await startup(nitroApp, backend, await prepareOptions());
 });
