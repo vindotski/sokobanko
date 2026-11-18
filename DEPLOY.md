@@ -1,15 +1,14 @@
 # Deploying Sokobanko on Spotcraft
 
-Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://spotcraft.dev) 0.2.0, on our own Hetzner servers. Spotcraft runs the app's container behind Caddy on HTTPS, gives it its own Postgres database, and watches it from the dashboard.
+Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://spotcraft.dev) 0.5, on our own Hetzner server behind a Cloudflare Tunnel. Spotcraft runs the app's container behind Caddy, gives it its own Postgres database, backs it up, and watches it from the dashboard at https://dash.spotcraft.dev.
 
 - **The image:** `vindotski/sokobanko` on Docker Hub. CI builds it for amd64 and arm64 and publishes it (`.github/workflows/ci.yml`). It has to be public, because Spotcraft's agent doesn't log in to registries.
 - **The database:** the app's own, `app_sokobanko`, given to it as `DATABASE_URL`.
   - **Spotcraft's `auth` schema:** guests and sessions, used through `@spotcraft/kit`.
-  - **Sokobanko's `public` tables:** `collections`, `levels` and `progress`.
-  - **At boot** the app applies its migrations, built into the image (`apps/web/server/utils/database.ts`). They also write the levels: Postgres is the levels' only source.
+  - **Sokobanko's `public` tables:** `collections`, `levels` and `progress`, plus `app_migrations`, the applied migrations.
+  - **At start** the server applies new migrations, built into the image, through the kit (`apps/web/server/plugins/database.ts`). They also write the levels: Postgres is the levels' only source. If that fails, the server exits, so a bad release never goes live.
 - **Guests:** a visitor becomes a guest on their first save, which is a solved level. The session is an HttpOnly cookie that the kit sets, and it lasts a year.
-
-It replaced the demo, which ran on Vercel against Spotcraft's old hosted API at api.vin.ski. The rollout below covers the switch.
+- **Headers:** Spotcraft's Caddy adds HSTS, `X-Frame-Options`, `Permissions-Policy` and the rest. The app sends its own Content Security Policy (`apps/web/nuxt.config.ts`).
 
 ## The app in Spotcraft's dashboard
 
@@ -19,29 +18,41 @@ It replaced the demo, which ran on Vercel against Spotcraft's old hosted API at 
 | --- | --- |
 | Name | `sokobanko` |
 | Image | `vindotski/sokobanko` |
-| Tag | a `sha-abc1234` tag from CI. `latest` works, but pinning a tag makes rolling back simply picking the previous one. |
-| Domain | `sokobanko.app`. On Cloudflare, `A` `2.31.218.181` and `AAAA` `2a01:4f8:c016:3ad0::1` (the **apps** server), DNS only, for both `sokobanko.app` and `www.sokobanko.app`. Spotcraft redirects `www` to the bare domain, and Caddy needs it to resolve for its certificate. |
+| Tag | a `sha-abc1234` tag from CI, never `latest`, so a rollback is picking the previous one. CI sets it on every release. |
+| Domain | `sokobanko.app`, with **Take over existing DNS records** ticked. Spotcraft points it and `www.sokobanko.app` at the tunnel, and `www` redirects to the bare domain. |
 | Port | `3000` |
 | Memory, CPUs | `512m`, `1` |
-| Read-only | on (only `/tmp` is writable, which the app needs for nothing but its migrations) |
+| Read-only | on |
 | Database | **ticked**; Spotcraft sets `DATABASE_URL` |
 | Env | `AUTH_SECRET=<openssl rand -hex 32>` and `PUBLIC_URL=https://sokobanko.app` |
 
 - **`AUTH_SECRET`** signs the session cookies. Keep it in the password manager. Changing it signs every guest out, and they lose their progress.
-- **`PUBLIC_URL`** must be the address players use, exactly the domain with `https://`. On https the cookie is `Secure`. Saving fails if it doesn't match.
-- **Database** must be ticked before the first deploy. Without it there's no `DATABASE_URL`: the container never turns healthy, and the log says "DATABASE_URL must be a postgres:// URL".
+- **`PUBLIC_URL`** must be the address players use, exactly the domain with `https://`. Saving fails if it doesn't match.
+- **Database** must be ticked before the first deploy. Without it there's no `DATABASE_URL`, and the server exits saying so.
 
-The container is healthy once `/api/health` answers, which means the database is migrated and Postgres responds. Spotcraft's deploy waits for that, and if it doesn't happen within two minutes it restores the previous version. The container is replaced in place, so expect a few seconds of downtime per release.
+The container is healthy once `/api/health` answers 200: the migrations have run and Postgres responds.
 
 ## Releasing
 
-1. Merge into `main` and push. CI verifies, then pushes `latest` and `sha-<short>`. A `v1.2.3` tag also pushes `1.2.3` and `1.2`.
-2. In the dashboard, edit `sokobanko` and pick the new `sha-…` tag. Spotcraft pulls it, restarts the container and waits until it's healthy. If the new one fails, it puts the previous one back.
-3. Smoke test (below).
+1. Merge `dev` into `main`. CI verifies, pushes `latest` and `sha-<short>`, then deploys `sha-<short>` through Spotcraft's deploy hook and waits until it is live (the `deploy` job). A `v1.2.3` tag also pushes `1.2.3` and `1.2`, but deploys nothing.
+2. Smoke test (below).
 
-- **Rolling back:** pick the previous tag. Migrations only ever add, so an older image runs on a newer database. Keep it that way: a migration that renames or drops something needs its own plan.
+Spotcraft starts the new version next to the old one and moves traffic once it is healthy, so a release has no downtime. If the new version doesn't turn healthy within two minutes, it is removed, the old one keeps serving, and the `deploy` job fails.
+
+- **Migrations only ever add.** For a few seconds both versions run against the same database, and a rollback runs an older image on a newer database. A migration that renames or drops something needs its own plan.
+- **Memory:** both versions run during a release, so the app briefly needs twice its 512 MB.
+- **Rolling back:** in the dashboard, edit `sokobanko` and pick the previous `sha-…` tag.
 - **Levels:** a migration adds or changes them (README, "Getting started"), then release. Deleting a level deletes its results with it.
-- **Spotcraft upgrades:** `@spotcraft/kit` X.Y needs Spotcraft X.Y or later (Spotcraft's ADR 0019). Upgrade Spotcraft first, then the kit.
+- **Versions:** `@spotcraft/kit` has its own version, apart from Spotcraft's (Spotcraft's ADR 0027). A kit release that needs a newer Spotcraft says so in its changelog; then upgrade Spotcraft first.
+
+### The deploy hook
+
+The `deploy` job runs only on `main`, and only once these are set in GitHub:
+
+- the repository variable `SPOTCRAFT_HOOK_URL`: `https://dash.spotcraft.dev/hooks/deploy/sokobanko`;
+- the secret `SPOTCRAFT_DEPLOY_TOKEN` in the `production` environment. In the dashboard, open `sokobanko`, then **Deploy hook → Turn on**, and copy the token. It is shown only once.
+
+**New token** in the dashboard replaces the token at once; update the secret. **Turn off** stops CI deploys. To approve each release, add required reviewers to the `production` environment. The hook can change only the tag, never the image, env or limits.
 
 ## Smoke test
 
@@ -52,25 +63,12 @@ In a fresh private window:
   - `/levels` shows First Push as solved, and `/play` opens Big Room.
   - The profile says "Playing since …".
 - **In the dashboard,** the app is healthy and its **Users** tab counts the guest.
-- **The browser console** shows no errors.
+- **The browser console** shows no errors, and no CSP warnings.
+- **`curl -I https://sokobanko.app`** shows `content-security-policy` and `x-frame-options: DENY`.
 
 ## Backups
 
-Spotcraft 0.2.0 doesn't back up Postgres yet; its decision 0015 says that's the next decision. Until then the only copy is the apps server's disk, so turn on Hetzner's server backups (`apps_server_backups` in Spotcraft's `infra/hetzner`). The levels could be rebuilt from the migrations in git, as long as nobody edits them in the database directly; the players' results are what would be lost.
+- **Every night at 03:00 UTC** Spotcraft dumps `app_sokobanko` to Cloudflare R2, with the app's settings and `AUTH_SECRET`. R2 keeps each backup for 30 days. The app's page in the dashboard shows the last backup; **Back up now** makes one at once.
+- **Hetzner's server backups** keep seven daily images of the whole server.
 
-## The rollout (2026-11-08)
-
-From the demo on Vercel (sokobanko.vin.ski) to the app on Spotcraft, on its own domain. Results started fresh: the old guests' sessions belonged to api.vin.ski and couldn't carry over.
-- [x] **1. Docker Hub:** the public repository `vindotski/sokobanko`. GitHub (`vindotski/sokobanko`) has the variable `DOCKERHUB_USERNAME` and the secret `DOCKERHUB_TOKEN`.
-- [x] **2. Published:** PR #1 merged into `main`. CI published `latest` and `sha-9a6e394` for amd64 and arm64.
-- [x] **3. The app:** added with the fields above, on `sokobanko.app`. The first try had no database (see `Database` above). The certificate came on the first request.
-- [x] **4. Smoke test** on https://sokobanko.app, over HTTPS with curl:
-  - health, the levels, the lock screen and the HttpOnly `Secure` cookie on the first save;
-  - a worse run keeping the best, `/play` opening Big Room, and the profile.
-  - Still to check in a browser: playing it and the console.
-- [ ] **5. sokobanko.vin.ski:** redirect it to https://sokobanko.app, or retire it.
-- [ ] **6. Retire:**
-  - the Vercel project;
-  - on the old Spotcraft at api.vin.ski: revoke Sokobanko's key and remove the `sokobanko` project, and remove Sokobanko's origins from `AUTH_TRUSTED_ORIGINS` if that server keeps running.
-
-The demo on Vercel was tagged `demo`. Its runbook is in git history (this file before the switch).
+To restore, follow Spotcraft's guide, [Backups and restoring](https://spotcraft.dev/docs/guides/backups). The levels could also be rebuilt from the migrations in git; the players' results are what a lost database would take with it.

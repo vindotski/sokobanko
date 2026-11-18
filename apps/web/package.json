@@ -18,7 +18,7 @@
     "@pinia/nuxt": "^1.0.3",
     "@sokoban/core": "workspace:*",
     "@sokoban/game": "workspace:*",
-    "@spotcraft/kit": "0.2.0",
+    "@spotcraft/kit": "0.4.0",
     "@tailwindcss/vite": "^4.3.3",
     "@vueuse/core": "^15.0.0",
     "canvas-confetti": "1.9.4",
@@ -42,7 +42,7 @@
     "drizzle-kit": "^0.31.11",
     "pg": "8.23.1",
     "shadcn-nuxt": "^2.8.2",
-    "spotcraft": "0.2.0",
+    "spotcraft": "0.5.0",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.13"
   }

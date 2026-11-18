@@ -11,6 +11,8 @@ import {
   parseLevel,
 } from "@sokoban/core";
 import { Application, type ColorSource, Graphics } from "pixi.js";
+// Pixi's shader code without eval, so the site's CSP needs no 'unsafe-eval'.
+import "pixi.js/unsafe-eval";
 import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
 import { Celebration } from "./celebration.ts";
 import { Joystick } from "./joystick.ts";

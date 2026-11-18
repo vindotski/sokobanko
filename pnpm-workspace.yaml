@@ -3,6 +3,3 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
-minimumReleaseAgeExclude:
-  - "@spotcraft/kit@0.2.0"
-  - spotcraft@0.2.0
