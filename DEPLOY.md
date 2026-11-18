@@ -72,8 +72,3 @@ In a fresh private window:
 - **Hetzner's server backups** keep seven daily images of the whole server.
 
 To restore, follow Spotcraft's guide, [Backups and restoring](https://spotcraft.dev/docs/guides/backups). The levels could also be rebuilt from the migrations in git; the players' results are what a lost database would take with it.
-
-## Left from the move off Vercel
-
-- [ ] **sokobanko.vin.ski:** still on Vercel. Redirect it to https://sokobanko.app, or retire it.
-- [ ] **Retire** the Vercel project, and on the old Spotcraft at api.vin.ski revoke Sokobanko's key and remove the `sokobanko` project.
