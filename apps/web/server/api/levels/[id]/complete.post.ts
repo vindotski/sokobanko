@@ -5,13 +5,14 @@ const SOLUTION = /^[lurdLURD]{1,20000}$/;
 
 /**
  * Verifies a solution by replaying it, then records it as the player's
- * completion. The player is the session's guest, made on their first save
- * (server/middleware/guest.ts); clients cannot write completions themselves.
+ * completion. The player is the session's guest, which the browser makes in
+ * the user pool before its first save (pages/play/[id].vue); clients cannot
+ * write completions themselves.
  */
 export default defineEventHandler(async (event) => {
   const guest = event.context.guest;
   if (!guest) throw createError({ statusCode: 401, message: "No session" });
-  const db = backend().db;
+  const database = db();
 
   const body = await readBody<{ solution?: unknown }>(event);
   const solution = body?.solution;
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
   // Levels unlock in play order: only solved levels and the first unsolved
   // one can be completed.
   const solved = new Set(
-    (await readProgress(db, guest.id)).map((c) => c.level),
+    (await readProgress(database, guest.id)).map((c) => c.level),
   );
   const states = levelStates(
     levels.map((l) => l.id),
@@ -53,7 +54,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Kept as the player's result, if it's a new best.
-  const best = await recordBest(db, guest.id, {
+  const best = await recordBest(database, guest.id, {
     level: level.id,
     moves: result.moves,
     pushes: result.pushes,

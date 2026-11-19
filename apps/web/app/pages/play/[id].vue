@@ -196,10 +196,19 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
   );
   verification.value = { state: "pending" };
   try {
-    const result = await $fetch<{ best: { moves: number; pushes: number } }>(
-      `/api/levels/${levelId}/complete`,
-      { method: "POST", body: { solution } },
-    );
+    const save = () =>
+      $fetch<{ best: { moves: number; pushes: number } }>(
+        `/api/levels/${levelId}/complete`,
+        { method: "POST", body: { solution } },
+      );
+    // A first save needs a guest: the browser makes one in the user pool.
+    if (Object.keys(store.best).length === 0) await ensureGuest();
+    const result = await save().catch(async (error) => {
+      // Their session ended since: a new guest, then save again.
+      if ((error as { statusCode?: number }).statusCode !== 401) throw error;
+      await ensureGuest();
+      return save();
+    });
     store.markCompleted(levelId, result.best);
     // The first save is what makes the visitor a guest.
     if (!previousBest) refreshNuxtData("account");

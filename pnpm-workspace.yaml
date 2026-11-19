@@ -7,5 +7,8 @@ allowBuilds:
 # release has time to be caught and pulled.
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
-  # The owner's own UI library, published from its CI with npm provenance.
+  # The owner's own packages, published from their CI with npm provenance:
+  # the UI library, Spotcraft's app helpers and its CLI.
   - "@kodentuzo/spotstrap"
+  - "@kodentuzo/spotkit"
+  - "@kodentuzo/spotcraft"

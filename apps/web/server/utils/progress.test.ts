@@ -6,23 +6,34 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { levels } from "../db/schema";
 import { type Completion, readProgress, recordBest } from "./progress";
 
-// Against a real database: from apps/web, `npx spotcraft dev start --name
-// sokobanko`, then DATABASE_URL=… pnpm test. Skipped without one.
+// Against the local stack: from apps/web, `pnpm exec spotcraft dev`, then
+// `set -a; . ./.env; set +a; pnpm test`. Players are guests of its user pool,
+// as on Spotcraft. Skipped without DATABASE_URL.
 const url = process.env.DATABASE_URL;
+const authUrl = process.env.AUTH_URL;
 
 describe.skipIf(!url)("progress in Postgres", () => {
   const pool = new pg.Pool({ connectionString: url, max: 2 });
   const db = drizzle(pool);
   const level = `test-${randomUUID().slice(0, 8)}`;
-  const users: string[] = [];
-
+  /**
+   * A new guest, made as a browser makes one. The app may only read and
+   * reference users. Each from its own address, so the pool's limit on new
+   * guests per address doesn't stop repeated runs.
+   */
   const newPlayer = async () => {
-    const id = randomUUID();
-    await db.execute(
-      sql`insert into auth.users (id, name, email, is_anonymous) values (${id}, 'Test', ${`${id}@test.invalid`}, true)`,
-    );
-    users.push(id);
-    return id;
+    const response = await fetch(`${authUrl}/sign-in/anonymous`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        origin: "http://localhost:3000",
+        "x-spotcraft-client-ip": `198.51.100.${Math.floor(Math.random() * 250)}`,
+      },
+      body: "{}",
+    });
+    if (!response.ok) throw new Error(`The pool answered ${response.status}`);
+    const { user } = (await response.json()) as { user: { id: string } };
+    return user.id;
   };
   const run = (moves: number, pushes = 1, at = "2026-11-08T10:00:00.000Z") =>
     ({ level, moves, pushes, completedAt: at }) satisfies Completion;
@@ -37,9 +48,9 @@ describe.skipIf(!url)("progress in Postgres", () => {
   });
 
   afterAll(async () => {
-    await db.execute(sql`delete from public.levels where id = ${level}`);
-    for (const id of users)
-      await db.execute(sql`delete from auth.users where id = ${id}`);
+    // Their results go with the level. The guests stay in the local pool,
+    // which deletes idle ones.
+    await db.execute(sql`delete from levels where id = ${level}`);
     await pool.end();
   });
 
@@ -73,13 +84,12 @@ describe.skipIf(!url)("progress in Postgres", () => {
     expect(await readProgress(db, b)).toEqual([]);
   });
 
-  it("goes with the player", async () => {
-    const player = await newPlayer();
-    await recordBest(db, player, run(4));
-    await db.execute(sql`delete from auth.users where id = ${player}`);
-    const left = await db.execute(
-      sql`select count(*)::int as n from public.progress where user_id = ${player}`,
+  it("goes with the player: deleting a user in the pool deletes it", async () => {
+    // Only the pool may delete users, so this checks the foreign key.
+    const fk = await db.execute(
+      sql`select confdeltype from pg_constraint
+          where conrelid = 'progress'::regclass and confrelid = 'auth.users'::regclass`,
     );
-    expect(left.rows[0]).toEqual({ n: 0 });
+    expect(fk.rows).toEqual([{ confdeltype: "c" }]);
   });
 });

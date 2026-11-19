@@ -1,8 +1,15 @@
-import { healthResponse } from "@spotcraft/kit/nuxt";
+import { sql } from "drizzle-orm";
 
 /**
- * For the container's HEALTHCHECK: 200 once the database is migrated, the
- * levels synced and Postgres answers. It waits for the start-up work, so a
- * deploy goes live only after the migrations have run.
+ * For the container's HEALTHCHECK: 200 once Postgres answers. Spotcraft runs
+ * the migrations before a new version starts, so there's nothing to wait for.
  */
-export default defineEventHandler(() => healthResponse(backend()));
+export default defineEventHandler(async () => {
+  try {
+    await db().execute(sql`select 1`);
+  } catch (error) {
+    console.error("Health check failed:", error);
+    throw createError({ statusCode: 503, message: "Database unavailable" });
+  }
+  return { ok: true };
+});

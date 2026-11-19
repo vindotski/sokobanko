@@ -8,6 +8,19 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Changed
+- **Guests live in Spotcraft's user pool** (Spotcraft 0.6), shared by every app on the server.
+  The browser makes the guest with Better Auth's client before the first save; the server reads
+  it with `@kodentuzo/spotkit`. `@spotcraft/kit` is gone. Existing guests move with their
+  progress and keep their cookies when the app moves (DEPLOY.md).
+- **The tables are in the `app_sokobanko` schema** of Spotcraft's shared database. The
+  migrations start again from one that makes today's tables and one that writes the levels.
+- **Spotcraft runs the migrations** before a new version starts, through the image's
+  `dev.spotcraft.migrate` label (`node .output/server/index.mjs migrate`). The server no longer
+  migrates at start, and `/api/health` only checks Postgres.
+- **Local development uses `spotcraft dev`** from `@kodentuzo/spotcraft` 0.6, one command for
+  Postgres, the user pool, `.env` and the migrations. CI runs the database tests on it too.
+
 ### Added
 - A Content Security Policy on every page, in production. Spotcraft 0.5's Caddy adds the other
   security headers. The game loads `pixi.js/unsafe-eval`, so the policy needs no
