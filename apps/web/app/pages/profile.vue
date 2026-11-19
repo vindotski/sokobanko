@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { UserIcon } from "@lucide/vue";
 
+// A player's own page: nothing for search engines.
+usePageSeo({
+  title: "Profile",
+  description: "Your solved levels and best results in Sokobanko.",
+  index: false,
+});
+
 const { data: guest } = await useAccount();
 const { data: completed } = await useCompletions();
 const { data: levels } = await useLevels();

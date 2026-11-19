@@ -1,7 +1,12 @@
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 
 const cnPath = new URL("./app/lib/utils.ts", import.meta.url);
+// The release version, shown in the footer, is the root package's.
+const { version } = JSON.parse(
+  readFileSync(new URL("../../package.json", import.meta.url), "utf8"),
+) as { version: string };
 
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-25",
@@ -12,6 +17,13 @@ export default defineNuxtConfig({
       title: "Sokobanko",
       // Native scrollbars and form controls follow the theme too.
       meta: [{ name: "color-scheme", content: "light dark" }],
+      // Icons and the web app manifest live in public/. Pages set their own
+      // titles and link previews (composables/seo.ts).
+      link: [
+        { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+        { rel: "manifest", href: "/site.webmanifest" },
+      ],
     },
   },
   css: [
@@ -51,6 +63,10 @@ export default defineNuxtConfig({
       // the app's own /_spotcraft/auth is used; `nuxt dev` reads AUTH_URL from
       // .env, where `spotcraft dev` puts the local pool.
       authUrl: process.env.AUTH_URL ?? "",
+      // Link previews need absolute URLs (og:image, og:url). Set
+      // NUXT_PUBLIC_SITE_URL to serve the app from another domain.
+      siteUrl: "https://sokobanko.app",
+      version,
     },
   },
   $production: {

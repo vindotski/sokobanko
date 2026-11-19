@@ -2,6 +2,12 @@
 import { CheckIcon, LockIcon, PlayIcon } from "@lucide/vue";
 import { levelStates, parseLevel } from "@sokoban/core";
 
+usePageSeo({
+  title: "Levels",
+  description:
+    "Every Sokobanko level, from the first push to David W. Skinner's Microban. Solve one to unlock the next.",
+});
+
 const progress = useProgressStore();
 const { data: levels } = await useLevels();
 const { data: collections } = await useCollections();

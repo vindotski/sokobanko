@@ -1,4 +1,10 @@
 <script setup lang="ts">
+usePageSeo({
+  title: "FAQ",
+  description:
+    "How to play Sokobanko, the controls, how progress is saved and where the levels come from.",
+});
+
 // Placeholder answers; extend as features land.
 const questions = [
   {
@@ -24,7 +30,13 @@ const questions = [
   {
     question: "Is my progress saved?",
     answer:
-      "Yes, in this browser. Your first solved level makes you a guest, and every solved level is checked and saved with your best result. Signing up to keep it across devices is coming soon.",
+      "Yes. Your first solved level makes you a guest, kept in this browser by a cookie, and every solved level is checked and saved on our server with your best result. Signing up to keep it across devices is coming soon.",
+  },
+  {
+    question: "What do you collect?",
+    answer:
+      "Only what the game needs: the guest cookie, your best results, and a few settings in your browser. Visits are counted without cookies or ids. The details, and how to opt out or have your data deleted, are on the",
+    link: { to: "/privacy", label: "privacy page" },
   },
   {
     question: "Where do the levels come from?",
@@ -66,6 +78,13 @@ const questions = [
         <AccordionTrigger>{{ item.question }}</AccordionTrigger>
         <AccordionContent class="text-muted-foreground">
           {{ item.answer }}
+          <template v-if="item.link">
+            <NuxtLink
+              :to="item.link.to"
+              class="font-medium text-foreground underline"
+              >{{ item.link.label }}</NuxtLink
+            >.
+          </template>
           <template v-if="item.email">
             <a
               :href="`mailto:${item.email}`"
