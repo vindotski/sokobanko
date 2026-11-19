@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
+/* Spotstrap's Sokobanko theme: black and white, square, no shadows, Geist. The
+   colors follow @nuxtjs/color-mode's .dark class on <html>, not the system. */
+@import "@kodentuzo/spotstrap/tailwind.css";
+@import "@kodentuzo/spotstrap/themes/sokobanko.css";
+@import "@kodentuzo/spotstrap/dark-class.css";
 
 /* Small capitals in Geist Mono: card labels, level meta, badges. */
 @utility text-label {
@@ -22,12 +25,6 @@
 }
 
 @theme inline {
-  --font-sans:
-    "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    Helvetica, Arial, sans-serif;
-  --font-mono:
-    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
-    monospace;
   /* Type scale, shared with www.vin.ski: every font size is one of these.
      Tailwind's xs/sm/base/lg are remapped onto it so shadcn components fit. */
   --text-xs: 12px;
@@ -56,42 +53,7 @@
   --text-display--line-height: 1.1;
   --text-display--letter-spacing: -0.03em;
   --text-display--font-weight: 600;
-  /* Square everywhere: every rounded-* utility resolves to 0. */
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
-  --radius-3xl: 0;
-  --radius-4xl: 0;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
   --color-grid: var(--grid);
-  /* High contrast: edges are borders, never soft shadows. */
-  --shadow-2xs: none;
-  --shadow-xs: none;
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: none;
-  --shadow-xl: none;
-  --shadow-2xl: none;
   --color-board-wall: var(--board-wall);
   --color-board-floor: var(--board-floor);
   --color-board-goal: var(--board-goal);
@@ -101,30 +63,7 @@
 }
 
 :root {
-  /* Native scrollbars and form controls match the active theme. */
-  color-scheme: light;
-  --radius: 0;
   --display-size: 44px;
-  --background: #fff;
-  --foreground: #000;
-  --card: #fff;
-  --card-foreground: #000;
-  --popover: #fff;
-  --popover-foreground: #000;
-  --primary: #000;
-  --primary-foreground: #fff;
-  --secondary: #f2f2f2;
-  --secondary-foreground: #000;
-  --muted: #f2f2f2;
-  /* About 7.5:1 on white, the same grey as www.vin.ski. */
-  --muted-foreground: #555;
-  --accent: #f2f2f2;
-  --accent-foreground: #000;
-  /* No red: errors say what went wrong in words. */
-  --destructive: #000;
-  --border: #000;
-  --input: #000;
-  --ring: #000;
   /* Decorative tile grid; quieter than real borders. */
   --grid: #e5e5e5;
   /* Sokoban board; packages/game/src/game.ts uses the same colors. Pieces are
@@ -138,25 +77,6 @@
 }
 
 .dark {
-  color-scheme: dark;
-  --background: #000;
-  --foreground: #fff;
-  --card: #000;
-  --card-foreground: #fff;
-  --popover: #000;
-  --popover-foreground: #fff;
-  --primary: #fff;
-  --primary-foreground: #000;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #fff;
-  --muted: #1a1a1a;
-  --muted-foreground: #aaa;
-  --accent: #1a1a1a;
-  --accent-foreground: #fff;
-  --destructive: #fff;
-  --border: #fff;
-  --input: #fff;
-  --ring: #fff;
   --grid: #262626;
   --board-wall: #fff;
   --board-floor: #000;
@@ -173,11 +93,13 @@
 }
 
 @layer base {
+  /* Spotstrap sets borders, the body's colors, font and size. Outlines stay
+     at full contrast; spotstrap's default is the ring at 50%. */
   * {
-    @apply border-border outline-ring;
+    @apply outline-ring;
   }
   body {
-    @apply bg-background font-sans text-body text-foreground antialiased;
+    @apply antialiased;
   }
   /* Every underline looks the same: thin and clear of the letters. */
   a {
