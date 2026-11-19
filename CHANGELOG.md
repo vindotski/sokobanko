@@ -25,6 +25,14 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 - The server no longer goes live before its migrations have run: if they fail, it exits, and
   Spotcraft keeps the previous version serving.
 - DEPLOY.md describes Spotcraft 0.5: releases without downtime, the deploy hook and backups.
+- The colors, square corners and flat edges now come from `@kodentuzo/spotstrap` 0.1.2 and its
+  Sokobanko theme, following the light/dark switch as before. The pages look the same; the board
+  keeps its own colors. Our type scale stays, and `cn` also knows spotstrap's text sizes.
+- pnpm installs a newly published package only once it is a day old, except spotstrap.
+
+### Fixed
+- The destructive button and badge drew white text on a white fill in dark mode. Neither is used
+  on a page yet.
 
 ## [0.2.1] - 2026-11-13
 

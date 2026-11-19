@@ -229,6 +229,9 @@ importers:
       '@fontsource-variable/geist-mono':
         specifier: 5.3.0
         version: 5.3.0
+      '@kodentuzo/spotstrap':
+        specifier: 0.1.2
+        version: 0.1.2(tailwindcss@4.3.3)
       '@lucide/vue':
         specifier: ^1.61.0
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
@@ -1161,6 +1164,15 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@kodentuzo/spotstrap@0.1.2':
+    resolution: {integrity: sha512-4Evcw+G8h5PFpbHw3Vyt88fsl0DBaPjaV3rEbOlCj4pF8TZhaZtjgxOZx5XAO1u09qRmjJ07qD5bRqcWq0xnRQ==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      tailwindcss: ^4.3.0
+    peerDependenciesMeta:
+      tailwindcss:
+        optional: true
 
   '@lucide/vue@1.61.0':
     resolution: {integrity: sha512-XYclbwUQ6Mvf0UskBG9gJH91BdF3VK4Tt6Pv8PSntwPwNnf357PCQnma4TrzOEdwD49UYCtsTafpfytRIxm1cQ==}
@@ -5369,6 +5381,10 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@kodentuzo/spotstrap@0.1.2(tailwindcss@4.3.3)':
+    optionalDependencies:
+      tailwindcss: 4.3.3
 
   '@lucide/vue@1.61.0(vue@3.5.44(typescript@6.0.3))':
     dependencies:
