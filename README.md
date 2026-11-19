@@ -2,7 +2,7 @@
 
 The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.app**. You push boxes onto goals, one at a time, and every move is counted and can be undone. It comes with 159 levels: four to start, then David W. Skinner's Microban, all 155. Your best results are checked and saved by the server.
 
-**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own schema, `app_sokobanko`, in Spotcraft's Postgres. The levels live there: its migrations write them, and Postgres is their only source. A visitor becomes a guest of Spotcraft's user pool the first time they solve a level, and their best result per level is kept in the schema. [DEPLOY.md](DEPLOY.md) has the setup, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps.
+**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own schema, `app_sokobanko`, in Spotcraft's Postgres. The levels live there: its migrations write them, and Postgres is their only source. A visitor becomes a guest of Spotcraft's user pool the first time they solve a level, and their best result per level is kept in the schema. [DEPLOY.md](DEPLOY.md) has the setup, [docs/product.md](docs/product.md) the player's loop and how it's measured, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps.
 
 ## What it does
 
@@ -25,7 +25,7 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
 | `bin/` | `import-collection.ts` turns a collection in plain-text XSB into a migration; `solve-levels.ts` finds the known solutions the tests replay |
-| `docs/` | The roadmap and the parity comparison |
+| `docs/` | The product loop and its metrics, the roadmap, and the parity comparison |
 
 ## Getting started
 

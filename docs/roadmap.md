@@ -1,11 +1,21 @@
 ---
 title: Roadmap
-description: The demo (on Vercel, with Spotcraft's old hosted API), the proof of concept (an app on Spotcraft 0.2.0, on our own servers), then the earlier plan.
+description: The active product phase, then the demo (on Vercel, with Spotcraft's old hosted API), the proof of concept (an app on Spotcraft 0.2.0, on our own servers), then the earlier plan.
 ---
 
 # Roadmap
 
-**Numbering:** a bare number in parentheses, like "(12)", is one of this repository's [decision records](decisions/README.md). Spotcraft's records are always written out as "Spotcraft's decision N", since the two sets of numbers overlap. Gameplay features are compared in [parity.md](parity.md).
+**Numbering:** a bare number in parentheses, like "(12)", is one of this repository's decision records. They aren't written yet; the [list in Phase 0](#phase-0-decision-records-tooling-and-early-cleanup) gives each number its decision. Spotcraft's records are always written out as "Spotcraft's decision N", since the two sets of numbers overlap. Gameplay features are compared in [parity.md](parity.md).
+
+## Active: from a working game to a product
+Sokobanko works, but nothing brings a player back, helps them spread it, or tells us what they do. This phase adds that layer. [product.md](product.md) has the loop, what each stage lacks, the bar for "done" and the metrics. One PR each, into `dev`, then a release as v0.4.0.
+- [x] **Write the loop down:** [product.md](product.md).
+- [ ] **Measure:** Spotcraft 0.7.0 with Umami, a `track()` helper, and the events `level_start`, `level_solve`, `level_restart`, `daily_solve`, `share` and `hint_dismissed`.
+- [ ] **Discover and trust:** icons, a web manifest, per-page titles and Open Graph tags, a privacy page, a footer, robots.txt and a sitemap.
+- [ ] **First win:** a one-time controls hint on the first level, and "Next level" after a solve.
+- [ ] **Mastery:** par for each level, and 1–3 stars on the win screen, level select and the profile.
+- [ ] **Daily return and share:** a daily puzzle at `/daily`, a streak checked by the server, and a spoiler-free share text.
+- [ ] **Done when** every point of [the bar](product.md#the-bar) holds on https://sokobanko.app.
 
 ## Demo: Sokobanko on Spotcraft
 Done and tagged `demo` ("Spotcraft Content Integration"). **Superseded by the proof of concept below:** Spotcraft 0.2.0 replaced the hosted API this section integrates with, so its levels import, keys and app data are gone. It's kept as history; the integration docs it cites are in git history.

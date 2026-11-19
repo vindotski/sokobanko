@@ -90,7 +90,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
-| Progress saved | ✅ in the browser (Supabase today, Dexie from ⏳ 3, 12) | ✖ | ✖ lost at power off | ✅ | ✖ | ✅ |
+| Progress saved | ✅ on the server: bests in the app's Postgres on Spotcraft, for a guest the kit creates on the first save; a half-played level in the browser (`localStorage`) | ✖ | ✖ lost at power off | ✅ | ✖ | ✅ |
 | Best result per level | ✅ fewest moves | ✖ | ✅ fewest pushes, moves and time | ? | ? | ✅ |
 | Statistics | ◐ solved count and bests | ✖ | ◐ top 5 | ? | ? | ◐ |
 | Accounts and sync | ✖ for now (Later, 15) | ✖ | ✖ | ? | ? | ◐ Play Games |
