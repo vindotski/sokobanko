@@ -27,6 +27,10 @@ if (!level) {
 }
 const levelId = level.id;
 const collectionId = level.collection;
+usePageSeo({
+  title: level.title,
+  description: `Play ${level.title} in Sokobanko: push every box onto a goal.`,
+});
 // The collection and its author, under the title.
 const { data: collections } = await useCollections();
 const collection = computed(() =>
