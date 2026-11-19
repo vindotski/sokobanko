@@ -26,6 +26,7 @@ if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
 const levelId = level.id;
+const collectionId = level.collection;
 // The collection and its author, under the title.
 const { data: collections } = await useCollections();
 const collection = computed(() =>
@@ -169,7 +170,23 @@ function playSound(prev: GameProgress, next: GameProgress) {
   else sound.play("step");
 }
 
+// One start per visit: the first move the player makes, not the board loading.
+let startTracked = false;
+function trackChange(prev: GameProgress, next: GameProgress) {
+  if (!started) return;
+  if (!startTracked && next.moves > prev.moves) {
+    startTracked = true;
+    track("level_start", { level: levelId, collection: collectionId });
+  }
+  // A restart clears the redo stack; undoing back to the start keeps it.
+  // Replaying a solved level isn't giving up, so it doesn't count.
+  if (next.moves === 0 && prev.moves > 0 && !next.canRedo && !prev.solved) {
+    track("level_restart", { level: levelId, moves: prev.moves });
+  }
+}
+
 function onChange(next: GameProgress) {
+  trackChange(progress.value, next);
   playSound(progress.value, next);
   announce(progress.value, next);
   progress.value = next;
@@ -186,6 +203,13 @@ function onChange(next: GameProgress) {
 async function onSolved({ solution, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
   const previousBest = store.best[levelId];
+  track("level_solve", {
+    level: levelId,
+    collection: collectionId,
+    moves,
+    pushes,
+    first: !previousBest,
+  });
   isNewBest.value = false;
   clearTimeout(dialogTimer);
   dialogTimer = setTimeout(
