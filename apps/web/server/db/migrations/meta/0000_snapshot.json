@@ -1,17 +1,66 @@
 {
-  "id": "5fae9672-81b2-4022-b5c4-dce9f85e44f9",
+  "id": "d019487e-9bf5-43d0-bdc7-b1ec80511710",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.levels": {
-      "name": "levels",
-      "schema": "",
+    "app_sokobanko.collections": {
+      "name": "collections",
+      "schema": "app_sokobanko",
       "columns": {
         "id": {
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "credit": {
+          "name": "credit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "app_sokobanko.levels": {
+      "name": "levels",
+      "schema": "app_sokobanko",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "title": {
@@ -41,16 +90,27 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "levels_collection_id_collections_id_fk": {
+          "name": "levels_collection_id_collections_id_fk",
+          "tableFrom": "levels",
+          "tableTo": "collections",
+          "schemaTo": "app_sokobanko",
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.progress": {
+    "app_sokobanko.progress": {
       "name": "progress",
-      "schema": "",
+      "schema": "app_sokobanko",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -99,6 +159,7 @@
           "name": "progress_level_id_levels_id_fk",
           "tableFrom": "progress",
           "tableTo": "levels",
+          "schemaTo": "app_sokobanko",
           "columnsFrom": ["level_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",

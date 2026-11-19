@@ -2,8 +2,7 @@
 export default defineEventHandler(async (event) => {
   const guest = event.context.guest;
   if (!guest) return [];
-  await databaseReady();
-  const completions = await readProgress(backend().db, guest.id);
+  const completions = await readProgress(db(), guest.id);
   return completions
     .map((c) => ({
       level_id: c.level,

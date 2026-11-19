@@ -45,6 +45,14 @@ export default defineNuxtConfig({
     prefix: "",
     componentDir: "./app/components/ui",
   },
+  runtimeConfig: {
+    public: {
+      // Where the browser reaches Spotcraft's user pool. Empty in a build, so
+      // the app's own /_spotcraft/auth is used; `nuxt dev` reads AUTH_URL from
+      // .env, where `spotcraft dev` puts the local pool.
+      authUrl: process.env.AUTH_URL ?? "",
+    },
+  },
   $production: {
     routeRules: {
       // Spotcraft's Caddy adds HSTS, nosniff, Referrer-Policy, X-Frame-Options,
@@ -73,11 +81,11 @@ export default defineNuxtConfig({
     // A plain Node server (`node .output/server/index.mjs`), run in a
     // container on Spotcraft; see the Dockerfile.
     preset: "node-server",
-    // The server reads DATABASE_URL, AUTH_SECRET and PUBLIC_URL from the
-    // environment (server/utils/backend.ts); none of them reach the browser.
-    // Bundled into the server, so the image needs nothing beside .output:
-    // the migrations, which also hold the levels, are applied at boot
-    // (server/utils/database.ts).
+    // The server reads DATABASE_URL and the AUTH_* settings from the
+    // environment (server/utils/db.ts, server/utils/userPool.ts).
+    // The migrations, which also hold the levels, are bundled into the server,
+    // so the image needs nothing beside .output: Spotcraft runs them with
+    // `node .output/server/index.mjs migrate` (server/plugins/database.ts).
     serverAssets: [
       {
         baseName: "migrations",

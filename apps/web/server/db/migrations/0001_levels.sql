@@ -1,3 +1,16 @@
+-- The levels: Postgres is their only source. Collections after these are added by
+-- bin/import-collection.ts, one migration each. Names resolve to app_sokobanko
+-- through the role's search path.
+-- Basics, made for Sokobanko.
+INSERT INTO "collections" ("id", "title", "author", "credit", "order") VALUES
+	('basics', 'Basics', NULL, 'Made for Sokobanko. Hello World! is from DoctorLai/sokoban-web (https://github.com/DoctorLai/sokoban-web), MIT licensed.', 1);
+--> statement-breakpoint
+INSERT INTO "levels" ("id", "collection_id", "title", "order", "map") VALUES
+	('first-push', 'basics', 'First Push', 1, '["#########","#@  $  .#","#########"]'),
+	('big-room', 'basics', 'Big Room', 2, '["##############################","#@                           #","#  $                         #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                            #","#                           .#","##############################"]'),
+	('two-boxes', 'basics', 'Two Boxes', 3, '[" #####","##   #","#@$$ #","#  ..#","######"]'),
+	('hello-world', 'basics', 'Hello World!', 4, '["##########","####....##","#  $$$$###","#  @   ###","##########"]');
+--> statement-breakpoint
 -- Microban: 155 levels, made by bin/import-collection.ts.
 INSERT INTO "collections" ("id", "title", "author", "credit", "order") VALUES
 	('microban', 'Microban', 'David W. Skinner', 'From David W. Skinner''s Microban (155 puzzles, April 2000), http://users.bentonrea.com/~sasquatch/sokoban/. His sets may be freely distributed provided they remain properly credited.', 2);
