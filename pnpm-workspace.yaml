@@ -3,3 +3,12 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
+# Wait a day before installing a newly published version, so a compromised
+# release has time to be caught and pulled.
+minimumReleaseAge: 1440
+minimumReleaseAgeExclude:
+  # The owner's own packages, published from their CI with npm provenance:
+  # the UI library, Spotcraft's app helpers and its CLI.
+  - "@kodentuzo/spotstrap"
+  - "@kodentuzo/spotkit"
+  - "@kodentuzo/spotcraft"

@@ -24,8 +24,7 @@ export interface Collection {
  * (levels without one last), then by id. Unlocking follows this order.
  */
 export async function getLevels(): Promise<Level[]> {
-  await databaseReady();
-  return readLevels(backend().db);
+  return readLevels(db());
 }
 
 /** getLevels() on a given database, for the tests. */
@@ -54,9 +53,8 @@ export async function readLevels(db: NodePgDatabase): Promise<Level[]> {
 
 /** Every collection in play order. */
 export async function getCollections(): Promise<Collection[]> {
-  await databaseReady();
-  return backend()
-    .db.select({
+  return db()
+    .select({
       id: collections.id,
       title: collections.title,
       author: collections.author,

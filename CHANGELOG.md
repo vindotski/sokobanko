@@ -8,6 +8,19 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Changed
+- **Guests live in Spotcraft's user pool** (Spotcraft 0.6), shared by every app on the server.
+  The browser makes the guest with Better Auth's client before the first save; the server reads
+  it with `@kodentuzo/spotkit`. `@spotcraft/kit` is gone. Existing guests move with their
+  progress and keep their cookies when the app moves (DEPLOY.md).
+- **The tables are in the `app_sokobanko` schema** of Spotcraft's shared database. The
+  migrations start again from one that makes today's tables and one that writes the levels.
+- **Spotcraft runs the migrations** before a new version starts, through the image's
+  `dev.spotcraft.migrate` label (`node .output/server/index.mjs migrate`). The server no longer
+  migrates at start, and `/api/health` only checks Postgres.
+- **Local development uses `spotcraft dev`** from `@kodentuzo/spotcraft` 0.6, one command for
+  Postgres, the user pool, `.env` and the migrations. CI runs the database tests on it too.
+
 ### Added
 - A Content Security Policy on every page, in production. Spotcraft 0.5's Caddy adds the other
   security headers. The game loads `pixi.js/unsafe-eval`, so the policy needs no
@@ -25,6 +38,20 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 - The server no longer goes live before its migrations have run: if they fail, it exits, and
   Spotcraft keeps the previous version serving.
 - DEPLOY.md describes Spotcraft 0.5: releases without downtime, the deploy hook and backups.
+- The colors, square corners and flat edges now come from `@kodentuzo/spotstrap` 0.1.3 and its
+  Sokobanko theme, following the light/dark switch as before. The pages look the same; the board
+  keeps its own colors. Our type scale stays, and `cn` also knows spotstrap's text sizes.
+- pnpm installs a newly published package only once it is a day old, except spotstrap.
+- Buttons, toggles, the theme menu, the FAQ and the solved dialog use spotstrap's components, so
+  every control is easy to hit on a phone. Buttons are 44px tall; the header and the play
+  screen's bars use 36px ones that still take a 44px tap. Their text is 17px, or 15px on the
+  small ones (was 14px). Theme menu rows and FAQ questions are 44px.
+- On a phone, the solved dialog opens as a sheet at the bottom of the screen, its buttons full
+  width.
+
+### Fixed
+- The destructive button and badge drew white text on a white fill in dark mode. Neither is used
+  on a page yet.
 
 ## [0.2.1] - 2026-11-13
 

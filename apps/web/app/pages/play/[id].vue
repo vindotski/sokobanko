@@ -196,10 +196,19 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
   );
   verification.value = { state: "pending" };
   try {
-    const result = await $fetch<{ best: { moves: number; pushes: number } }>(
-      `/api/levels/${levelId}/complete`,
-      { method: "POST", body: { solution } },
-    );
+    const save = () =>
+      $fetch<{ best: { moves: number; pushes: number } }>(
+        `/api/levels/${levelId}/complete`,
+        { method: "POST", body: { solution } },
+      );
+    // A first save needs a guest: the browser makes one in the user pool.
+    if (Object.keys(store.best).length === 0) await ensureGuest();
+    const result = await save().catch(async (error) => {
+      // Their session ended since: a new guest, then save again.
+      if ((error as { statusCode?: number }).statusCode !== 401) throw error;
+      await ensureGuest();
+      return save();
+    });
     store.markCompleted(levelId, result.best);
     // The first save is what makes the visitor a guest.
     if (!previousBest) refreshNuxtData("account");
@@ -235,7 +244,7 @@ function replay() {
           v-if="prevLevel"
           variant="ghost"
           size="sm"
-          class="justify-self-start"
+          class="justify-self-start max-sm:btn-icon"
           as-child
         >
           <NuxtLink :to="`/play/${prevLevel.id}`" aria-label="Previous level">
@@ -247,7 +256,7 @@ function replay() {
           v-else
           variant="ghost"
           size="sm"
-          class="justify-self-start"
+          class="justify-self-start max-sm:btn-icon"
           aria-label="Previous level"
           disabled
         >
@@ -274,7 +283,7 @@ function replay() {
           v-if="nextLocked"
           variant="ghost"
           size="sm"
-          class="justify-self-end"
+          class="justify-self-end max-sm:btn-icon"
           aria-label="Next level (locked)"
           disabled
         >
@@ -285,7 +294,7 @@ function replay() {
           v-else-if="nextLevel"
           variant="ghost"
           size="sm"
-          class="justify-self-end"
+          class="justify-self-end max-sm:btn-icon"
           as-child
         >
           <NuxtLink :to="`/play/${nextLevel.id}`" aria-label="Next level">
@@ -301,7 +310,7 @@ function replay() {
           v-else-if="!(levelId in store.best)"
           variant="ghost"
           size="sm"
-          class="justify-self-end"
+          class="justify-self-end max-sm:btn-icon"
           aria-label="Finish"
           disabled
         >
@@ -312,7 +321,7 @@ function replay() {
           v-else
           variant="ghost"
           size="sm"
-          class="justify-self-end"
+          class="justify-self-end max-sm:btn-icon"
           as-child
         >
           <NuxtLink to="/play" aria-label="Finish">
@@ -423,6 +432,7 @@ function replay() {
               <Button
                 variant="outline"
                 size="sm"
+                class="max-md:btn-icon"
                 title="Undo (Z)"
                 aria-keyshortcuts="Z U"
                 :disabled="progress.moves === 0"
@@ -434,6 +444,7 @@ function replay() {
               <Button
                 variant="outline"
                 size="sm"
+                class="max-md:btn-icon"
                 title="Redo (Y)"
                 aria-keyshortcuts="Y"
                 :disabled="!progress.canRedo"
@@ -445,6 +456,7 @@ function replay() {
               <Button
                 variant="outline"
                 size="sm"
+                class="max-md:btn-icon"
                 title="Restart (R)"
                 aria-keyshortcuts="R"
                 :disabled="progress.moves === 0"
@@ -479,6 +491,7 @@ function replay() {
               <Toggle
                 variant="outline"
                 size="sm"
+                class="btn-icon"
                 :title="sound.enabled.value ? 'Sound on' : 'Sound off'"
                 aria-label="Sound"
                 :model-value="sound.enabled.value"
@@ -490,6 +503,7 @@ function replay() {
               <Toggle
                 variant="outline"
                 size="sm"
+                class="max-sm:btn-icon"
                 title="Overview (hold Space)"
                 aria-keyshortcuts="Space"
                 :disabled="!overview.available"
