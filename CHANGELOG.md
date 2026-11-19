@@ -18,7 +18,7 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 - **Spotcraft runs the migrations** before a new version starts, through the image's
   `dev.spotcraft.migrate` label (`node .output/server/index.mjs migrate`). The server no longer
   migrates at start, and `/api/health` only checks Postgres.
-- **Local development uses `spotcraft dev`** from `@kodentuzo/spotcraft` 0.6, one command for
+- **Local development uses `spotcraft dev`** from `@kodentuzo/spotcraft` 0.6.1, one command for
   Postgres, the user pool, `.env` and the migrations. CI runs the database tests on it too.
 
 ### Added
