@@ -22,6 +22,8 @@ export interface TrackEvents {
    * start, and not Replay after a solve.
    */
   level_restart: { level: string; moves: number };
+  /** "Got it" on the first-time hint, and how far into the run they were. */
+  hint_dismissed: { level: string; moves: number };
 }
 
 type Umami = {

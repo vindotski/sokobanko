@@ -54,6 +54,19 @@ function saveRun({ solution, solved }: GameProgress) {
 }
 const savedRun = import.meta.client ? readRun() : undefined;
 
+// A first-time player is told the goal and the one rule that catches
+// everyone, above the board. It doesn't block play: keys reach the board
+// meanwhile. It stays until "Got it" or the first solve, and is read in setup
+// (client only) because the board's padding is fixed when it's created.
+const hintKey = "sokobanko:hint";
+function readHintDismissed() {
+  try {
+    return localStorage.getItem(hintKey) === "dismissed";
+  } catch {
+    return true;
+  }
+}
+
 const game = useTemplateRef("game");
 const progress = ref<GameProgress>({
   moves: 0,
@@ -103,6 +116,26 @@ const nextLocked = computed(
 const currentLevel = computed(() =>
   levels.value?.find((l) => states.value.get(l.id) === "current"),
 );
+
+const hintDismissed = ref(
+  import.meta.server ||
+    Object.keys(store.best).length > 0 ||
+    readHintDismissed(),
+);
+const showHint = computed(
+  () => !hintDismissed.value && Object.keys(store.best).length === 0,
+);
+// Room above the board for the hint, decided once, when the board is made.
+const boardPadding = showHint.value
+  ? { top: 128, bottom: 136 }
+  : { bottom: 136 };
+function dismissHint() {
+  hintDismissed.value = true;
+  try {
+    localStorage.setItem(hintKey, "dismissed");
+  } catch {}
+  track("hint_dismissed", { level: levelId, moves: progress.value.moves });
+}
 
 /** The saved best, once the level is solved. */
 const best = computed(() => store.best[levelId]);
@@ -395,7 +428,7 @@ function replay() {
             :level="level"
             :solution="savedRun"
             :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart.`"
-            :padding="{ bottom: 136 }"
+            :padding="boardPadding"
             class="size-full touch-none select-none"
             @change="onChange"
             @solved="onSolved"
@@ -404,6 +437,33 @@ function replay() {
         </div>
 
         <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+        <!--
+          First-time players only. Client only: whether to show it lives in
+          this browser's storage. The wrapper lets clicks through to the
+          board; the card itself takes them.
+        -->
+        <ClientOnly>
+          <div
+            v-if="showHint"
+            class="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4"
+          >
+            <Card class="pointer-events-auto w-full max-w-md gap-3 py-4">
+              <CardHeader class="px-4">
+                <CardTitle>Push every box onto a goal</CardTitle>
+                <CardDescription>
+                  Walk into a box to push it, one at a time. You can't pull, so
+                  a box pushed into a corner is stuck:
+                  <span class="sm:hidden">tap Undo.</span>
+                  <span class="hidden sm:inline">press Z to undo.</span>
+                </CardDescription>
+              </CardHeader>
+              <CardFooter class="justify-end px-4">
+                <Button size="sm" @click="dismissHint">Got it</Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </ClientOnly>
 
         <!-- Above the toolbar; clicks and drags pass through to the board. -->
         <div
