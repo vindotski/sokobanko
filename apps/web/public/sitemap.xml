@@ -3,6 +3,7 @@
      time, so /play/<id> pages aren't listed. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://sokobanko.app/</loc></url>
+  <url><loc>https://sokobanko.app/daily</loc></url>
   <url><loc>https://sokobanko.app/levels</loc></url>
   <url><loc>https://sokobanko.app/faq</loc></url>
   <url><loc>https://sokobanko.app/privacy</loc></url>

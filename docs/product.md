@@ -64,8 +64,8 @@ Every event's data holds the level's slug (`level`), never anything about the pl
 | `level_solve` | A run solves the level, before the server checks it | `level`, `collection`, `moves`, `pushes`, `first` (their first solve of it); `par` and `stars` once the level has a par |
 | `level_restart` | Restart (R or the button) on an unsolved board. Undoing back to the start and Replay after a solve don't count. | `level`, `moves` (how far they got) |
 | `hint_dismissed` | "Got it" on the first-time goal hint | `level`, `moves` |
-| `daily_solve` | Today's daily puzzle is solved (not built yet) | `stars`, `streak` |
-| `share` | The player shares a result (not built yet) | — |
+| `daily_solve` | Today's daily puzzle is solved and saved. It carries no level: everyone has the same one that day. | `moves`, `streak` (days in a row, today included); `par` and `stars` |
+| `share` | The player shares a daily result | `via`: `native` (the share sheet) or `clipboard` (copied, where there's no share sheet) |
 
 ### Par
 

@@ -27,6 +27,13 @@ export interface TrackEvents {
   level_restart: { level: string; moves: number };
   /** "Got it" on the first-time hint, and how far into the run they were. */
   hint_dismissed: { level: string; moves: number };
+  /**
+   * Today's daily puzzle solved and saved. No level: it's the same for
+   * everyone that day.
+   */
+  daily_solve: { moves: number; streak: number; par?: number; stars?: number };
+  /** A daily result shared: the share sheet, or copied where there's none. */
+  share: { via: "native" | "clipboard" };
 }
 
 type Umami = {

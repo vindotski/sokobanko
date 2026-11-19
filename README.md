@@ -13,6 +13,8 @@ The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.a
 - **Big levels:** the camera follows the player, and an overview (hold Space) shows the whole level.
 - **Sound,** off until you turn it on: short synthesized blips for steps, pushes, goals and solves.
 - **Light and dark,** following the system. The monochrome board tells pieces apart by shape, and the celebrations respect reduced motion.
+- **Stars against par:** each level's par is the fewest moves known. Three stars at par, two up to a quarter over, one for any solve, on the level select and the profile.
+- **A daily puzzle:** one level a day for everyone, at `/daily`, open whatever you've unlocked. Solve it on consecutive days for a streak, and share your stars without giving the solution away.
 - **Your bests,** per level, on the profile page, and under the counter while you play.
 
 Planned features, and what the others have that this doesn't yet, are in [parity.md](docs/parity.md).

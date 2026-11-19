@@ -1,4 +1,13 @@
 export {
+  DAILY_EPOCH,
+  dailyLevel,
+  dailyNumber,
+  dayIndex,
+  nextDailyAt,
+  streak,
+  utcDay,
+} from "./daily.ts";
+export {
   type Direction,
   directionToLetter,
   letterToDirection,

@@ -1,4 +1,5 @@
 import {
+  date,
   integer,
   jsonb,
   pgSchema,
@@ -70,4 +71,28 @@ export const progress = app.table(
     completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.levelId] })],
+);
+
+/**
+ * Each player's best result on each day's daily puzzle (@sokoban/core's
+ * dailyLevel), apart from `progress`: the daily is open to every player,
+ * whatever they've unlocked, so it doesn't count as solving the level. The
+ * days in a row make the streak.
+ */
+export const dailyResults = app.table(
+  "daily_results",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    /** The UTC day, `YYYY-MM-DD`. */
+    day: date("day", { mode: "string" }).notNull(),
+    levelId: text("level_id")
+      .notNull()
+      .references(() => levels.id, { onDelete: "cascade" }),
+    moves: integer("moves").notNull(),
+    pushes: integer("pushes").notNull(),
+    completedAt: timestamp("completed_at", { withTimezone: true }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day] })],
 );
