@@ -13,7 +13,7 @@ import {
   Volume2Icon,
   VolumeOffIcon,
 } from "@lucide/vue";
-import { levelStates } from "@sokoban/core";
+import { levelStates, twoStarLimit } from "@sokoban/core";
 import type { GameProgress, OverviewState } from "@sokoban/game";
 import { usePreferredReducedMotion } from "@vueuse/core";
 
@@ -27,6 +27,8 @@ if (!level) {
 }
 const levelId = level.id;
 const collectionId = level.collection;
+// The fewest moves known; three stars at or under it.
+const par = level.par;
 usePageSeo({
   title: level.title,
   description: `Play ${level.title} in Sokobanko: push every box onto a goal.`,
@@ -97,6 +99,7 @@ await useAsyncData("completions", () => store.load());
 const solvedOpen = ref(false);
 const run = ref({ moves: 0, pushes: 0 });
 const isNewBest = ref(false);
+const runStars = computed(() => levelStars(par, run.value.moves));
 // Neighbours in play order, solved or not. Plain indexing, unlike `.at()`,
 // gives no previous level for the first one rather than wrapping around.
 const levelIndex = computed(() =>
@@ -246,6 +249,7 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
     moves,
     pushes,
     first: !previousBest,
+    ...(par && { par, stars: levelStars(par, moves) }),
   });
   isNewBest.value = false;
   clearTimeout(dialogTimer);
@@ -555,7 +559,10 @@ function replay() {
               </Button>
             </div>
 
-            <!-- This run, and the best to beat once the level is solved. -->
+            <!--
+              This run, then the best to beat once the level is solved, or
+              par before that.
+            -->
             <div class="flex min-w-0 max-w-48 flex-col items-center sm:max-w-sm">
               <p
                 class="max-w-full truncate font-mono text-sm text-muted-foreground"
@@ -571,7 +578,13 @@ function replay() {
                 Best {{ count(best.moves, "move", "moves")
                 }}<span class="hidden sm:inline">
                   · {{ count(best.pushes, "push", "pushes") }}</span
-                >
+                ><template v-if="par"> · par {{ par }}</template>
+              </p>
+              <p
+                v-else-if="par"
+                class="max-w-full truncate font-mono text-xs text-muted-foreground"
+              >
+                Par {{ count(par, "move", "moves") }}
               </p>
             </div>
 
@@ -618,6 +631,27 @@ function replay() {
           </div>
           <DialogDescription>{{ level.title }}</DialogDescription>
         </DialogHeader>
+
+        <!-- This run's stars, and what the next one takes. -->
+        <div
+          v-if="runStars && par"
+          class="flex flex-col items-center gap-1 text-center"
+        >
+          <StarRating :stars="runStars" size="md" />
+          <p class="text-sm text-muted-foreground">
+            <template v-if="runStars === 3">
+              At par: {{ count(par, "move", "moves") }}.
+            </template>
+            <template v-else-if="runStars === 2">
+              Par is {{ count(par, "move", "moves") }}. Solve it in {{ par }} or
+              fewer for three stars.
+            </template>
+            <template v-else>
+              Par is {{ count(par, "move", "moves") }}. Solve it in
+              {{ twoStarLimit(par) }} or fewer for two stars.
+            </template>
+          </p>
+        </div>
 
         <div class="grid grid-cols-2 gap-3">
           <Card class="gap-1 py-4">

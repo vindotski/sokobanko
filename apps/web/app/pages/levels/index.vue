@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CheckIcon, LockIcon, PlayIcon } from "@lucide/vue";
+import { LockIcon, PlayIcon } from "@lucide/vue";
 import { levelStates, parseLevel } from "@sokoban/core";
 
 usePageSeo({
@@ -24,10 +24,12 @@ const states = computed(() =>
 const cards = computed(() =>
   (levels.value ?? []).map((level) => {
     const parsed = parseLevel(level);
+    const best = progress.best[level.id];
     return {
       level,
       boxes: parsed.boxes.reduce((n, box) => n + box, 0),
-      best: progress.best[level.id],
+      best,
+      stars: levelStars(level.par, best?.moves),
       state: states.value.get(level.id),
     };
   }),
@@ -43,10 +45,15 @@ const sections = computed(() =>
         collection,
         cards: own,
         solved: own.filter((c) => c.best).length,
+        stars: starTotal(own),
+        maxStars: 3 * own.filter((c) => c.level.par).length,
       };
     })
     .filter((section) => section.cards.length),
 );
+function starTotal(list: { stars?: number }[]) {
+  return list.reduce((sum, c) => sum + (c.stars ?? 0), 0);
+}
 // Locked cards aren't links.
 const NuxtLink = resolveComponent("NuxtLink");
 const solvedCount = computed(() => cards.value.filter((c) => c.best).length);
@@ -92,7 +99,11 @@ const solvedPercent = computed(() =>
             </p>
           </div>
           <span class="text-label whitespace-nowrap text-muted-foreground">
-            {{ section.solved }} of {{ section.cards.length }} solved
+            {{ section.solved }} of {{ section.cards.length }} solved<template
+              v-if="section.maxStars"
+            >
+              · {{ section.stars }} of {{ section.maxStars }} stars</template
+            >
           </span>
         </div>
         <ItemGroup
@@ -123,7 +134,7 @@ const solvedPercent = computed(() =>
               >
                 <LevelPreview :level="card.level" />
                 <Badge v-if="card.best" class="absolute top-2 right-2">
-                  <CheckIcon />
+                  <StarRating v-if="card.stars" :stars="card.stars" />
                   {{ card.best.moves }} moves
                 </Badge>
                 <Badge
@@ -149,6 +160,9 @@ const solvedPercent = computed(() =>
                 <ItemDescription class="truncate text-label">
                   Level {{ card.level.number }} · {{ card.boxes }}
                   {{ card.boxes === 1 ? "box" : "boxes" }}
+                  <template v-if="card.level.par">
+                    · par {{ card.level.par }}</template
+                  >
                 </ItemDescription>
               </ItemContent>
             </component>

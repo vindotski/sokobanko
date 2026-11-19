@@ -9,6 +9,8 @@ export interface Level extends LevelJson {
   collection: string;
   /** Position within the collection, from 1. */
   number: number;
+  /** The fewest moves known to solve it; null until it has a solution. */
+  par: number | null;
 }
 
 /** A collection as the API returns it, in play order. */
@@ -35,6 +37,7 @@ export async function readLevels(db: NodePgDatabase): Promise<Level[]> {
       title: levels.title,
       map: levels.map,
       collection: levels.collectionId,
+      par: levels.par,
     })
     .from(levels)
     .innerJoin(collections, eq(levels.collectionId, collections.id))

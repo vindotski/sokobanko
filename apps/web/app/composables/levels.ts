@@ -1,3 +1,5 @@
+import { starsFor } from "@sokoban/core";
+
 /**
  * Levels in play order, from server/api/levels.
  * The completion route in server/api/levels/[id]/complete.post.ts uses the
@@ -26,4 +28,15 @@ export function useCompletions() {
   return useAsyncData("my-completions", () =>
     api("/api/me/completions").catch(() => []),
   );
+}
+
+/**
+ * Stars for a solved level, from its best moves and par; undefined while
+ * it's unsolved or has no par yet.
+ */
+export function levelStars(
+  par: number | null | undefined,
+  moves: number | undefined,
+) {
+  return par && moves !== undefined ? starsFor(moves, par) : undefined;
 }

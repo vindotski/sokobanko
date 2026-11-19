@@ -16,3 +16,9 @@ export {
   replay,
 } from "./moves.ts";
 export { type LevelState, levelStates } from "./progress.ts";
+export {
+  type Stars,
+  starsFor,
+  TWO_STAR_MARGIN,
+  twoStarLimit,
+} from "./stars.ts";

@@ -44,6 +44,12 @@ export const levels = app.table("levels", {
   /** Position within the collection; levels without one come last. */
   order: integer("order"),
   map: jsonb("map").$type<string[]>().notNull(),
+  /**
+   * The fewest moves known to solve it: the length of its solution in
+   * server/utils/solutions.json, which bin/shortest-solutions.ts searches for.
+   * Three stars at par or under (@sokoban/core's starsFor).
+   */
+  par: integer("par"),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -56,14 +56,20 @@ Sokobanko is a product when all of these are true on https://sokobanko.app:
 
 Spotcraft injects the Umami script, which counts page views. The game adds its own events through one `track(event, data)` helper. It does nothing when the script is missing, because analytics are off or the visitor opted out. No event carries an id: that's Spotcraft's rule.
 
+Every event's data holds the level's slug (`level`), never anything about the player. The helper is `apps/web/app/composables/track.ts`, which types each event's data.
+
 | Event | When | Data |
 | --- | --- | --- |
-| `level_start` | A level opens | — |
-| `level_solve` | A level is solved | `collection`, `moves`, `stars` |
-| `level_restart` | The player restarts a level | — |
-| `daily_solve` | Today's daily puzzle is solved | `stars`, `streak` |
-| `share` | The player shares a result | — |
-| `hint_dismissed` | The first-run controls hint is closed | — |
+| `level_start` | The player's first move on a visit to a level, resumed runs too. Opening a level without moving isn't a start. | `level`, `collection` |
+| `level_solve` | A run solves the level, before the server checks it | `level`, `collection`, `moves`, `pushes`, `first` (their first solve of it); `par` and `stars` once the level has a par |
+| `level_restart` | Restart (R or the button) on an unsolved board. Undoing back to the start and Replay after a solve don't count. | `level`, `moves` (how far they got) |
+| `hint_dismissed` | "Got it" on the first-time goal hint | `level`, `moves` |
+| `daily_solve` | Today's daily puzzle is solved (not built yet) | `stars`, `streak` |
+| `share` | The player shares a result (not built yet) | — |
+
+### Par
+
+A level's par is the move count of its solution in `apps/web/server/utils/solutions.json`. `bin/shortest-solutions.ts` searches for the fewest moves. It proved the fewest for 144 of the 159 levels. For 11 more it found shorter solutions without proving them fewest. Four (Microban 93, 139, 146 and 153) keep their first solution, so their par is generous. A player who beats a par sets nothing new: par only changes with a migration.
 
 ### The funnel
 
@@ -71,7 +77,7 @@ Spotcraft injects the Umami script, which counts page views. The game adds its o
 | --- | --- |
 | Landing | Umami's page views of `/` |
 | Started a level | `level_start` |
-| First solve | `level_solve` |
+| First solve | `level_solve` with `first` |
 | Came back the next day | Umami's returning visitors, by its own anonymous visitor count |
 | Shared | `share` |
 

@@ -16,6 +16,9 @@ export interface TrackEvents {
     moves: number;
     pushes: number;
     first: boolean;
+    /** Only for levels with a par. */
+    par?: number;
+    stars?: number;
   };
   /**
    * Restart (R or the button) on an unsolved board: not undoing back to the

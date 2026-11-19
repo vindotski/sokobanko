@@ -50,7 +50,7 @@ cd ../.. && pnpm dev      # http://localhost:3000
 | `pnpm --filter @sokoban/web db:generate` | Writes a new migration after a change to `apps/web/server/db/schema.ts` |
 | `pnpm --filter @sokoban/web db:migrate` | Applies the migrations to `DATABASE_URL` |
 
-Levels come in collections and are added by a migration: `bin/import-collection.ts` writes one from a plain-text XSB file, after checking every level with the game's parser. Then `bin/solve-levels.ts` adds a solution for each new level to `apps/web/server/utils/solutions.json`, and the database tests check that every level in Postgres replays its solution. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
+Levels come in collections and are added by a migration: `bin/import-collection.ts` writes one from a plain-text XSB file, after checking every level with the game's parser. Then `bin/solve-levels.ts` adds a solution for each new level to `apps/web/server/utils/solutions.json`, and `bin/shortest-solutions.ts` shortens each to the fewest moves it can find. A level's par is its solution's move count, set by a migration: three stars at par or under, two up to a quarter over. The database tests check that every level in Postgres replays its solution, and that its par matches it. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
 
 ## Stack
 

@@ -15,10 +15,19 @@ const { data: levels } = await useLevels();
 // Bests with their level's title. A level that has since been removed is
 // left out.
 const completions = computed(() => {
-  const titles = new Map((levels.value ?? []).map((l) => [l.id, l.title]));
+  const byId = new Map((levels.value ?? []).map((l) => [l.id, l]));
   return (completed.value ?? []).flatMap((c) => {
-    const title = titles.get(c.level_id);
-    return title ? [{ ...c, title }] : [];
+    const level = byId.get(c.level_id);
+    return level
+      ? [
+          {
+            ...c,
+            title: level.title,
+            par: level.par,
+            stars: levelStars(level.par, c.moves),
+          },
+        ]
+      : [];
   });
 });
 
@@ -30,7 +39,9 @@ const stats = computed(() => {
     total,
     percent: total ? (done.length / total) * 100 : 0,
     moves: done.reduce((sum, c) => sum + c.moves, 0),
-    pushes: done.reduce((sum, c) => sum + c.pushes, 0),
+    stars: done.reduce((sum, c) => sum + (c.stars ?? 0), 0),
+    maxStars: 3 * (levels.value ?? []).filter((l) => l.par).length,
+    threeStars: done.filter((c) => c.stars === 3).length,
   };
 });
 </script>
@@ -78,13 +89,15 @@ const stats = computed(() => {
       </Card>
       <Card>
         <CardHeader>
-          <CardDescription class="text-label">Best pushes</CardDescription>
+          <CardDescription class="text-label">Stars</CardDescription>
           <CardTitle class="font-mono text-title">
-            {{ stats.pushes }}
+            {{ stats.stars }} of {{ stats.maxStars }}
           </CardTitle>
         </CardHeader>
         <CardContent class="flex h-2 items-center">
-          <p class="text-label text-muted-foreground">Server-verified</p>
+          <p class="text-label text-muted-foreground">
+            {{ stats.threeStars }} at par
+          </p>
         </CardContent>
       </Card>
     </div>
@@ -98,7 +111,9 @@ const stats = computed(() => {
           <TableHeader>
             <TableRow>
               <TableHead>Level</TableHead>
+              <TableHead>Stars</TableHead>
               <TableHead class="text-right">Moves</TableHead>
+              <TableHead class="text-right">Par</TableHead>
               <TableHead class="text-right">Pushes</TableHead>
               <TableHead class="text-right">Completed</TableHead>
             </TableRow>
@@ -116,8 +131,14 @@ const stats = computed(() => {
                   {{ completion.title }}
                 </NuxtLink>
               </TableCell>
+              <TableCell>
+                <StarRating v-if="completion.stars" :stars="completion.stars" />
+              </TableCell>
               <TableCell class="text-right font-mono">
                 {{ completion.moves }}
+              </TableCell>
+              <TableCell class="text-right font-mono text-muted-foreground">
+                {{ completion.par ?? "–" }}
               </TableCell>
               <TableCell class="text-right font-mono">
                 {{ completion.pushes }}
