@@ -26,7 +26,10 @@
 
 @theme inline {
   /* Type scale, shared with www.vin.ski: every font size is one of these.
-     Tailwind's xs/sm/base/lg are remapped onto it so shadcn components fit. */
+     Tailwind's xs/sm/base/lg are remapped onto it so shadcn components fit.
+     Spotstrap's Apple scale (text-title-1, text-footnote…) is there too, but
+     unused; its text-body (17px on 22px) is replaced by ours below, which
+     sets the body text through spotstrap's base styles as well. */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 17px;
