@@ -2,6 +2,10 @@
 import { ArrowRightIcon } from "@lucide/vue";
 
 definePageMeta({ layout: "landing" });
+usePageSeo({
+  description:
+    "A classic box-pushing puzzle. Push every box onto a goal: you can't pull, so every move counts. Free, in your browser.",
+});
 
 const { data: levelIds } = await useLevelIds();
 </script>
