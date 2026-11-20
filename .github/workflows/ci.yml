@@ -1,9 +1,9 @@
 name: CI
 
-# Pull requests: verify, and build the image (not pushed) so a broken Dockerfile
-# shows before merging. main and v* tags: verify, then publish the image to
-# Docker Hub. main is then deployed to Spotcraft through its deploy hook
-# (DEPLOY.md).
+# Pull requests: check the branch's name, verify, and build the image (not
+# pushed) so a broken Dockerfile shows before merging. main: verify, then
+# publish the image to Docker Hub. v* tags: the same, then deploy the tagged
+# commit to Spotcraft through its deploy hook (DEPLOY.md, CONTRIBUTING.md).
 on:
   push:
     branches: [main]
@@ -18,6 +18,28 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Work happens on short-lived branches cut from main and merged back into it:
+  # feature/, bugfix/ or chore/, then lowercase letters, digits, dots and
+  # hyphens (CONTRIBUTING.md).
+  branch-name:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Check the branch and its target
+        env:
+          HEAD: ${{ github.head_ref }}
+          BASE: ${{ github.base_ref }}
+        run: |
+          if [ "$BASE" != main ]; then
+            echo "::error::Open the pull request against main, not $BASE."
+            exit 1
+          fi
+          if ! echo "$HEAD" | grep -Eq '^(feature|bugfix|chore)/[a-z0-9][a-z0-9.-]*$'; then
+            echo "::error::Name the branch feature/<name>, bugfix/<name> or chore/<name> (lowercase letters, digits, dots and hyphens), not $HEAD."
+            exit 1
+          fi
+
   verify:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
@@ -69,14 +91,14 @@ jobs:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # main → latest; v1.2.3 → 1.2.3 and 1.2; every build → sha-abc1234, the tag
-      # to deploy, so a rollback is picking the previous one.
+      # v1.2.3 → 1.2.3, 1.2 and latest; every build → sha-abc1234, the tag to
+      # deploy, so a rollback is picking the previous one.
       - id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           images: ${{ vars.DOCKERHUB_USERNAME || 'vindotski' }}/sokobanko
           tags: |
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
@@ -98,13 +120,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # main → Spotcraft, through the app's deploy hook (DEPLOY.md). Off until the
-  # production environment has the variable SPOTCRAFT_HOOK_URL and the secret
+  # A v* tag → Spotcraft, through the app's deploy hook (DEPLOY.md); merges to
+  # main only build. The production environment accepts only v* tags. Off
+  # until it has the variable SPOTCRAFT_HOOK_URL and the secret
   # SPOTCRAFT_DEPLOY_TOKEN. A job's `if` can't see an environment's variables,
   # so the step checks.
   deploy:
     needs: image
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: production
