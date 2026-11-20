@@ -1,8 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { levelStates } from "./progress.ts";
 
-const states = (ids: string[], solved: string[]) =>
-  Object.fromEntries(levelStates(ids, (id) => solved.includes(id)));
+/** Levels as `collection/id`, in play order; the state of each, by id. */
+const states = (levels: string[], solved: string[]) =>
+  Object.fromEntries(
+    levelStates(
+      levels.map((level) => {
+        const [collection, id] = level.includes("/")
+          ? level.split("/")
+          : ["one", level];
+        return { id: id ?? level, collection: collection ?? "one" };
+      }),
+      (id) => solved.includes(id),
+    ),
+  );
 
 describe("levelStates", () => {
   it("makes the first level current when nothing is solved", () => {
@@ -35,6 +46,36 @@ describe("levelStates", () => {
       b: "current",
       c: "solved",
       d: "locked",
+    });
+  });
+
+  it("makes each collection's first level current", () => {
+    expect(states(["x/a", "x/b", "y/c", "y/d"], [])).toEqual({
+      a: "current",
+      b: "locked",
+      c: "current",
+      d: "locked",
+    });
+  });
+
+  it("never locks one collection behind another", () => {
+    // "x" isn't finished, and "y" goes on from where the player is.
+    expect(states(["x/a", "x/b", "y/c", "y/d", "y/e"], ["a", "c"])).toEqual({
+      a: "solved",
+      b: "current",
+      c: "solved",
+      d: "current",
+      e: "locked",
+    });
+  });
+
+  it("keeps a later level current within its own collection", () => {
+    // "b" was added to "x" between solved levels; "y" is unaffected.
+    expect(states(["x/a", "x/b", "x/c", "y/d"], ["a", "c", "d"])).toEqual({
+      a: "solved",
+      b: "current",
+      c: "solved",
+      d: "solved",
     });
   });
 

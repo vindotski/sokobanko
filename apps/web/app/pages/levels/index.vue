@@ -7,12 +7,9 @@ const { data: levels } = await useLevels();
 const { data: collections } = await useCollections();
 await useAsyncData("completions", () => progress.load());
 
-// Levels unlock in play order; the server enforces the same rule.
+// Each collection unlocks in its own order; the server enforces the same rule.
 const states = computed(() =>
-  levelStates(
-    (levels.value ?? []).map((l) => l.id),
-    (id) => id in progress.best,
-  ),
+  levelStates(levels.value ?? [], (id) => id in progress.best),
 );
 
 const cards = computed(() =>

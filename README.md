@@ -6,7 +6,7 @@ The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.a
 
 ## What it does
 
-- **Play right away:** no sign-up. Levels unlock in play order, and the Play button picks up where you left off.
+- **Play right away:** no sign-up. Each collection unlocks in its own order, and the Play button picks up where you left off.
 - **Keyboard or touch:** arrow keys or WASD, or a joystick that appears wherever you touch the board.
 - **Deadlock warnings:** a box pushed where it can never reach a goal, like a corner, is crossed out. The move still counts, and undo takes it back.
 - **Undo, redo and restart,** from the toolbar or with Z, Y and R, with moves and pushes counted. A half-played level picks up where you left it. Every solution is kept as LURD (`rRRuL…`) and replayed to check it.

@@ -87,21 +87,21 @@ const levelIndex = computed(() =>
 const prevLevel = computed(() => levels.value?.[levelIndex.value - 1]);
 const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
 
-// Levels unlock in play order; the server enforces the same rule.
+// Each collection unlocks in its own order; the server enforces the same rule.
 const states = computed(() =>
-  levelStates(
-    (levels.value ?? []).map((l) => l.id),
-    (id) => id in store.best,
-  ),
+  levelStates(levels.value ?? [], (id) => id in store.best),
 );
 const isLocked = computed(() => states.value.get(levelId) === "locked");
 const nextLocked = computed(
   () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
 );
-/** The level to solve to unlock this one. */
-const currentLevel = computed(() =>
-  levels.value?.find((l) => states.value.get(l.id) === "current"),
-);
+/** The level to solve to unlock this one: the current one in its collection. */
+const currentLevel = computed(() => {
+  const collection = levels.value?.[levelIndex.value]?.collection;
+  return levels.value?.find(
+    (l) => l.collection === collection && states.value.get(l.id) === "current",
+  );
+});
 
 /** The saved best, once the level is solved. */
 const best = computed(() => store.best[levelId]);

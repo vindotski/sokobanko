@@ -44,7 +44,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 - **No variants:** the engine, the XSB maps and the LURD solutions are all for square grids. Hexoban and Multiban would need a different format, and the [Sokoban wiki](http://sokobano.de/wiki) is the reference for them.
 
 **Worth knowing:**
-- **Unlocking in order:** levels unlock in play order, and progress is checked by replaying the solution in the browser (12). That replay check moves to a server only under Later (15).
+- **Unlocking in order:** each collection unlocks in its own order, and progress is checked by replaying the solution in the browser (12). That replay check moves to a server only under Later (15).
 - **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions.
 
 ## Controls and UX

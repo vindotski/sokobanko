@@ -27,15 +27,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: "Level not found" });
   }
 
-  // Levels unlock in play order: only solved levels and the first unsolved
-  // one can be completed.
+  // Each collection unlocks in its own order: only solved levels and the
+  // first unsolved one of the level's collection can be completed.
   const solved = new Set(
     (await readProgress(database, guest.id)).map((c) => c.level),
   );
-  const states = levelStates(
-    levels.map((l) => l.id),
-    (levelId) => solved.has(levelId),
-  );
+  const states = levelStates(levels, (levelId) => solved.has(levelId));
   if (states.get(level.id) === "locked") {
     throw createError({ statusCode: 403, message: "Level is locked" });
   }
