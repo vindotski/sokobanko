@@ -8,6 +8,44 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-20
+
+From a working game to a product: a reason to come back every day, something to aim for on
+every level, a link worth sharing, and numbers on how it's played. The loop and its metrics
+are in docs/product.md.
+
+Needs no change to deploy: the migrations only add (a column and a table). The analytics
+events need Spotcraft 0.7 on the server, which injects Umami; without it they're simply not
+sent. Local development uses `spotcraft dev` from `@kodentuzo/spotcraft` 0.7.0.
+
+### Added
+- **A daily puzzle** at `/daily`: one level a day for everyone, by UTC date, open whatever
+  you've unlocked. Levels come in a shuffled order that doesn't repeat until each has had its
+  day; Basics is left out. Results are kept per day, apart from your levels, so a daily solve
+  unlocks nothing. Solve it on consecutive days for a streak. The landing page links it next
+  to Play.
+- **Sharing a daily result:** the share sheet, or a copy where there's none, with the puzzle's
+  number, stars, moves and streak, and a link. It never gives the solution away.
+- **Par and stars.** Each level's par is the fewest moves known to solve it. Three stars at par
+  or under, two up to a quarter over, one for any solve. They show after a solve, on the level
+  select with totals per collection, and on the profile.
+- `bin/shortest-solutions.ts` searches for each level's fewest moves (A* over moves). It proved
+  them for 144 of the 159 levels and shortened 11 more. The stored solutions went from 28,264
+  to 20,143 moves, and par follows them.
+- **A first-time hint** above the board: push every box onto a goal, and boxes can't be pulled.
+  It doesn't block play, and goes after "Got it" or the first solve.
+- **Analytics events** for Spotcraft's Umami, with no ids: `level_start`, `level_solve`,
+  `level_restart`, `hint_dismissed`, `daily_solve` and `share` (docs/product.md).
+- **Icons and link previews:** a favicon, app icons and a web manifest, an Open Graph image,
+  and a title and description for every page.
+- **A privacy page** that says what the game stores and what Spotcraft counts, with its opt-out.
+- A footer with Privacy, FAQ, Feedback and the version; `robots.txt` and a sitemap.
+- docs/product.md: the product loop, its events and funnel, and the metrics to watch.
+
+### Changed
+- The profile's Best pushes card is now Stars; pushes are still in the table.
+- `@kodentuzo/spotcraft` 0.7.0, so `spotcraft dev` runs Umami too.
+
 ## [0.3.0] - 2026-11-19
 
 Guests and their progress move into Spotcraft's user pool, shared by every app on the server,
@@ -106,7 +144,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/vindotski/sokobanko/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vindotski/sokobanko/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vindotski/sokobanko/compare/v0.1.0...v0.2.0
