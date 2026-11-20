@@ -20,6 +20,10 @@ export default defineNuxtConfig({
           content: "width=device-width, initial-scale=1, viewport-fit=cover",
         },
       ],
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      ],
     },
   },
   css: [
@@ -55,6 +59,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      // The site's own address, for canonical links, link previews and the
+      // sitemap (NUXT_PUBLIC_SITE_URL elsewhere).
+      siteUrl: "https://sokobanko.app",
       // Where the browser reaches Spotcraft's user pool. Empty, so it's the
       // app's own /_spotcraft/auth: on Spotcraft, and in `nuxt dev` through
       // the proxy below, so phones on the same network can save too.
