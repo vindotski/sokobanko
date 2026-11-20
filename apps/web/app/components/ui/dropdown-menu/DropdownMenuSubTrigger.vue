@@ -8,6 +8,7 @@ import {
   DropdownMenuSubTrigger,
   useForwardProps,
 } from "reka-ui"
+import { menuItemClass } from "."
 
 const props = defineProps<DropdownMenuSubTriggerProps & { class?: HTMLAttributes["class"], inset?: boolean }>()
 
@@ -21,7 +22,7 @@ const forwardedProps = useForwardProps(delegatedProps)
     v-bind="forwardedProps"
     :data-inset="inset ? '' : undefined"
     :class="cn(
-      `menu-item data-[inset]:pl-8 data-[variant=destructive]:menu-item-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5`,
+      `${menuItemClass} data-[inset]:pl-8 data-[variant=destructive]:text-destructive`,
       props.class,
     )"
   >

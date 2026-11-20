@@ -4,6 +4,7 @@ import type { HTMLAttributes } from "vue"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import { DropdownMenuItem, useForwardProps } from "reka-ui"
+import { menuItemClass } from "."
 
 const props = withDefaults(defineProps<DropdownMenuItemProps & {
   class?: HTMLAttributes["class"]
@@ -24,7 +25,7 @@ const forwardedProps = useForwardProps(delegatedProps)
     :data-inset="inset ? '' : undefined"
     :data-variant="variant"
     v-bind="forwardedProps"
-    :class="cn(`menu-item data-[inset]:pl-8 data-[variant=destructive]:menu-item-destructive [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-5`, props.class)"
+    :class="cn(`${menuItemClass} data-[inset]:pl-8 data-[variant=destructive]:text-destructive`, props.class)"
   >
     <slot />
   </DropdownMenuItem>

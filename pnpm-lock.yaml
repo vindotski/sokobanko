@@ -232,9 +232,6 @@ importers:
       '@kodentuzo/spotkit':
         specifier: 0.1.0
         version: 0.1.0
-      '@kodentuzo/spotstrap':
-        specifier: 0.1.3
-        version: 0.1.3(tailwindcss@4.3.3)
       '@lucide/vue':
         specifier: ^1.61.0
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
@@ -1176,15 +1173,6 @@ packages:
   '@kodentuzo/spotkit@0.1.0':
     resolution: {integrity: sha512-0AInxA9KOJUiyz6pFldwJxp3mboj9WGFA5RdZXrOR7MDilG7fttqBSNzcpgdJ0t6j6G0XMiV5S7f2J6nTndYOw==}
     engines: {node: '>=24'}
-
-  '@kodentuzo/spotstrap@0.1.3':
-    resolution: {integrity: sha512-46J6frIKWIptH9el1A5nOPVf5WsK8Ua0DRULAYm8TVNUTr+yjQWhl0XbB4UXwERprGq526/myuHB0JBiPi5jJg==}
-    engines: {node: '>=24'}
-    peerDependencies:
-      tailwindcss: ^4.3.0
-    peerDependenciesMeta:
-      tailwindcss:
-        optional: true
 
   '@lucide/vue@1.61.0':
     resolution: {integrity: sha512-XYclbwUQ6Mvf0UskBG9gJH91BdF3VK4Tt6Pv8PSntwPwNnf357PCQnma4TrzOEdwD49UYCtsTafpfytRIxm1cQ==}
@@ -5392,10 +5380,6 @@ snapshots:
   '@kodentuzo/spotkit@0.1.0':
     dependencies:
       jose: 6.2.17
-
-  '@kodentuzo/spotstrap@0.1.3(tailwindcss@4.3.3)':
-    optionalDependencies:
-      tailwindcss: 4.3.3
 
   '@lucide/vue@1.61.0(vue@3.5.44(typescript@6.0.3))':
     dependencies:

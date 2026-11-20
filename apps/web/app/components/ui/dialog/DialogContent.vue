@@ -10,6 +10,7 @@ import {
   DialogPortal,
   useForwardPropsEmits,
 } from "reka-ui"
+import { buttonVariants } from "../button"
 import DialogOverlay from "./DialogOverlay.vue"
 
 defineOptions({
@@ -34,7 +35,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       v-bind="{ ...$attrs, ...forwarded }"
       :class="
         cn(
-          'dialog z-50 h-fit data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+          'fixed inset-0 z-50 m-auto grid h-fit max-h-[calc(100%-2rem)] w-[min(32rem,100%-2rem)] gap-4 overflow-auto border bg-popover p-6 text-popover-foreground duration-200 max-sm:mb-0 max-sm:max-h-[calc(100%-2.75rem)] max-sm:w-full max-sm:border-b-0 max-sm:pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
           props.class,
         )"
     >
@@ -43,7 +44,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits)
       <DialogClose
         v-if="showCloseButton"
         data-slot="dialog-close"
-        class="btn btn-ghost btn-icon btn-compact absolute top-3 right-3""
+        :class="cn(buttonVariants({ variant: 'ghost', size: 'icon-sm' }), 'absolute top-3 right-3')"
       >
         <X />
         <span class="sr-only">Close</span>
