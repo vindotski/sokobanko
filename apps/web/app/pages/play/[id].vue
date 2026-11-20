@@ -1,23 +1,20 @@
 <script setup lang="ts">
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  ChevronDownIcon,
   LockIcon,
   PlayIcon,
   Redo2Icon,
   RotateCcwIcon,
-  ScanSearchIcon,
   TrophyIcon,
   Undo2Icon,
-  Volume2Icon,
-  VolumeOffIcon,
 } from "@lucide/vue";
 import { levelStates } from "@sokoban/core";
-import type { GameProgress, OverviewState } from "@sokoban/game";
-import { usePreferredReducedMotion } from "@vueuse/core";
+import type { CameraState, GameProgress } from "@sokoban/game";
+import { onKeyStroke, usePreferredReducedMotion } from "@vueuse/core";
 
-definePageMeta({ layout: "play" });
+definePageMeta({ layout: "game" });
 
 const route = useRoute();
 const { data: levels } = await useLevels();
@@ -30,6 +27,10 @@ const levelId = level.id;
 const { data: collections } = await useCollections();
 const collection = computed(() =>
   collections.value?.find((c) => c.id === level.collection),
+);
+/** How many levels the collection has, for "8 of 155". */
+const collectionSize = computed(
+  () => levels.value?.filter((l) => l.collection === level.collection).length,
 );
 
 // A half-played run is kept in the browser, so a reload or a visit to
@@ -64,7 +65,31 @@ const progress = ref<GameProgress>({
   boxesOnGoals: 0,
   deadBoxes: 0,
 });
-const overview = ref<OverviewState>({ available: false, active: false });
+const camera = ref<CameraState>({
+  canZoomIn: true,
+  canZoomOut: false,
+  fitted: true,
+  following: true,
+});
+
+// The controls help: from Settings, or the ? key anywhere but a text field
+// or another dialog.
+const helpOpen = ref(false);
+// The level picker, opened from the level's name.
+const switcherOpen = ref(false);
+onKeyStroke("?", (e) => {
+  const target = e.target;
+  if (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      ["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) ||
+      target.closest('[role="dialog"]'))
+  ) {
+    return;
+  }
+  e.preventDefault();
+  helpOpen.value = !helpOpen.value;
+});
 
 type Verification =
   | { state: "idle" | "pending" }
@@ -79,12 +104,10 @@ await useAsyncData("completions", () => store.load());
 const solvedOpen = ref(false);
 const run = ref({ moves: 0, pushes: 0 });
 const isNewBest = ref(false);
-// Neighbours in play order, solved or not. Plain indexing, unlike `.at()`,
-// gives no previous level for the first one rather than wrapping around.
+// The next level in play order, solved or not, for the solved dialog.
 const levelIndex = computed(() =>
   (levels.value ?? []).findIndex((l) => l.id === levelId),
 );
-const prevLevel = computed(() => levels.value?.[levelIndex.value - 1]);
 const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
 
 // Each collection unlocks in its own order; the server enforces the same rule.
@@ -124,7 +147,7 @@ let started = false;
 function announce(prev: GameProgress, next: GameProgress) {
   const counts = `${count(next.moves, "move", "moves")}, ${count(next.pushes, "push", "pushes")}`;
   const goals = `${next.boxesOnGoals} of ${count(next.boxes, "box", "boxes")} on goals`;
-  // The notice above the toolbar is hidden from screen readers, so every
+  // The status line in the bottom bar is hidden from screen readers, so every
   // announcement that leaves a box stuck says so. A warning only; the move
   // stands until undone.
   const stuck =
@@ -154,7 +177,8 @@ function announce(prev: GameProgress, next: GameProgress) {
   });
 }
 
-// Sounds follow the same changes; muted until the player turns them on.
+// Sounds follow the same changes; muted until the player turns them on in
+// Settings.
 const sound = useSound();
 function playSound(prev: GameProgress, next: GameProgress) {
   // Loading the level, or a resumed run, makes no sound.
@@ -229,110 +253,56 @@ function replay() {
 </script>
 
 <template>
-  <div class="flex flex-1 flex-col">
-    <div class="border-b">
-      <!--
-        Three columns, like the bottom toolbar, so the title stays centred.
-        On the first level Prev is disabled rather than hidden, so nothing
-        shifts; Next is disabled while the next level is locked, and on the
-        last level it becomes Finish.
-      -->
+  <div class="flex min-h-0 flex-1 flex-col">
+    <!--
+      The level, with every way to leave it: back to Levels, its name (which
+      opens the level picker), and Settings. The same on every screen.
+    -->
+    <header class="border-b">
       <div
-        class="mx-auto grid h-12 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
+        class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4"
       >
         <Button
-          v-if="prevLevel"
           variant="ghost"
           size="sm"
-          class="justify-self-start max-sm:w-control-compact max-sm:px-0"
           as-child
+          class="justify-self-start max-sm:w-control-compact max-sm:px-0"
         >
-          <NuxtLink :to="`/play/${prevLevel.id}`" aria-label="Previous level">
-            <ChevronLeftIcon data-icon="inline-start" />
-            <span class="sr-only sm:not-sr-only">Prev</span>
+          <NuxtLink to="/levels" aria-label="All levels" title="All levels">
+            <ArrowLeftIcon data-icon="inline-start" />
+            <span class="max-sm:sr-only">Levels</span>
           </NuxtLink>
         </Button>
+        <!-- The level's name opens the level picker. -->
         <Button
-          v-else
           variant="ghost"
-          size="sm"
-          class="justify-self-start max-sm:w-control-compact max-sm:px-0"
-          aria-label="Previous level"
-          disabled
+          class="h-auto min-w-0 flex-col gap-0 px-3 py-1"
+          aria-haspopup="dialog"
+          :aria-label="`${level.title}: choose a level`"
+          title="Choose a level"
+          @click="switcherOpen = true"
         >
-          <ChevronLeftIcon data-icon="inline-start" />
-          <span class="sr-only sm:not-sr-only">Prev</span>
-        </Button>
-
-        <div class="flex min-w-0 flex-col items-center">
-          <h1 class="max-w-full truncate text-sm font-semibold">
-            {{ level.title }}
-          </h1>
-          <p
+          <span class="flex max-w-full items-center gap-1">
+            <span class="truncate text-sm font-semibold">{{ level.title }}</span>
+            <ChevronDownIcon class="size-4 shrink-0" />
+          </span>
+          <span
             v-if="collection"
-            class="max-w-full truncate text-xs text-muted-foreground"
+            class="max-w-full truncate text-xs font-normal text-muted-foreground"
           >
-            {{ collection.title
-            }}<template v-if="collection.author">
-              · {{ collection.author }}</template
-            >
-          </p>
+            {{ collection.title }} · {{ level.number }} of
+            {{ collectionSize }}
+          </span>
+        </Button>
+        <div class="justify-self-end">
+          <PlaySettingsMenu @help="helpOpen = true" />
         </div>
-
-        <Button
-          v-if="nextLocked"
-          variant="ghost"
-          size="sm"
-          class="justify-self-end max-sm:w-control-compact max-sm:px-0"
-          aria-label="Next level (locked)"
-          disabled
-        >
-          <span class="sr-only sm:not-sr-only">Next</span>
-          <LockIcon data-icon="inline-end" />
-        </Button>
-        <Button
-          v-else-if="nextLevel"
-          variant="ghost"
-          size="sm"
-          class="justify-self-end max-sm:w-control-compact max-sm:px-0"
-          as-child
-        >
-          <NuxtLink :to="`/play/${nextLevel.id}`" aria-label="Next level">
-            <span class="sr-only sm:not-sr-only">Next</span>
-            <ChevronRightIcon data-icon="inline-end" />
-          </NuxtLink>
-        </Button>
-        <!--
-          The last level: Finish waits until it's solved, then /play
-          congratulates once every level is.
-        -->
-        <Button
-          v-else-if="!(levelId in store.best)"
-          variant="ghost"
-          size="sm"
-          class="justify-self-end max-sm:w-control-compact max-sm:px-0"
-          aria-label="Finish"
-          disabled
-        >
-          <span class="sr-only sm:not-sr-only">Finish</span>
-          <TrophyIcon data-icon="inline-end" />
-        </Button>
-        <Button
-          v-else
-          variant="ghost"
-          size="sm"
-          class="justify-self-end max-sm:w-control-compact max-sm:px-0"
-          as-child
-        >
-          <NuxtLink to="/play" aria-label="Finish">
-            <span class="sr-only sm:not-sr-only">Finish</span>
-            <TrophyIcon data-icon="inline-end" />
-          </NuxtLink>
-        </Button>
       </div>
-    </div>
+    </header>
 
-    <div class="relative flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]">
+    <div
+      class="relative min-h-0 flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]"
+    >
       <!-- No game on a locked level, so there's nothing to play or record. -->
       <div
         v-if="isLocked"
@@ -370,154 +340,111 @@ function replay() {
             ref="game"
             :level="level"
             :solution="savedRun"
-            :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart.`"
-            :padding="{ bottom: 136 }"
+            :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart, plus and minus to zoom; question mark for all controls.`"
             class="size-full touch-none select-none"
             @change="onChange"
             @solved="onSolved"
-            @overview="overview = $event"
+            @camera="camera = $event"
           />
         </div>
-
+        <BoardMapControls
+          :camera="camera"
+          class="absolute right-3 bottom-3"
+          @zoom-in="game?.zoomIn()"
+          @zoom-out="game?.zoomOut()"
+          @fit="game?.fit()"
+          @recenter="game?.recenter()"
+        />
         <p class="sr-only" aria-live="polite">{{ announcement }}</p>
-
-        <!-- Above the toolbar; clicks and drags pass through to the board. -->
-        <div
-          v-if="!progress.solved && progress.moves === 0"
-          class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
-        >
-          <Item variant="outline" size="sm" class="bg-background">
-            <ItemContent>
-              <!-- Phones have no keyboard; they get the drag hint alone. -->
-              <ItemDescription class="sm:hidden">
-                Drag the board to move
-              </ItemDescription>
-              <ItemDescription class="hidden sm:block">
-                Drag the board or use arrow keys / WASD · Z undo · R restart
-                <span v-if="overview.available">
-                  · hold Space for overview
-                </span>
-              </ItemDescription>
-            </ItemContent>
-          </Item>
-        </div>
-        <!--
-          A stuck box (drawn with a cross) is a warning, not a dead end for
-          the run: the move stands until undone. The live region says the
-          same, so this one stays silent.
-        -->
-        <div
-          v-else-if="!progress.solved && progress.deadBoxes > 0"
-          aria-hidden="true"
-          class="pointer-events-none absolute inset-x-0 bottom-18 flex justify-center px-4"
-        >
-          <Item variant="outline" size="sm" class="bg-background">
-            <ItemContent>
-              <ItemDescription>
-                A crossed box can't reach a goal any more ·
-                <span class="sm:hidden">tap Undo</span>
-                <span class="hidden sm:inline">Z to undo</span>
-              </ItemDescription>
-            </ItemContent>
-          </Item>
-        </div>
-
-        <!-- Three columns, so the status stays centred whatever the sides hold. -->
-        <div class="absolute inset-x-0 bottom-0 border-t bg-background">
-          <div
-            class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
-          >
-            <div class="flex gap-2">
-              <!-- Keys in the tooltips; the starting hint names Z and R too. -->
-              <Button
-                variant="outline"
-                size="sm"
-                class="max-md:w-control-compact max-md:px-0"
-                title="Undo (Z)"
-                aria-keyshortcuts="Z U"
-                :disabled="progress.moves === 0"
-                @click="game?.undo()"
-              >
-                <Undo2Icon data-icon="inline-start" />
-                <span class="sr-only md:not-sr-only">Undo</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                class="max-md:w-control-compact max-md:px-0"
-                title="Redo (Y)"
-                aria-keyshortcuts="Y"
-                :disabled="!progress.canRedo"
-                @click="game?.redo()"
-              >
-                <Redo2Icon data-icon="inline-start" />
-                <span class="sr-only md:not-sr-only">Redo</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                class="max-md:w-control-compact max-md:px-0"
-                title="Restart (R)"
-                aria-keyshortcuts="R"
-                :disabled="progress.moves === 0"
-                @click="game?.restart()"
-              >
-                <RotateCcwIcon data-icon="inline-start" />
-                <span class="sr-only md:not-sr-only">Restart</span>
-              </Button>
-            </div>
-
-            <!-- This run, and the best to beat once the level is solved. -->
-            <div class="flex min-w-0 max-w-48 flex-col items-center sm:max-w-sm">
-              <p
-                class="max-w-full truncate font-mono text-sm text-muted-foreground"
-              >
-                {{ count(progress.moves, "move", "moves") }} ·
-                {{ count(progress.pushes, "push", "pushes") }}
-              </p>
-              <p
-                v-if="best"
-                class="max-w-full truncate font-mono text-xs text-muted-foreground"
-              >
-                <!-- Bests are ranked by moves; phones have room for those only. -->
-                Best {{ count(best.moves, "move", "moves")
-                }}<span class="hidden sm:inline">
-                  · {{ count(best.pushes, "push", "pushes") }}</span
-                >
-              </p>
-            </div>
-
-            <div class="flex gap-2 justify-self-end">
-              <Toggle
-                variant="outline"
-                size="sm"
-                class="w-control-compact px-0"
-                :title="sound.enabled.value ? 'Sound on' : 'Sound off'"
-                aria-label="Sound"
-                :model-value="sound.enabled.value"
-                @update:model-value="sound.setEnabled($event)"
-              >
-                <Volume2Icon v-if="sound.enabled.value" />
-                <VolumeOffIcon v-else />
-              </Toggle>
-              <Toggle
-                variant="outline"
-                size="sm"
-                class="max-sm:w-control-compact max-sm:px-0"
-                title="Overview (hold Space)"
-                aria-keyshortcuts="Space"
-                :disabled="!overview.available"
-                :model-value="overview.active"
-                @update:model-value="game?.setOverview($event)"
-              >
-                <ScanSearchIcon data-icon="inline-start" />
-                <span class="sr-only sm:not-sr-only">Overview</span>
-              </Toggle>
-            </div>
-          </div>
-        </div>
       </template>
     </div>
+
+    <!-- The run and the game's buttons, within thumb reach. Nothing on a locked
+         level, which has its own way out. -->
+    <footer
+      v-if="!isLocked"
+      class="border-t bg-background pb-[env(safe-area-inset-bottom)]"
+    >
+      <div class="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-2">
+        <!--
+          One line of status: how to start, a stuck box, or the counts. The
+          live region says the same, so this one stays silent.
+        -->
+        <div
+          aria-hidden="true"
+          class="flex min-h-6 items-center justify-between gap-3 text-sm text-muted-foreground"
+        >
+          <template v-if="!progress.solved && progress.moves === 0">
+            <span class="truncate sm:hidden">Drag to move · pinch to zoom</span>
+            <span class="hidden truncate sm:inline">
+              Arrows or WASD to move · ? for all controls
+            </span>
+          </template>
+          <span
+            v-else-if="!progress.solved && progress.deadBoxes > 0"
+            class="truncate text-foreground"
+          >
+            A crossed box can't reach a goal ·
+            <span class="sm:hidden">Undo</span>
+            <span class="hidden sm:inline">Z to undo</span>
+          </span>
+          <span v-else class="truncate font-mono">
+            {{ count(progress.moves, "move", "moves") }} ·
+            {{ count(progress.pushes, "push", "pushes") }}
+          </span>
+          <span v-if="best" class="shrink-0 font-mono">
+            Best {{ best.moves }}
+          </span>
+        </div>
+
+        <!-- Labelled at every width; the keys are in the tooltips. -->
+        <div class="grid grid-cols-3 gap-2 sm:flex">
+          <Button
+            variant="outline"
+            size="sm"
+            title="Undo (Z)"
+            aria-keyshortcuts="Z U"
+            :disabled="progress.moves === 0"
+            @click="game?.undo()"
+          >
+            <Undo2Icon data-icon="inline-start" />
+            Undo
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Redo (Y)"
+            aria-keyshortcuts="Y"
+            :disabled="!progress.canRedo"
+            @click="game?.redo()"
+          >
+            <Redo2Icon data-icon="inline-start" />
+            Redo
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            title="Restart (R)"
+            aria-keyshortcuts="R"
+            :disabled="progress.moves === 0"
+            @click="game?.restart()"
+          >
+            <RotateCcwIcon data-icon="inline-start" />
+            Restart
+          </Button>
+        </div>
+      </div>
+    </footer>
+
+    <PlayControlsHelp v-model:open="helpOpen" />
+    <LevelSwitcher
+      v-model:open="switcherOpen"
+      :levels="levels ?? []"
+      :collections="collections ?? []"
+      :current="level"
+      :states="states"
+      :best="store.best"
+    />
 
     <Dialog v-model:open="solvedOpen">
       <DialogContent class="sm:max-w-md">

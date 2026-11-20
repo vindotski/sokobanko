@@ -36,7 +36,7 @@ export function directionFromKey(code: string): Direction | null {
   return MOVEMENT_KEYS.get(code) ?? null;
 }
 
-export type KeyAction = "undo" | "redo" | "restart";
+export type KeyAction = "undo" | "redo" | "restart" | "zoomIn" | "zoomOut";
 
 // Keyed by the character rather than the physical key, since these are
 // mnemonics: Z for undo stays Z on QWERTZ and AZERTY.
@@ -45,11 +45,15 @@ const ACTION_KEYS = new Map<string, KeyAction>([
   ["u", "undo"],
   ["y", "redo"],
   ["r", "restart"],
+  // + is Shift and = on many layouts, so = zooms in too.
+  ["+", "zoomIn"],
+  ["=", "zoomIn"],
+  ["-", "zoomOut"],
 ]);
 
 /**
- * Action for a `KeyboardEvent.key` (Z or U, Y, R, either case), or `null` for
- * any other key.
+ * Action for a `KeyboardEvent.key` (Z or U, Y, R, either case; + or = and -
+ * to zoom), or `null` for any other key.
  */
 export function actionFromKey(key: string): KeyAction | null {
   return ACTION_KEYS.get(key.toLowerCase()) ?? null;

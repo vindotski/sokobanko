@@ -8,10 +8,27 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Added
+- **A map-style camera on the play page.** Pinch to zoom and drag with two fingers to look
+  around; on a computer, Ctrl/⌘ and scroll (or a trackpad pinch) zooms around the pointer, scroll
+  pans, and + and − zoom. Buttons on the board's corner zoom in and out, show the whole level and,
+  once you've looked away, bring the camera back to the player; so does your next move. One
+  finger still moves the player, and holding Space still shows the whole level.
+- **Controls help:** every gesture and shortcut in one sheet, from Settings or the ? key.
+
 ### Changed
 - **Sokobanko's code is now licensed AGPL-3.0-only** (was MIT), so anyone who runs a modified
   version as a public site must offer its source. Versions released before this change stay
   available under MIT. The levels keep their own terms.
+- **The play page is a focused game screen:** no site header, one top bar (back to Levels, the
+  level's name and its place in the collection, Settings) and one bottom bar (the run, then
+  labelled Undo, Redo and Restart). The hints and the stuck-box warning sit in the bottom bar
+  instead of over the board.
+- **Tap the level's name to pick another level:** a list with a tab per collection, opening on
+  the level you're playing, takes the place of the Prev/Next buttons. The solved dialog keeps
+  its Next level button.
+- **Sound and the theme are in the play page's Settings menu.** The Overview toggle gives way to
+  the camera buttons.
 - **Each collection unlocks on its own:** its first unsolved level is up next, whatever the other
   collections, so you can start Microban before finishing Basics. Within a collection the rule is
   the same as before, and the server enforces it (`levelStates` in `@sokoban/core` takes the

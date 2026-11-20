@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { LevelJson } from "@sokoban/core";
 import type {
+  CameraState,
   Game,
   GamePadding,
   GameProgress,
-  OverviewState,
 } from "@sokoban/game";
 
 const props = defineProps<{
@@ -19,7 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   change: [progress: GameProgress];
   solved: [progress: GameProgress];
-  overview: [state: OverviewState];
+  camera: [state: CameraState];
 }>();
 
 const container = useTemplateRef("container");
@@ -39,7 +39,7 @@ onMounted(async () => {
     ...(props.solution && { initialSolution: props.solution }),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
-    onOverviewChange: (state) => emit("overview", state),
+    onCameraChange: (state) => emit("camera", state),
   });
   if (unmounted) {
     created.destroy();
@@ -67,7 +67,10 @@ defineExpose({
   undo: () => game?.undo(),
   redo: () => game?.redo(),
   restart: () => game?.restart(),
-  setOverview: (on: boolean) => game?.setOverview(on),
+  zoomIn: () => game?.zoomIn(),
+  zoomOut: () => game?.zoomOut(),
+  fit: () => game?.fit(),
+  recenter: () => game?.recenter(),
 });
 
 onBeforeUnmount(() => {

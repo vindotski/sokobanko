@@ -27,20 +27,67 @@ export function fitTileSize(
   return Math.min(area.width / cols, area.height / rows);
 }
 
-/**
- * Tile size to zoom to. The overview zooms out until the whole board fits,
- * and is only `available` when that is smaller than the normal zoom.
- */
-export function zoomTarget(
+/** The closest a player can zoom in, as a tile size in pixels. */
+const MAX_ZOOM_TILE = 96;
+
+export interface ZoomBounds {
+  /** The default tile size for this screen (tileSize). */
+  normal: number;
+  /** The tile size at which the whole board fits (fitTileSize). */
+  fit: number;
+  /** No further out than the whole level, or the default if it fits already. */
+  min: number;
+  /** No further in than 96 px tiles. */
+  max: number;
+}
+
+/** How far a player may zoom on this screen, for a board of cols × rows. */
+export function zoomBounds(
   area: { width: number; height: number },
   cols: number,
   rows: number,
-  overview: boolean,
-) {
+): ZoomBounds {
   const normal = tileSize(area);
   const fit = fitTileSize(area, cols, rows);
-  const available = fit < normal;
-  return { tile: overview && available ? fit : normal, available };
+  return {
+    normal,
+    fit,
+    min: Math.min(fit, normal),
+    max: Math.max(MAX_ZOOM_TILE, normal),
+  };
+}
+
+/** A tile size kept within the bounds. */
+export function clampTile(tile: number, bounds: ZoomBounds) {
+  return Math.min(Math.max(tile, bounds.min), bounds.max);
+}
+
+/**
+ * The offset after zooming from `from` to `to` px tiles that keeps the board
+ * point under `focal` (a position in the play area, like the fingers or the
+ * cursor) where it is on screen. One axis.
+ */
+export function zoomAround(
+  offset: number,
+  from: number,
+  to: number,
+  focal: number,
+) {
+  return focal - (focal - offset) * (to / from);
+}
+
+/**
+ * The offset after dragging the board by `delta` px. The board can't be
+ * dragged past its own edges, and stays centred when it fits. One axis.
+ */
+export function panAxis(
+  length: number,
+  board: number,
+  offset: number,
+  delta: number,
+) {
+  if (board <= length) return (length - board) / 2;
+  return clampOffset(length, board, offset + delta);
 }
 
 /** Keeps the board from scrolling past its own edges. */

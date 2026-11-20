@@ -14,6 +14,12 @@ describe("actionFromKey", () => {
     expect(actionFromKey("r")).toBe("restart");
   });
 
+  it("maps + and = to zoom in, - to zoom out", () => {
+    expect(actionFromKey("+")).toBe("zoomIn");
+    expect(actionFromKey("=")).toBe("zoomIn");
+    expect(actionFromKey("-")).toBe("zoomOut");
+  });
+
   it("ignores Caps Lock", () => {
     expect(actionFromKey("Z")).toBe("undo");
     expect(actionFromKey("R")).toBe("restart");
