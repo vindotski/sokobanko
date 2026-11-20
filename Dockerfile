@@ -1,4 +1,5 @@
-# Sokobanko, hosted as an app on Spotcraft (see DEPLOY.md).
+# Sokobanko, hosted as an app on Spotcraft (docs/Deploying-on-Spotcraft.md;
+# docs/Self-Hosting.md for other hosts).
 # Build from the repository root: docker build -t sokobanko .
 
 # The build output is plain JavaScript, so it is built once on the native platform.

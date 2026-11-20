@@ -5,7 +5,7 @@ All notable changes to Sokobanko are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A `vX.Y.Z` tag
 publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and deploys it
-(`.github/workflows/ci.yml`, `CONTRIBUTING.md`).
+(`.github/workflows/ci.yml`, the wiki's Contributing page).
 
 ## [Unreleased]
 
@@ -13,7 +13,7 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 - **Releases deploy from version tags.** Merging to `main` only builds the image; pushing a
   signed `vX.Y.Z` tag deploys it, and `latest` follows releases. `dev` is gone: work happens on
   `feature/`, `bugfix/` and `chore/` branches cut from `main` and merged back into it, which CI
-  checks (`CONTRIBUTING.md`).
+  checks (the wiki's Contributing page).
 - **The app lives at the repository root.** `app/`, `server/`, `public/` and `nuxt.config.ts`
   moved up from `apps/web`, and the root `package.json` is the app's; `packages/core` and
   `packages/game` stay workspace packages. Docker, CI and `spotcraft dev` run from the root, and
@@ -21,7 +21,13 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 - **Packages are `@sokobanko/core` and `@sokobanko/game`** (were `@sokoban/*`), and the scripts
   are in one `scripts/` folder (`import-collection.ts` and `solve-levels.ts` were in `bin/`).
 - **The agents' skills are no longer committed:** `skills-lock.json` lists them, and
-  `npx skills experimental_install` restores them (`CONTRIBUTING.md`).
+  `npx skills experimental_install` restores them (the wiki's Development page).
+- **The README is an introduction, and the technical docs moved to the
+  [wiki](https://github.com/vindotski/sokobanko/wiki):** architecture, getting started,
+  development, contributing, deploying on Spotcraft, and self-hosting with Docker. They're
+  written in `docs/` and published from `main` by CI's `wiki` job. `DEPLOY.md` became the wiki's
+  Deploying on Spotcraft page, `CONTRIBUTING.md` is a short summary, the old roadmap is retired,
+  and the README has screenshots.
 
 ## [0.4.0] - 2026-11-20
 

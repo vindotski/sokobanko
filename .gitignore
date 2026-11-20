@@ -11,6 +11,6 @@ coverage/
 .env*
 !.env.example
 
-# Agent skills, restored from skills-lock.json (CONTRIBUTING.md)
+# Agent skills, restored from skills-lock.json (docs/Development.md)
 .agents/
 .claude/skills/
