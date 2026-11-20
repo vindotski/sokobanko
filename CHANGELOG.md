@@ -17,6 +17,11 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 - **Controls help:** every gesture and shortcut in one sheet, from Settings or the ? key.
 
 ### Changed
+- **Three undos per attempt.** Undo is no longer unlimited: each attempt at a level has three,
+  shown on the Undo button, and Restart gives them all back. Redo is free. Reloading a
+  half-played level keeps the undos already used. The game now saves its full input log, undos
+  included, and the server replays it, so a result that used more undos is refused. Bests set
+  before this change stay.
 - **Progress is local first.** A solve counts as soon as it happens and unlocks the next level
   even when the server can't be reached. It's kept in the browser and uploaded once the server is
   back (on the next visit, on reconnecting, or on returning to the tab), in play order. The server

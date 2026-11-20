@@ -29,7 +29,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Move and push counters | ✅ | ? | ✅ | ? | ✅ | ✅ |
-| Undo | ✅ unlimited (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
+| Undo | ◐ 3 per attempt, refilled by Restart, checked by the server (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
 | Redo | ✅ until the next move | ✖ | ✖ | ✅ | ? | ? |
 | Restart | ✅ | ◐ 4 per level | ✅ | ✅ | ? | ? |
 | Time counter | ✖ on purpose | ? | ✅ | ? | ? | ? |
@@ -45,7 +45,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 **Worth knowing:**
 - **Unlocking in order:** each collection unlocks in its own order. A solve unlocks the next level in the browser at once, and the server replays the solution to verify it, later if it can't be reached at the time.
-- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions.
+- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions. Sokobanko sits in between: three undos per attempt, and the server replays the full input log, undos included, so the limit holds for saved results.
 
 ## Controls and UX
 

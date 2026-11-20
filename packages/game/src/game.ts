@@ -9,6 +9,9 @@ import {
   move,
   type ParsedLevel,
   parseLevel,
+  replayLog,
+  UNDO,
+  UNDO_BUDGET,
 } from "@sokoban/core";
 import { Application, type ColorSource, Graphics } from "pixi.js";
 // Pixi's shader code without eval, so the site's CSP needs no 'unsafe-eval'.
@@ -59,6 +62,13 @@ export interface GameProgress {
   pushes: number;
   /** Moves so far as LURD letters; uppercase letters are pushes. */
   solution: string;
+  /**
+   * Everything played this run, undos included: LURD letters, and `z` for
+   * each undo. The server replays it to check the undo budget.
+   */
+  log: string;
+  /** Undos still allowed this run; restart refills them. */
+  undosLeft: number;
   solved: boolean;
   /** Undone moves that redo can bring back; any new move drops them. */
   canRedo: boolean;
@@ -92,10 +102,11 @@ export interface GameOptions {
   /** Board colors; light ones by default. */
   palette?: Partial<GamePalette>;
   /**
-   * Moves to start from, as LURD, e.g. a half-played run saved earlier. The
-   * level starts fresh if they don't replay or already solve it.
+   * A run to resume, as an input log (see `GameProgress.log`), e.g. a
+   * half-played run saved earlier; undos it used stay used. The level starts
+   * fresh if it doesn't replay or already solves it.
    */
-  initialSolution?: string;
+  initialLog?: string;
   /** Called after every move, undo, restart and level change. */
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
@@ -107,11 +118,11 @@ export interface GameOptions {
 export interface Game {
   /** Replaces the current level. Throws `LevelParseError` if it is invalid. */
   setLevel(level: LevelJson): void;
-  /** Takes back the last move. */
+  /** Takes back the last move, while the run has undos left. */
   undo(): void;
   /** Plays the last undone move again. */
   redo(): void;
-  /** Returns to the start of the level. */
+  /** Returns to the start of the level, as a new run with a full undo budget. */
   restart(): void;
   /** Zooms in or out a step, around the player if the camera follows them. */
   zoomIn(): void;
@@ -147,6 +158,9 @@ export async function createGame(
   let history: Step[] = [];
   // Undone steps, the most recently undone last.
   let future: Step[] = [];
+  // This run's input log and the undos it has used.
+  let log = "";
+  let undos = 0;
   const current = () => history.at(-1)?.level ?? start;
 
   const app = new Application();
@@ -386,6 +400,8 @@ export async function createGame(
       moves: history.length,
       pushes: history.filter((s) => s.pushed).length,
       solution: history.map((s) => s.letter).join(""),
+      log,
+      undosLeft: UNDO_BUDGET - undos,
       solved: isSolved(level),
       canRedo: future.length > 0,
       boxes,
@@ -413,6 +429,7 @@ export async function createGame(
 
   function play(next: Step) {
     history.push(next);
+    log += next.letter;
     const progress = update();
     if (progress.solved) {
       celebrate();
@@ -421,8 +438,11 @@ export async function createGame(
   }
 
   function undo() {
+    if (undos >= UNDO_BUDGET || !history.length) return;
     const last = history.pop();
     if (!last) return;
+    undos++;
+    log += UNDO;
     future.push(last);
     celebration.clear();
     update();
@@ -436,6 +456,8 @@ export async function createGame(
   function restart() {
     history = [];
     future = [];
+    log = "";
+    undos = 0;
     celebration.clear();
     update();
   }
@@ -459,7 +481,18 @@ export async function createGame(
     ]);
   }
 
-  history = replaySteps(start, options.initialSolution ?? "");
+  /** Picks up a saved run where it left off, or starts fresh if it doesn't replay. */
+  function resume(saved: string) {
+    try {
+      const run = replayLog(start, saved);
+      if (run.solved) return;
+      history = replaySteps(start, run.solution);
+      log = saved;
+      undos = run.undos;
+    } catch {}
+  }
+
+  resume(options.initialLog ?? "");
   update();
   snapCamera();
   app.renderer.on("resize", snapCamera);
@@ -474,6 +507,8 @@ export async function createGame(
       dead = deadSquares(start);
       history = [];
       future = [];
+      log = "";
+      undos = 0;
       zoom = undefined;
       celebration.clear();
       update();
