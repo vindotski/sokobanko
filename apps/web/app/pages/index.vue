@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowRightIcon } from "@lucide/vue";
+import { ArrowRightIcon, CalendarDaysIcon, FlameIcon } from "@lucide/vue";
 
 definePageMeta({ layout: "landing" });
 usePageSeo({
@@ -8,6 +8,14 @@ usePageSeo({
 });
 
 const { data: levelIds } = await useLevelIds();
+// Today's puzzle number, and the player's streak if they have one.
+const api = useApi();
+const { data: daily } = await useAsyncData("daily", () =>
+  api("/api/daily").catch(() => null),
+);
+const { data: myDaily } = await useAsyncData("my-daily-home", () =>
+  api("/api/me/daily").catch(() => ({ today: null, streak: 0 })),
+);
 </script>
 
 <template>
@@ -28,7 +36,19 @@ const { data: levelIds } = await useLevelIds();
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
       <PlayButton size="lg" />
-      <Button as-child size="lg" variant="outline">
+      <Button v-if="daily" as-child size="lg" variant="outline">
+        <NuxtLink to="/daily">
+          <CalendarDaysIcon data-icon="inline-start" />
+          Daily #{{ daily.number }}
+          <template v-if="myDaily?.streak">
+            <span class="inline-flex items-center" aria-hidden="true">
+              <FlameIcon class="size-4" />{{ myDaily.streak }}
+            </span>
+            <span class="sr-only">, {{ myDaily.streak }}-day streak</span>
+          </template>
+        </NuxtLink>
+      </Button>
+      <Button as-child size="lg" variant="ghost">
         <NuxtLink to="/levels">
           Browse levels
           <ArrowRightIcon data-icon="inline-end" />

@@ -15,6 +15,20 @@
       "when": 1795097468759,
       "tag": "0001_levels",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1795128673920,
+      "tag": "0002_par",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795129768317,
+      "tag": "0003_daily_results",
+      "breakpoints": true
     }
   ]
 }

@@ -3,17 +3,20 @@ import {
   ArrowRightIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ClockIcon,
+  FlameIcon,
   LockIcon,
   PlayIcon,
   Redo2Icon,
   RotateCcwIcon,
   ScanSearchIcon,
+  Share2Icon,
   TrophyIcon,
   Undo2Icon,
   Volume2Icon,
   VolumeOffIcon,
 } from "@lucide/vue";
-import { levelStates } from "@sokoban/core";
+import { levelStates, twoStarLimit } from "@sokoban/core";
 import type { GameProgress, OverviewState } from "@sokoban/game";
 import { usePreferredReducedMotion } from "@vueuse/core";
 
@@ -26,10 +29,41 @@ if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
 const levelId = level.id;
-usePageSeo({
-  title: level.title,
-  description: `Play ${level.title} in Sokobanko: push every box onto a goal.`,
-});
+const collectionId = level.collection;
+// The fewest moves known; three stars at or under it.
+const par = level.par;
+
+// The daily puzzle: this page with `?daily`, reached through /daily. It's open
+// to every player, whatever they've unlocked, and saves to the day's results
+// rather than the level's. A link to an earlier day goes to today's.
+const isDaily = "daily" in route.query;
+const api = useApi();
+const { data: daily } = await useAsyncData("play-daily", () =>
+  isDaily ? api("/api/daily") : Promise.resolve(null),
+);
+const { data: myDaily } = await useAsyncData("play-my-daily", () =>
+  isDaily ? api("/api/me/daily") : Promise.resolve({ today: null, streak: 0 }),
+);
+if (isDaily && daily.value?.level.id !== levelId) {
+  await navigateTo("/daily", { replace: true });
+}
+const dailyNumber = daily.value?.number;
+/** Today's best on the daily, to tell a new best from a replay. */
+const dailyBest = ref(myDaily.value?.today ?? undefined);
+const streakDays = ref(myDaily.value?.streak ?? 0);
+
+usePageSeo(
+  isDaily && dailyNumber
+    ? {
+        title: `Daily #${dailyNumber}`,
+        description:
+          "Today's Sokobanko puzzle: the same level for everyone. Solve it, keep your streak, share your stars.",
+      }
+    : {
+        title: level.title,
+        description: `Play ${level.title} in Sokobanko: push every box onto a goal.`,
+      },
+);
 // The collection and its author, under the title.
 const { data: collections } = await useCollections();
 const collection = computed(() =>
@@ -40,7 +74,9 @@ const collection = computed(() =>
 // another level doesn't lose it. Storage can be missing or blocked (private
 // windows), in which case runs simply aren't kept. Read on the client only:
 // the server renders a fresh board either way.
-const runKey = `sokobanko:run:${levelId}`;
+const runKey = isDaily
+  ? `sokobanko:run:daily:${daily.value?.day}`
+  : `sokobanko:run:${levelId}`;
 function readRun() {
   try {
     return localStorage.getItem(runKey) ?? undefined;
@@ -56,6 +92,19 @@ function saveRun({ solution, solved }: GameProgress) {
   } catch {}
 }
 const savedRun = import.meta.client ? readRun() : undefined;
+
+// A first-time player is told the goal and the one rule that catches
+// everyone, above the board. It doesn't block play: keys reach the board
+// meanwhile. It stays until "Got it" or the first solve, and is read in setup
+// (client only) because the board's padding is fixed when it's created.
+const hintKey = "sokobanko:hint";
+function readHintDismissed() {
+  try {
+    return localStorage.getItem(hintKey) === "dismissed";
+  } catch {
+    return true;
+  }
+}
 
 const game = useTemplateRef("game");
 const progress = ref<GameProgress>({
@@ -83,6 +132,7 @@ await useAsyncData("completions", () => store.load());
 const solvedOpen = ref(false);
 const run = ref({ moves: 0, pushes: 0 });
 const isNewBest = ref(false);
+const runStars = computed(() => levelStars(par, run.value.moves));
 // Neighbours in play order, solved or not. Plain indexing, unlike `.at()`,
 // gives no previous level for the first one rather than wrapping around.
 const levelIndex = computed(() =>
@@ -98,7 +148,9 @@ const states = computed(() =>
     (id) => id in store.best,
   ),
 );
-const isLocked = computed(() => states.value.get(levelId) === "locked");
+const isLocked = computed(
+  () => !isDaily && states.value.get(levelId) === "locked",
+);
 const nextLocked = computed(
   () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
 );
@@ -107,8 +159,28 @@ const currentLevel = computed(() =>
   levels.value?.find((l) => states.value.get(l.id) === "current"),
 );
 
+const hintDismissed = ref(
+  import.meta.server ||
+    Object.keys(store.best).length > 0 ||
+    readHintDismissed(),
+);
+const showHint = computed(
+  () => !hintDismissed.value && Object.keys(store.best).length === 0,
+);
+// Room above the board for the hint, decided once, when the board is made.
+const boardPadding = showHint.value
+  ? { top: 128, bottom: 136 }
+  : { bottom: 136 };
+function dismissHint() {
+  hintDismissed.value = true;
+  try {
+    localStorage.setItem(hintKey, "dismissed");
+  } catch {}
+  track("hint_dismissed", { level: levelId, moves: progress.value.moves });
+}
+
 /** The saved best, once the level is solved. */
-const best = computed(() => store.best[levelId]);
+const best = computed(() => (isDaily ? dailyBest.value : store.best[levelId]));
 
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
@@ -173,7 +245,23 @@ function playSound(prev: GameProgress, next: GameProgress) {
   else sound.play("step");
 }
 
+// One start per visit: the first move the player makes, not the board loading.
+let startTracked = false;
+function trackChange(prev: GameProgress, next: GameProgress) {
+  if (!started) return;
+  if (!startTracked && next.moves > prev.moves) {
+    startTracked = true;
+    track("level_start", { level: levelId, collection: collectionId });
+  }
+  // A restart clears the redo stack; undoing back to the start keeps it.
+  // Replaying a solved level isn't giving up, so it doesn't count.
+  if (next.moves === 0 && prev.moves > 0 && !next.canRedo && !prev.solved) {
+    track("level_restart", { level: levelId, moves: prev.moves });
+  }
+}
+
 function onChange(next: GameProgress) {
+  trackChange(progress.value, next);
   playSound(progress.value, next);
   announce(progress.value, next);
   progress.value = next;
@@ -187,9 +275,35 @@ function onChange(next: GameProgress) {
 
 // The server replays the solution and records it only if it really solves
 // the level.
+type Saved = {
+  best: { moves: number; pushes: number };
+  /** The daily only: days in a row, this one included. */
+  streak?: number;
+};
+const submit = (solution: string) =>
+  isDaily
+    ? $fetch<Saved>("/api/daily/complete", {
+        method: "POST",
+        body: { solution, level: levelId },
+      })
+    : $fetch<Saved>(`/api/levels/${levelId}/complete`, {
+        method: "POST",
+        body: { solution },
+      });
+
 async function onSolved({ solution, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
-  const previousBest = store.best[levelId];
+  const previousBest = isDaily ? dailyBest.value : store.best[levelId];
+  if (!isDaily) {
+    track("level_solve", {
+      level: levelId,
+      collection: collectionId,
+      moves,
+      pushes,
+      first: !previousBest,
+      ...(par && { par, stars: levelStars(par, moves) }),
+    });
+  }
   isNewBest.value = false;
   clearTimeout(dialogTimer);
   dialogTimer = setTimeout(
@@ -200,20 +314,28 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
   );
   verification.value = { state: "pending" };
   try {
-    const save = () =>
-      $fetch<{ best: { moves: number; pushes: number } }>(
-        `/api/levels/${levelId}/complete`,
-        { method: "POST", body: { solution } },
-      );
+    const save = () => submit(solution);
     // A first save needs a guest: the browser makes one in the user pool.
-    if (Object.keys(store.best).length === 0) await ensureGuest();
+    // On the daily, a player with no levels solved may have one already;
+    // ensureGuest leaves an existing session alone.
+    if (isDaily || Object.keys(store.best).length === 0) await ensureGuest();
     const result = await save().catch(async (error) => {
       // Their session ended since: a new guest, then save again.
       if ((error as { statusCode?: number }).statusCode !== 401) throw error;
       await ensureGuest();
       return save();
     });
-    store.markCompleted(levelId, result.best);
+    if (isDaily) {
+      dailyBest.value = result.best;
+      streakDays.value = result.streak ?? streakDays.value;
+      track("daily_solve", {
+        moves,
+        streak: streakDays.value,
+        ...(par && { par, stars: levelStars(par, moves) }),
+      });
+    } else {
+      store.markCompleted(levelId, result.best);
+    }
     // The first save is what makes the visitor a guest.
     if (!previousBest) refreshNuxtData("account");
     verification.value = { state: "verified", best: result.best };
@@ -230,6 +352,66 @@ function replay() {
   solvedOpen.value = false;
   game.value?.restart();
 }
+
+// Sharing the day's best: its number, stars, moves and streak, and a link to
+// today's puzzle. Nothing in it gives the solution away.
+const shareState = ref<"idle" | "copied">("idle");
+const shareText = computed(() => {
+  const best =
+    verification.value.state === "verified"
+      ? verification.value.best
+      : run.value;
+  const stars = levelStars(par, best.moves);
+  const link = new URL("/daily", useRuntimeConfig().public.siteUrl).href;
+  return [
+    `Sokobanko #${dailyNumber}`,
+    stars ? "⭐".repeat(stars) : undefined,
+    count(best.moves, "move", "moves"),
+    streakDays.value > 1 ? `🔥${streakDays.value}` : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .concat(`\n${link}`);
+});
+async function share() {
+  const text = shareText.value;
+  try {
+    if (navigator.share) {
+      await navigator.share({ text });
+      track("share", { via: "native" });
+      return;
+    }
+    await navigator.clipboard.writeText(text);
+    track("share", { via: "clipboard" });
+    shareState.value = "copied";
+    setTimeout(() => {
+      shareState.value = "idle";
+    }, 2000);
+  } catch {
+    // Dismissed, or the clipboard is blocked: nothing to do.
+  }
+}
+
+// Time left until the next daily, while the dialog is open.
+const now = ref(Date.now());
+let clock: ReturnType<typeof setInterval> | undefined;
+watch(solvedOpen, (open) => {
+  clearInterval(clock);
+  if (open && isDaily) {
+    now.value = Date.now();
+    clock = setInterval(() => {
+      now.value = Date.now();
+    }, 1000);
+  }
+});
+onBeforeUnmount(() => clearInterval(clock));
+const nextIn = computed(() => {
+  const left = Math.max(0, Date.parse(daily.value?.nextAt ?? "") - now.value);
+  const h = Math.floor(left / 3_600_000);
+  const m = Math.floor((left % 3_600_000) / 60_000);
+  const s = Math.floor((left % 60_000) / 1000);
+  return h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
+});
 </script>
 
 <template>
@@ -244,8 +426,9 @@ function replay() {
       <div
         class="mx-auto grid h-12 w-full max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-2 px-4"
       >
+        <span v-if="isDaily" />
         <Button
-          v-if="prevLevel"
+          v-else-if="prevLevel"
           variant="ghost"
           size="sm"
           class="justify-self-start max-sm:btn-icon"
@@ -270,10 +453,17 @@ function replay() {
 
         <div class="flex min-w-0 flex-col items-center">
           <h1 class="max-w-full truncate text-sm font-semibold">
-            {{ level.title }}
+            <template v-if="isDaily">Daily #{{ dailyNumber }}</template>
+            <template v-else>{{ level.title }}</template>
           </h1>
           <p
-            v-if="collection"
+            v-if="isDaily"
+            class="max-w-full truncate text-xs text-muted-foreground"
+          >
+            {{ level.title }}
+          </p>
+          <p
+            v-else-if="collection"
             class="max-w-full truncate text-xs text-muted-foreground"
           >
             {{ collection.title
@@ -283,8 +473,9 @@ function replay() {
           </p>
         </div>
 
+        <span v-if="isDaily" />
         <Button
-          v-if="nextLocked"
+          v-else-if="nextLocked"
           variant="ghost"
           size="sm"
           class="justify-self-end max-sm:btn-icon"
@@ -375,7 +566,7 @@ function replay() {
             :level="level"
             :solution="savedRun"
             :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart.`"
-            :padding="{ bottom: 136 }"
+            :padding="boardPadding"
             class="size-full touch-none select-none"
             @change="onChange"
             @solved="onSolved"
@@ -384,6 +575,33 @@ function replay() {
         </div>
 
         <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+
+        <!--
+          First-time players only. Client only: whether to show it lives in
+          this browser's storage. The wrapper lets clicks through to the
+          board; the card itself takes them.
+        -->
+        <ClientOnly>
+          <div
+            v-if="showHint"
+            class="pointer-events-none absolute inset-x-0 top-4 flex justify-center px-4"
+          >
+            <Card class="pointer-events-auto w-full max-w-md gap-3 py-4">
+              <CardHeader class="px-4">
+                <CardTitle>Push every box onto a goal</CardTitle>
+                <CardDescription>
+                  Walk into a box to push it, one at a time. You can't pull, so
+                  a box pushed into a corner is stuck:
+                  <span class="sm:hidden">tap Undo.</span>
+                  <span class="hidden sm:inline">press Z to undo.</span>
+                </CardDescription>
+              </CardHeader>
+              <CardFooter class="justify-end px-4">
+                <Button size="sm" @click="dismissHint">Got it</Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </ClientOnly>
 
         <!-- Above the toolbar; clicks and drags pass through to the board. -->
         <div
@@ -471,7 +689,10 @@ function replay() {
               </Button>
             </div>
 
-            <!-- This run, and the best to beat once the level is solved. -->
+            <!--
+              This run, then the best to beat once the level is solved, or
+              par before that.
+            -->
             <div class="flex min-w-0 max-w-48 flex-col items-center sm:max-w-sm">
               <p
                 class="max-w-full truncate font-mono text-sm text-muted-foreground"
@@ -487,7 +708,13 @@ function replay() {
                 Best {{ count(best.moves, "move", "moves")
                 }}<span class="hidden sm:inline">
                   · {{ count(best.pushes, "push", "pushes") }}</span
-                >
+                ><template v-if="par"> · par {{ par }}</template>
+              </p>
+              <p
+                v-else-if="par"
+                class="max-w-full truncate font-mono text-xs text-muted-foreground"
+              >
+                Par {{ count(par, "move", "moves") }}
               </p>
             </div>
 
@@ -529,11 +756,33 @@ function replay() {
           <!-- Centred on phones, like the rest of the dialog header. -->
           <div class="flex items-center justify-center gap-2 sm:justify-start">
             <TrophyIcon class="size-5" />
-            <DialogTitle>Level solved!</DialogTitle>
+            <DialogTitle v-if="isDaily">Daily #{{ dailyNumber }} solved!</DialogTitle>
+            <DialogTitle v-else>Level solved!</DialogTitle>
             <Badge v-if="isNewBest">New best!</Badge>
           </div>
           <DialogDescription>{{ level.title }}</DialogDescription>
         </DialogHeader>
+
+        <!-- This run's stars, and what the next one takes. -->
+        <div
+          v-if="runStars && par"
+          class="flex flex-col items-center gap-1 text-center"
+        >
+          <StarRating :stars="runStars" size="md" />
+          <p class="text-sm text-muted-foreground">
+            <template v-if="runStars === 3">
+              At par: {{ count(par, "move", "moves") }}.
+            </template>
+            <template v-else-if="runStars === 2">
+              Par is {{ count(par, "move", "moves") }}. Solve it in {{ par }} or
+              fewer for three stars.
+            </template>
+            <template v-else>
+              Par is {{ count(par, "move", "moves") }}. Solve it in
+              {{ twoStarLimit(par) }} or fewer for two stars.
+            </template>
+          </p>
+        </div>
 
         <div class="grid grid-cols-2 gap-3">
           <Card class="gap-1 py-4">
@@ -569,7 +818,42 @@ function replay() {
           </Card>
         </div>
 
-        <DialogFooter>
+        <!-- The daily: the streak, and when the next puzzle comes. -->
+        <div
+          v-if="isDaily"
+          class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground"
+        >
+          <span
+            v-if="verification.state === 'verified'"
+            class="inline-flex items-center gap-1"
+          >
+            <FlameIcon class="size-4" />
+            {{ count(streakDays, "day", "days") }} in a row
+          </span>
+          <span class="inline-flex items-center gap-1">
+            <ClockIcon class="size-4" />
+            Next puzzle in {{ nextIn }}
+          </span>
+        </div>
+
+        <DialogFooter v-if="isDaily">
+          <Button variant="outline" @click="replay">
+            <RotateCcwIcon data-icon="inline-start" />
+            Replay
+          </Button>
+          <Button variant="outline" as-child>
+            <NuxtLink to="/levels">All levels</NuxtLink>
+          </Button>
+          <!-- Shares the saved best, so it waits for the save. -->
+          <Button
+            :disabled="verification.state === 'pending'"
+            @click="share"
+          >
+            <Share2Icon data-icon="inline-start" />
+            {{ shareState === "copied" ? "Copied!" : "Share" }}
+          </Button>
+        </DialogFooter>
+        <DialogFooter v-else>
           <Button variant="outline" @click="replay">
             <RotateCcwIcon data-icon="inline-start" />
             Replay

@@ -22,7 +22,7 @@ const email = "ivan@vin.ski";
       <ul class="flex list-disc flex-col gap-2 pl-5 text-muted-foreground">
         <li>
           <span class="text-foreground">A guest cookie.</span> Your first
-          solved level makes you a guest, with a session cookie from Spotcraft's
+          solved level or daily puzzle makes you a guest, with a session cookie from Spotcraft's
           kit. It holds no name or email, only a random guest id, and it's
           first-party: no other site can read it.
         </li>
@@ -30,6 +30,11 @@ const email = "ivan@vin.ski";
           <span class="text-foreground">Your best result per level.</span> The
           moves and pushes of your best solution to each level, and when you
           solved it, saved on our server under your guest.
+        </li>
+        <li>
+          <span class="text-foreground">Your daily puzzle results.</span> For
+          each day you solve the daily puzzle, your best moves and pushes, and
+          when. They make your streak.
         </li>
         <li>
           <span class="text-foreground">In your browser's localStorage:</span>

@@ -41,7 +41,7 @@
     "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@kodentuzo/spotcraft": "0.6.1",
+    "@kodentuzo/spotcraft": "0.7.0",
     "@types/canvas-confetti": "1.9.0",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^0.31.11",

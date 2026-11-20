@@ -44,4 +44,15 @@ describe.skipIf(!url)("the levels in Postgres", () => {
     );
     expect(unsolved.map((l) => l.id)).toEqual([]);
   });
+
+  // Par is the fewest moves known: the move count of the stored solution,
+  // which bin/shortest-solutions.ts shortens. A migration sets it, so a
+  // shorter solution needs a migration too, or stars would drift from it.
+  it("each have par equal to their known solution's moves", () => {
+    const known: Record<string, string> = solutions;
+    const drifted = levels
+      .filter((level) => level.par !== known[level.id]?.length)
+      .map((l) => `${l.id}: par ${l.par}, solution ${known[l.id]?.length}`);
+    expect(drifted).toEqual([]);
+  });
 });

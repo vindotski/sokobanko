@@ -1,4 +1,13 @@
 export {
+  DAILY_EPOCH,
+  dailyLevel,
+  dailyNumber,
+  dayIndex,
+  nextDailyAt,
+  streak,
+  utcDay,
+} from "./daily.ts";
+export {
   type Direction,
   directionToLetter,
   letterToDirection,
@@ -16,3 +25,9 @@ export {
   replay,
 } from "./moves.ts";
 export { type LevelState, levelStates } from "./progress.ts";
+export {
+  type Stars,
+  starsFor,
+  TWO_STAR_MARGIN,
+  twoStarLimit,
+} from "./stars.ts";
