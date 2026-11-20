@@ -21,9 +21,12 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
   version as a public site must offer its source. Versions released before this change stay
   available under MIT. The levels keep their own terms.
 - **The play page is a focused game screen:** no site header, one top bar (back to Levels, the
-  level and its place in the collection, Prev/Next) and one bottom bar (the run, labelled Undo,
-  Redo and Restart, and Settings). On phones every control is at the bottom, within thumb reach,
-  and the hints and the stuck-box warning sit in the bottom bar instead of over the board.
+  level's name and its place in the collection, Settings) and one bottom bar (the run, then
+  labelled Undo, Redo and Restart). The hints and the stuck-box warning sit in the bottom bar
+  instead of over the board.
+- **Tap the level's name to pick another level:** a list with a tab per collection, opening on
+  the level you're playing, takes the place of the Prev/Next buttons. The solved dialog keeps
+  its Next level button.
 - **Sound and the theme are in the play page's Settings menu.** The Overview toggle gives way to
   the camera buttons.
 - **Each collection unlocks on its own:** its first unsolved level is up next, whatever the other
