@@ -8,11 +8,11 @@ The classic box-pushing puzzle in the browser, with server-verified results and 
 [![Release](https://img.shields.io/github/v/release/vindotski/sokobanko)](https://github.com/vindotski/sokobanko/releases)
 [![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue)](LICENSE)
 
-| The play screen, light and dark | |
+| On a phone | |
 | --- | --- |
-| ![A Microban level half solved in the light theme: black walls, boxes on goals marked with ticks, and Undo, Redo and Restart below the board](.github/assets/play-light.png) | ![The same level in the dark theme, with the board's colours inverted](.github/assets/play-dark.png) |
-| **The Levels page** | **On a phone** |
-| ![The Levels page: a row of level cards per collection, each with its best result](.github/assets/levels.png) | ![The play screen on a phone, with the controls within thumb reach](.github/assets/play-phone.png) |
+| ![The map: a Continue card for the next level, then each collection as a winding path of numbered levels, solved ones filled with a tick, and a tab bar for Play, Progress and Help at the bottom](.github/assets/map-phone.png) | ![The game on a phone: the goals, moves, undos and best along the top, the board, and Undo, Redo and Restart in thumb reach](.github/assets/play-phone.png) |
+| **On a desktop** | **In dark** |
+| ![The map on a desktop: a sidebar, the level path, and a level card beside it with a big Play](.github/assets/desktop-light.png) | ![The game on a desktop in the dark theme, with the counts and controls in a panel beside the board](.github/assets/desktop-dark.png) |
 
 ## What it is
 

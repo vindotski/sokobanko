@@ -56,11 +56,11 @@ The `deploy` job runs on version tags, and deploys once GitHub's `production` en
 ## Smoke test
 
 In a fresh private window:
-- **The first visit sets no cookie.** `/play/two-boxes` shows the lock screen.
+- **The first visit sets no cookie.** `/play/two-boxes` goes to its card, which says it's locked.
 - **Solving First Push** (→ five times) makes a guest in the user pool (`/_spotcraft/auth/sign-in/anonymous`), shows "Your best: 5 moves", and sets the HttpOnly session cookie.
 - **After a reload:**
-  - `/levels` shows First Push as solved, and `/play` opens Big Room.
-  - The profile says "Playing since …".
+  - The map shows First Push as solved, and `/play` opens Big Room.
+  - Progress says "Playing since …".
 - **In the dashboard,** the app is healthy and the **Users** page counts the guest.
 - **The browser console** shows no errors, and no CSP warnings.
 - **`curl -I https://sokobanko.app`** shows `content-security-policy` and `x-frame-options: DENY`.

@@ -74,7 +74,7 @@ Only add levels whose terms allow it, and keep their credit (the README lists th
 
 - **Where things are:** stories live in `stories/`: `ui/` for the shadcn-vue primitives, `app/` for Sokobanko's components, and `docs/` for the Introduction and the design tokens (colours, type, sizing, the board's pieces). Level fixtures are in `stories/fixtures/levels.ts`. Stories stay out of `app/components`, because Nuxt would register them as components there.
 - **Toolbars:** **Theme** switches light and dark (the `dark` class on `<html>`, as color mode sets it), and **Viewport** switches phone and desktop.
-- **Leaving out:** components that read the TanStack collections or the server (the pages, `PlayButton`) aren't storied.
+- **Leaving out:** components that read the TanStack collections or the server (the pages, `ProgressSync`) aren't storied.
 
 ### Every story is a test
 

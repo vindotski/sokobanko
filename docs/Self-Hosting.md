@@ -70,4 +70,4 @@ The game still runs without a user pool: every level plays, and progress is kept
 
 ## Checking it works
 
-Follow the smoke test in [Deploying on Spotcraft](Deploying-on-Spotcraft.md#smoke-test). In a fresh private window, solving First Push should create a guest (`/_spotcraft/auth/sign-in/anonymous`), and after a reload the Levels page should show it as solved.
+Follow the smoke test in [Deploying on Spotcraft](Deploying-on-Spotcraft.md#smoke-test). In a fresh private window, solving First Push should create a guest (`/_spotcraft/auth/sign-in/anonymous`), and after a reload the map should show it as solved.
