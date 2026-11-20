@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { MonitorIcon, MoonIcon, SunIcon } from "@lucide/vue";
+import { MoonIcon, SunIcon } from "@lucide/vue";
 
 // Light, dark, or follow the system. color-mode remembers the choice in
 // localStorage and applies it before the first paint.
 const colorMode = useColorMode();
-
-const options = [
-  { value: "light", label: "Light", icon: SunIcon },
-  { value: "dark", label: "Dark", icon: MoonIcon },
-  { value: "system", label: "System", icon: MonitorIcon },
-];
 </script>
 
 <template>
@@ -27,7 +21,7 @@ const options = [
     <DropdownMenuContent align="end">
       <DropdownMenuRadioGroup v-model="colorMode.preference">
         <DropdownMenuRadioItem
-          v-for="option in options"
+          v-for="option in themeOptions"
           :key="option.value"
           :value="option.value"
         >

@@ -1,15 +1,15 @@
 # Sokobanko
 
-The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.app**. You push boxes onto goals, one at a time, and every move is counted and can be undone. It comes with 159 levels: four to start, then David W. Skinner's Microban, all 155. Your best results are checked and saved by the server.
+The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.app**. You push boxes onto goals, one at a time, and every move is counted. Each attempt has three undos, so plan ahead. It comes with 159 levels: four to start, then David W. Skinner's Microban, all 155. Your progress is kept in the browser, so you can keep going when the server can't be reached, and your best results are checked and saved by the server whenever it can.
 
 **Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own schema, `app_sokobanko`, in Spotcraft's Postgres. The levels live there: its migrations write them, and Postgres is their only source. A visitor becomes a guest of Spotcraft's user pool the first time they solve a level, and their best result per level is kept in the schema. [DEPLOY.md](DEPLOY.md) has the setup, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps.
 
 ## What it does
 
-- **Play right away:** no sign-up. Levels unlock in play order, and the Play button picks up where you left off.
+- **Play right away:** no sign-up. Each collection unlocks in its own order, and the Play button picks up where you left off.
 - **Keyboard or touch:** arrow keys or WASD, or a joystick that appears wherever you touch the board.
 - **Deadlock warnings:** a box pushed where it can never reach a goal, like a corner, is crossed out. The move still counts, and undo takes it back.
-- **Undo, redo and restart,** from the toolbar or with Z, Y and R, with moves and pushes counted. A half-played level picks up where you left it. Every solution is kept as LURD (`rRRuL…`) and replayed to check it.
+- **Undo, redo and restart,** from the toolbar or with Z, Y and R, with moves and pushes counted. Three undos per attempt; Restart gives them back, and redo is free. A half-played level picks up where you left it, undos used included. Every run is kept as LURD (`rRRuL…`, with `z` for undos) and replayed by the server, budget and all.
 - **Big levels:** the camera follows the player, and an overview (hold Space) shows the whole level.
 - **Sound,** off until you turn it on: short synthesized blips for steps, pushes, goals and solves.
 - **Light and dark,** following the system. The monochrome board tells pieces apart by shape, and the celebrations respect reduced motion.
@@ -62,4 +62,6 @@ Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (
 
 ## License
 
-[MIT](LICENSE). The Hello World! level is from [DoctorLai/sokoban-web](https://github.com/DoctorLai/sokoban-web), also MIT licensed. The Microban levels are by David W. Skinner, from [his Sokoban page](https://web.archive.org/web/2010/http://users.bentonrea.com/~sasquatch/sokoban/): his sets "may be freely distributed provided they remain properly credited".
+Copyright © Ivan Vinski. The code is licensed under the [GNU Affero General Public License v3.0 only](LICENSE) (AGPL-3.0-only). In short, anyone who runs a modified version as a public site must offer its source to the site's users. Versions released before this change remain available under MIT.
+
+The levels keep their own terms. The Hello World! level is from [DoctorLai/sokoban-web](https://github.com/DoctorLai/sokoban-web), MIT licensed. The Microban levels are by David W. Skinner, from [his Sokoban page](https://web.archive.org/web/2010/http://users.bentonrea.com/~sasquatch/sokoban/): his sets "may be freely distributed provided they remain properly credited".

@@ -6,7 +6,10 @@ export interface KeyHandlers {
   onStep: (direction: Direction) => void;
   /** Space held down (true) and released (false). */
   onPeek: (peeking: boolean) => void;
-  /** Z or U (undo), Y (redo) and R (restart). Undo and redo auto-repeat. */
+  /**
+   * Z or U (undo), Y (redo), R (restart), + or = and - (zoom). Undo, redo and
+   * zoom auto-repeat.
+   */
   onAction: (action: KeyAction) => void;
 }
 
@@ -16,8 +19,10 @@ export interface KeyHandlers {
  */
 export function listenToKeys({ onStep, onPeek, onAction }: KeyHandlers) {
   const handleKeyDown = (e: KeyboardEvent) => {
-    if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    // Ctrl and ⌘ are the browser's (⌘+ zooms the page); Shift only types +.
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
     if (isTyping(e.target) || inDialog(e.target)) return;
+    if (e.shiftKey && actionFromKey(e.key) !== "zoomIn") return;
 
     // Space and arrow keys would otherwise scroll the page.
     if (e.code === "Space") {

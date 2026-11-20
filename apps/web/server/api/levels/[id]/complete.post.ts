@@ -1,11 +1,18 @@
-import { levelStates, parseLevel, ReplayError, replay } from "@sokoban/core";
+import {
+  levelStates,
+  parseLevel,
+  ReplayError,
+  replayLog,
+  UNDO_BUDGET,
+} from "@sokoban/core";
 
-// Generous upper bound; real solutions are hundreds of moves at most.
-const SOLUTION = /^[lurdLURD]{1,20000}$/;
+// An input log: LURD moves and z for undos. A generous upper bound; real
+// runs are hundreds of moves at most.
+const LOG = /^[lurdLURDz]{1,20000}$/;
 
 /**
- * Verifies a solution by replaying it, then records it as the player's
- * completion. The player is the session's guest, which the browser makes in
+ * Verifies a run by replaying its input log, undo budget included, then
+ * records its final path as the player's completion. The player is the session's guest, which the browser makes in
  * the user pool before its first save (pages/play/[id].vue); clients cannot
  * write completions themselves.
  */
@@ -14,10 +21,12 @@ export default defineEventHandler(async (event) => {
   if (!guest) throw createError({ statusCode: 401, message: "No session" });
   const database = db();
 
-  const body = await readBody<{ solution?: unknown }>(event);
-  const solution = body?.solution;
-  if (typeof solution !== "string" || !SOLUTION.test(solution)) {
-    throw createError({ statusCode: 400, message: "Invalid solution" });
+  // `solution` is the field's name before logs: a plain solution, which is a
+  // log without undos, from runs solved before the change and not yet synced.
+  const body = await readBody<{ log?: unknown; solution?: unknown }>(event);
+  const log = body?.log ?? body?.solution;
+  if (typeof log !== "string" || !LOG.test(log)) {
+    throw createError({ statusCode: 400, message: "Invalid log" });
   }
 
   const id = getRouterParam(event, "id") ?? "";
@@ -27,22 +36,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: "Level not found" });
   }
 
-  // Levels unlock in play order: only solved levels and the first unsolved
-  // one can be completed.
+  // Each collection unlocks in its own order: only solved levels and the
+  // first unsolved one of the level's collection can be completed.
   const solved = new Set(
     (await readProgress(database, guest.id)).map((c) => c.level),
   );
-  const states = levelStates(
-    levels.map((l) => l.id),
-    (levelId) => solved.has(levelId),
-  );
+  const states = levelStates(levels, (levelId) => solved.has(levelId));
   if (states.get(level.id) === "locked") {
     throw createError({ statusCode: 403, message: "Level is locked" });
   }
 
-  let result: ReturnType<typeof replay>;
+  let result: ReturnType<typeof replayLog>;
   try {
-    result = replay(parseLevel(level), solution);
+    result = replayLog(parseLevel(level), log, { undoBudget: UNDO_BUDGET });
   } catch (e) {
     if (e instanceof ReplayError) {
       throw createError({ statusCode: 422, message: e.message });

@@ -29,7 +29,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Move and push counters | ✅ | ? | ✅ | ? | ✅ | ✅ |
-| Undo | ✅ unlimited (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
+| Undo | ◐ 3 per attempt, refilled by Restart, checked by the server (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
 | Redo | ✅ until the next move | ✖ | ✖ | ✅ | ? | ? |
 | Restart | ✅ | ◐ 4 per level | ✅ | ✅ | ? | ? |
 | Time counter | ✖ on purpose | ? | ✅ | ? | ? | ? |
@@ -44,8 +44,8 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 - **No variants:** the engine, the XSB maps and the LURD solutions are all for square grids. Hexoban and Multiban would need a different format, and the [Sokoban wiki](http://sokobano.de/wiki) is the reference for them.
 
 **Worth knowing:**
-- **Unlocking in order:** levels unlock in play order, and progress is checked by replaying the solution in the browser (12). That replay check moves to a server only under Later (15).
-- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions.
+- **Unlocking in order:** each collection unlocks in its own order. A solve unlocks the next level in the browser at once, and the server replays the solution to verify it, later if it can't be reached at the time.
+- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions. Sokobanko sits in between: three undos per attempt, and the server replays the full input log, undos included, so the limit holds for saved results.
 
 ## Controls and UX
 
@@ -57,7 +57,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Swipe | ◐ the joystick follows a drag | ✖ | ✖ | ✅ | ✅ | ✅ |
 | Tap to walk (pathfinding) | ⏳ 8 (16) | ✖ | ✖ | ✅ | ? | ◐ double tap |
 | Drag a box to push it there | ⏳ 8 (16) | ✖ | ✖ | ◐ long press | ? | ? |
-| Big levels: camera and overview | ✅ the camera follows the player; Space shows the whole level | ✖ | ✖ | ? | ? | ? |
+| Big levels: camera and overview | ✅ the camera follows the player; pinch or Ctrl/⌘-scroll to zoom, two fingers or scroll to pan, buttons to zoom, fit and recenter; Space shows the whole level | ✖ | ✖ | ? | ? | ? |
 | Themes | ✅ light and dark, following the system | ✖ | ◐ colours | ? | ? | ✅ |
 | Sound | ✅ synthesized, muted by default | ? | ✅ | ✅ | ? | ✅ |
 | Reduced motion | ✅ celebrations respect it | ✖ | ✖ | ? | ? | ? |
@@ -90,7 +90,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 | Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
-| Progress saved | ✅ in the browser (Supabase today, Dexie from ⏳ 3, 12) | ✖ | ✖ lost at power off | ✅ | ✖ | ✅ |
+| Progress saved | ✅ in the browser first, then verified and kept by the server | ✖ | ✖ lost at power off | ✅ | ✖ | ✅ |
 | Best result per level | ✅ fewest moves | ✖ | ✅ fewest pushes, moves and time | ? | ? | ✅ |
 | Statistics | ◐ solved count and bests | ✖ | ◐ top 5 | ? | ? | ◐ |
 | Accounts and sync | ✖ for now (Later, 15) | ✖ | ✖ | ? | ? | ◐ Play Games |

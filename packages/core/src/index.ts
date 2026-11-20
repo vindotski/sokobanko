@@ -9,10 +9,21 @@ export {
   deadSquares,
   insideCells,
   isSolved,
+  type LogReplayResult,
   type MoveResult,
   move,
   ReplayError,
   type ReplayResult,
   replay,
+  replayLog,
+  UNDO,
+  UNDO_BUDGET,
 } from "./moves.ts";
-export { type LevelState, levelStates } from "./progress.ts";
+export {
+  isBetter,
+  type LevelRef,
+  type LevelState,
+  levelStates,
+  pendingUploads,
+  type Score,
+} from "./progress.ts";

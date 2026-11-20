@@ -1,5 +1,5 @@
 import type { LevelJson } from "@sokoban/core";
-import { asc, eq, sql } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { collections, levels } from "../db/schema";
 
@@ -21,7 +21,7 @@ export interface Collection {
 
 /**
  * Every level in play order: collection by collection, then by `order`
- * (levels without one last), then by id. Unlocking follows this order.
+ * (both unique, so the order is total). Unlocking follows this order.
  */
 export async function getLevels(): Promise<Level[]> {
   return readLevels(db());
@@ -38,11 +38,7 @@ export async function readLevels(db: NodePgDatabase): Promise<Level[]> {
     })
     .from(levels)
     .innerJoin(collections, eq(levels.collectionId, collections.id))
-    .orderBy(
-      asc(collections.order),
-      sql`${levels.order} asc nulls last`,
-      asc(levels.id),
-    );
+    .orderBy(asc(collections.order), asc(levels.order));
   const seen = new Map<string, number>();
   return rows.map((row) => {
     const number = (seen.get(row.collection) ?? 0) + 1;

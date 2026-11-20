@@ -7,6 +7,7 @@ import {
   move,
   ReplayError,
   replay,
+  replayLog,
 } from "./moves.ts";
 
 const level = (...map: string[]) =>
@@ -198,5 +199,55 @@ describe("deadSquares", () => {
     const dead = deadSquares(l);
     expect(dead[cell(l, 0, 0)]).toBe(0);
     expect(dead[cell(l, 0, 1)]).toBe(0);
+  });
+});
+
+describe("replayLog", () => {
+  const helloWorld = level(
+    "##########",
+    "####....##",
+    "#  $$$$###",
+    "#  @   ###",
+    "##########",
+  );
+  const solution = "rUdrrUdlluRuRlddllluRRdrUdrU";
+
+  it("plays a log without undos like a solution", () => {
+    const { level: _, ...result } = replayLog(helloWorld, solution);
+    const { level: __, ...plain } = replay(helloWorld, solution);
+
+    expect(result).toEqual({ ...plain, undos: 0 });
+  });
+
+  it("takes undone moves out of the path, and redone ones back in", () => {
+    // A wrong step undone, then a step undone and redone.
+    const result = replayLog(helloWorld, `lzr${"z"}r${solution.slice(1)}`);
+
+    expect(result.solved).toBe(true);
+    expect(result.solution).toBe(solution);
+    expect(result.moves).toBe(solution.length);
+    expect(result.undos).toBe(2);
+  });
+
+  it("allows as many undos as the budget", () => {
+    expect(replayLog(helloWorld, "lzlzlz", { undoBudget: 3 }).undos).toBe(3);
+  });
+
+  it("refuses more undos than the budget", () => {
+    expect(() => replayLog(helloWorld, "lzlzlzlz", { undoBudget: 3 })).toThrow(
+      "too many undos at 7",
+    );
+  });
+
+  it("refuses an undo with nothing to undo", () => {
+    expect(() => replayLog(helloWorld, "z")).toThrow(ReplayError);
+    expect(() => replayLog(helloWorld, "z")).toThrow("nothing to undo at 0");
+  });
+
+  it("refuses unknown letters and blocked moves", () => {
+    expect(() => replayLog(helloWorld, "rx")).toThrow("unknown move 'x' at 1");
+    expect(() => replayLog(helloWorld, "dd")).toThrow(
+      "move 'd' at 0 is blocked",
+    );
   });
 });

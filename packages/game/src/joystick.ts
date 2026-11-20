@@ -57,6 +57,13 @@ export class Joystick extends Container {
       .fill({ color, alpha: 0.4 });
   }
 
+  /** Lets go without a step, e.g. when a second finger starts a pinch. */
+  cancel() {
+    this.pointerId = null;
+    this.direction = null;
+    this.visible = false;
+  }
+
   /** Call once per frame. */
   update(deltaMs: number) {
     const step = this.repeater.update(this.direction, deltaMs);

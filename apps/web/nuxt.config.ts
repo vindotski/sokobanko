@@ -47,11 +47,30 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      // Where the browser reaches Spotcraft's user pool. Empty in a build, so
-      // the app's own /_spotcraft/auth is used; `nuxt dev` reads AUTH_URL from
-      // .env, where `spotcraft dev` puts the local pool.
-      authUrl: process.env.AUTH_URL ?? "",
+      // Where the browser reaches Spotcraft's user pool. Empty, so it's the
+      // app's own /_spotcraft/auth: on Spotcraft, and in `nuxt dev` through
+      // the proxy below, so phones on the same network can save too.
+      authUrl: "",
     },
+  },
+  $development: {
+    nitro: {
+      // The local pool (`spotcraft dev`, AUTH_URL in .env) listens on
+      // 127.0.0.1 only; the dev server passes /_spotcraft/auth on to it, as
+      // Spotcraft's Caddy does in production.
+      devProxy: process.env.AUTH_URL
+        ? {
+            "/_spotcraft/auth": {
+              target: process.env.AUTH_URL,
+              changeOrigin: true,
+            },
+          }
+        : {},
+    },
+  },
+  routeRules: {
+    // Picks the next level from progress kept in the browser.
+    "/play": { ssr: false },
   },
   $production: {
     routeRules: {

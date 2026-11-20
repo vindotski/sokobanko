@@ -1,0 +1,220 @@
+{
+  "id": "cec169ed-6112-4414-bd2b-9bcff20faedf",
+  "prevId": "984211a7-b472-4530-bad6-302b21aa7f69",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "app_sokobanko.collections": {
+      "name": "collections",
+      "schema": "app_sokobanko",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author": {
+          "name": "author",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "credit": {
+          "name": "credit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "collections_order_unique": {
+          "name": "collections_order_unique",
+          "nullsNotDistinct": false,
+          "columns": ["order"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "collections_order_positive": {
+          "name": "collections_order_positive",
+          "value": "\"app_sokobanko\".\"collections\".\"order\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "app_sokobanko.levels": {
+      "name": "levels",
+      "schema": "app_sokobanko",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "collection_id": {
+          "name": "collection_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "order": {
+          "name": "order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "map": {
+          "name": "map",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "levels_collection_id_collections_id_fk": {
+          "name": "levels_collection_id_collections_id_fk",
+          "tableFrom": "levels",
+          "tableTo": "collections",
+          "schemaTo": "app_sokobanko",
+          "columnsFrom": ["collection_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "levels_collection_order_unique": {
+          "name": "levels_collection_order_unique",
+          "nullsNotDistinct": false,
+          "columns": ["collection_id", "order"]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "levels_order_positive": {
+          "name": "levels_order_positive",
+          "value": "\"app_sokobanko\".\"levels\".\"order\" > 0"
+        },
+        "levels_map_is_array": {
+          "name": "levels_map_is_array",
+          "value": "jsonb_typeof(\"app_sokobanko\".\"levels\".\"map\") = 'array'"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "app_sokobanko.progress": {
+      "name": "progress",
+      "schema": "app_sokobanko",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level_id": {
+          "name": "level_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moves": {
+          "name": "moves",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pushes": {
+          "name": "pushes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "progress_user_id_users_id_fk": {
+          "name": "progress_user_id_users_id_fk",
+          "tableFrom": "progress",
+          "tableTo": "users",
+          "schemaTo": "auth",
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "progress_level_id_levels_id_fk": {
+          "name": "progress_level_id_levels_id_fk",
+          "tableFrom": "progress",
+          "tableTo": "levels",
+          "schemaTo": "app_sokobanko",
+          "columnsFrom": ["level_id"],
+          "columnsTo": ["id"],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "progress_user_id_level_id_pk": {
+          "name": "progress_user_id_level_id_pk",
+          "columns": ["user_id", "level_id"]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "progress_moves_positive": {
+          "name": "progress_moves_positive",
+          "value": "\"app_sokobanko\".\"progress\".\"moves\" > 0"
+        },
+        "progress_pushes_within_moves": {
+          "name": "progress_pushes_within_moves",
+          "value": "\"app_sokobanko\".\"progress\".\"pushes\" >= 0 and \"app_sokobanko\".\"progress\".\"pushes\" <= \"app_sokobanko\".\"progress\".\"moves\""
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

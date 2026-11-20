@@ -8,6 +8,66 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-20
+
+### Added
+- **A map-style camera on the play page.** Pinch to zoom and drag with two fingers to look
+  around; on a computer, Ctrl/⌘ and scroll (or a trackpad pinch) zooms around the pointer, scroll
+  pans, and + and − zoom. Buttons on the board's corner zoom in and out, show the whole level and,
+  once you've looked away, bring the camera back to the player; so does your next move. One
+  finger still moves the player, and holding Space still shows the whole level.
+- **Controls help:** every gesture and shortcut in one sheet, from Settings or the ? key.
+
+### Changed
+- **Three undos per attempt.** Undo is no longer unlimited: each attempt at a level has three,
+  shown on the Undo button, and Restart gives them all back. Redo is free. Reloading a
+  half-played level keeps the undos already used. The game now saves its full input log, undos
+  included, and the server replays it, so a result that used more undos is refused. Bests set
+  before this change stay.
+- **Progress is local first.** A solve counts as soon as it happens and unlocks the next level
+  even when the server can't be reached. It's kept in the browser and uploaded once the server is
+  back (on the next visit, on reconnecting, or on returning to the tab), in play order. The server
+  still replays every solution and keeps the verified best. A run it refuses is dropped from the
+  browser too. The profile marks results that haven't synced yet.
+- **Sokobanko's code is now licensed AGPL-3.0-only** (was MIT), so anyone who runs a modified
+  version as a public site must offer its source. Versions released before this change stay
+  available under MIT. The levels keep their own terms.
+- **The play page is a focused game screen:** no site header, one top bar (back to Levels, the
+  level's name and its place in the collection, Settings) and one bottom bar (the run, then
+  labelled Undo, Redo and Restart). The hints and the stuck-box warning sit in the bottom bar
+  instead of over the board.
+- **Tap the level's name to pick another level:** a list with a tab per collection, opening on
+  the level you're playing, takes the place of the Prev/Next buttons. The solved dialog keeps
+  its Next level button.
+- **Sound and the theme are in the play page's Settings menu.** The Overview toggle gives way to
+  the camera buttons.
+- **Each collection unlocks on its own:** its first unsolved level is up next, whatever the other
+  collections, so you can start Microban before finishing Basics. Within a collection the rule is
+  the same as before, and the server enforces it (`levelStates` in `@sokoban/core` takes the
+  levels with their collections).
+- **The Levels page shows each collection as one row** you can scroll, swipe or step through
+  with its arrows, instead of a grid of every level. Each row opens at your next level. The
+  rows are shadcn-vue's Carousel (`embla-carousel-vue`), with its buttons at our sizes.
+- **The controls are plain shadcn-vue and Tailwind again**, without `@kodentuzo/spotstrap`. The
+  colors, square corners, flat edges and fonts are our own tokens in `main.css`, with the same
+  values as spotstrap's Sokobanko theme, so the pages look the same. Buttons, toggles and menu rows
+  stay 44px tall, and compact ones keep a 44px hit area; `cn` knows the `control` sizes. The
+  solved dialog still becomes a sheet at the bottom on phones.
+- pnpm's one-day wait for new packages no longer has a spotstrap exception.
+- **A best ranks by moves, then pushes:** a run with as many moves and fewer pushes is the new
+  best. A tie still keeps the older run.
+- **Players' results outlive level changes:** a level that someone has solved can't be deleted
+  (the foreign key is `RESTRICT`, no longer `CASCADE`), so a migration can't erase results.
+- `bin/import-collection.ts` writes schema-qualified table names, so a collection's migration
+  doesn't depend on the role's search path.
+
+### Fixed
+- A stray quote in the dialog's and the drawer's close button markup.
+- **The database guards its own data** (migration `0002_integrity`): collection order is
+  unique, so two collections can't interleave their levels; every level has an order, unique in
+  its collection; orders are positive, maps are arrays, results have at least one move and no
+  more pushes than moves. `levels.updated_at`, never updated or read, is gone.
+
 ## [0.3.0] - 2026-11-19
 
 Guests and their progress move into Spotcraft's user pool, shared by every app on the server,
@@ -106,7 +166,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/vindotski/sokobanko/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vindotski/sokobanko/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vindotski/sokobanko/compare/v0.1.0...v0.2.0

@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<{
 <template>
   <div
     data-slot="dialog-footer"
-    :class="cn('dialog-actions', props.class)"
+    :class="cn('flex flex-col-reverse gap-3 sm:flex-row sm:flex-wrap sm:justify-end max-sm:*:w-full', props.class)"
   >
     <slot />
     <DialogClose v-if="showCloseButton" as-child>
