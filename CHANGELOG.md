@@ -9,6 +9,10 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 ## [Unreleased]
 
 ### Changed
+- **Each collection unlocks on its own:** its first unsolved level is up next, whatever the other
+  collections, so you can start Microban before finishing Basics. Within a collection the rule is
+  the same as before, and the server enforces it (`levelStates` in `@sokoban/core` takes the
+  levels with their collections).
 - **The Levels page shows each collection as one row** you can scroll, swipe or step through
   with its arrows, instead of a grid of every level. Each row opens at your next level. The
   rows are shadcn-vue's Carousel (`embla-carousel-vue`), with its buttons at our sizes.

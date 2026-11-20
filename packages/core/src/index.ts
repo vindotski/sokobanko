@@ -15,4 +15,4 @@ export {
   type ReplayResult,
   replay,
 } from "./moves.ts";
-export { type LevelState, levelStates } from "./progress.ts";
+export { type LevelRef, type LevelState, levelStates } from "./progress.ts";
