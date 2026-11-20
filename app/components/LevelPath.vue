@@ -11,12 +11,18 @@ const props = defineProps<{
   levels: { id: string; title: string; number: number }[];
   states: Record<string, LevelState>;
   best: Record<string, { moves: number }>;
+  /** Whether to remember this width for the next visit (not beside a card). */
+  remember?: boolean;
 }>();
 
 const SIZE = 56;
 const PITCH = 80;
 // As many levels per row as fit, from 4 (a phone) to 10. The server, and the
-// first render in the browser, use 4; then the path fits its space.
+// first render in the browser, can't measure: they use the count this
+// browser last had (a cookie, kept along with the map hint, so only once a
+// level is solved), else 4; then the path fits its space.
+const saved = useMapCookie(MAP_COLUMNS_COOKIE);
+const hint = useMapCookie(MAP_HINT_COOKIE);
 const box = useTemplateRef("box");
 const { width: available } = useElementSize(box);
 const columns = computed(() =>
@@ -25,8 +31,18 @@ const columns = computed(() =>
         10,
         Math.max(4, Math.floor((available.value + PITCH - SIZE) / PITCH)),
       )
-    : 4,
+    : (parseColumns(saved.value) ?? 4),
 );
+watch([available, hint], () => {
+  if (
+    props.remember &&
+    hint.value &&
+    available.value &&
+    saved.value !== String(columns.value)
+  ) {
+    saved.value = String(columns.value);
+  }
+});
 const cells = computed(() => pathCells(props.levels.length, columns.value));
 const rows = computed(() => Math.ceil(props.levels.length / columns.value));
 const width = computed(() => columns.value * PITCH - (PITCH - SIZE));
