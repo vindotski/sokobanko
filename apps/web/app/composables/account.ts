@@ -26,10 +26,9 @@ const makePool = (baseURL: string) =>
   createAuthClient({ baseURL, plugins: [anonymousClient()] });
 
 /**
- * Spotcraft's user pool, from the browser: on Spotcraft it answers at
- * /_spotcraft/auth on the app's own domain, so its session cookie is
- * first-party. Locally it runs on its own port (AUTH_URL in .env), and
- * `localhost` cookies reach every port. Browser only.
+ * Spotcraft's user pool, from the browser: it answers at /_spotcraft/auth on
+ * the app's own domain (on Spotcraft, and through the dev server's proxy
+ * locally), so its session cookie is first-party. Browser only.
  */
 export function useUserPool() {
   const configured = useRuntimeConfig().public.authUrl;
