@@ -9,6 +9,9 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 ## [Unreleased]
 
 ### Changed
+- **The Levels page shows each collection as one row** you can scroll, swipe or step through
+  with its arrows, instead of a grid of every level. Each row opens at your next level. The
+  rows are shadcn-vue's Carousel (`embla-carousel-vue`), with its buttons at our sizes.
 - **The controls are plain shadcn-vue and Tailwind again**, without `@kodentuzo/spotstrap`. The
   colors, square corners, flat edges and fonts are our own tokens in `main.css`, with the same
   values as spotstrap's Sokobanko theme, so the pages look the same. Buttons, toggles and menu rows
