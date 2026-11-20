@@ -7,39 +7,6 @@ const open = defineModel<boolean>("open", { required: true });
 
 // From the bottom on phones, within thumb reach; from the side elsewhere.
 const wide = useMediaQuery("(min-width: 640px)");
-
-const controls = [
-  { action: "Move", touch: "Drag on the board", keys: "Arrows or WASD" },
-  {
-    action: `Undo (${UNDO_BUDGET} per attempt)`,
-    touch: "Undo button",
-    keys: "Z or U",
-  },
-  { action: "Redo", touch: "Redo button", keys: "Y" },
-  { action: "Restart", touch: "Restart button", keys: "R" },
-  {
-    action: "Zoom",
-    touch: "Pinch, or + and −",
-    keys: "+ and −, or Ctrl/⌘ and scroll",
-  },
-  { action: "Look around", touch: "Drag with two fingers", keys: "Scroll" },
-  {
-    action: "See the whole level",
-    touch: "Whole-level button",
-    keys: "Hold Space",
-  },
-  {
-    action: "Back to the player",
-    touch: "Move, or the locate button",
-    keys: "Move",
-  },
-  {
-    action: "Another level",
-    touch: "Tap the level's name",
-    keys: "Click the level's name",
-  },
-  { action: "These controls", touch: "Settings, then Controls", keys: "?" },
-];
 </script>
 
 <template>
@@ -53,28 +20,8 @@ const controls = [
           undos; Restart gives them all back.
         </SheetDescription>
       </SheetHeader>
-      <!-- Padding outside the table, and wrapping cells, so it fits the
-           sheet instead of scrolling sideways. -->
-      <div class="px-4">
-        <Table class="[&_td]:whitespace-normal [&_th]:whitespace-normal">
-          <TableHeader>
-            <TableRow>
-              <TableHead>To</TableHead>
-              <TableHead>Touch</TableHead>
-              <!-- Phones have no keyboard; the column would only crowd them. -->
-              <TableHead class="hidden sm:table-cell">Keyboard and mouse</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-for="row in controls" :key="row.action">
-              <TableCell class="font-medium">{{ row.action }}</TableCell>
-              <TableCell class="whitespace-normal">{{ row.touch }}</TableCell>
-              <TableCell class="hidden whitespace-normal sm:table-cell">
-                {{ row.keys }}
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+      <div class="px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <ControlsTable />
       </div>
     </SheetContent>
   </Sheet>
