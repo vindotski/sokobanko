@@ -15,7 +15,7 @@ After the prefix, use lowercase letters, digits, dots and hyphens. CI's `branch-
 1. `git switch -c feature/<name> origin/main`
 2. Commit. Commits are signed, in the `type(scope): summary` style (`feat`, `fix`, `chore`, `docs`, `refactor`, `test`).
 3. Open a pull request into `main`. Note user-facing changes under `[Unreleased]` in `CHANGELOG.md`.
-4. Once `branch-name`, `verify` and `image` pass, merge with a **merge commit**. Squash and rebase merges are turned off: a rebase merge rewrites the commits and drops their signatures. GitHub deletes the branch after merging.
+4. Once `branch-name`, `verify`, `image` and `storybook` pass, merge with a **merge commit**. Squash and rebase merges are turned off: a rebase merge rewrites the commits and drops their signatures. GitHub deletes the branch after merging.
 
 A ruleset on `main` enforces this: changes arrive only through pull requests with passing checks, with no force pushes and no deletion.
 
