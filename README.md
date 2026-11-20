@@ -1,59 +1,52 @@
 # Sokobanko
 
-The classic box-pushing puzzle, in the browser. Play it at **https://sokobanko.app**. You push boxes onto goals, one at a time, and every move is counted. Each attempt has three undos, so plan ahead. It comes with 159 levels: four to start, then David W. Skinner's Microban, all 155. Your progress is kept in the browser, so you can keep going when the server can't be reached, and your best results are checked and saved by the server whenever it can.
+The classic box-pushing puzzle in the browser, with server-verified results and no sign-up.
 
-**Hosted on [Spotcraft](https://spotcraft.dev).** Sokobanko runs as an app on Spotcraft, on our own servers, with its own schema, `app_sokobanko`, in Spotcraft's Postgres. The levels live there: its migrations write them, and Postgres is their only source. A visitor becomes a guest of Spotcraft's user pool the first time they solve a level, and their best result per level is kept in the schema. [DEPLOY.md](DEPLOY.md) has the setup, [CONTRIBUTING.md](CONTRIBUTING.md) the branches and releases, the [roadmap](docs/roadmap.md) what's next, and [docs/parity.md](docs/parity.md) compares the game with the original Sokoban and the top mobile apps.
+**[Play it at sokobanko.app →](https://sokobanko.app)**
 
-## What it does
+[![CI](https://github.com/vindotski/sokobanko/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vindotski/sokobanko/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/vindotski/sokobanko)](https://github.com/vindotski/sokobanko/releases)
+[![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue)](LICENSE)
 
-- **Play right away:** no sign-up. Each collection unlocks in its own order, and the Play button picks up where you left off.
-- **Keyboard or touch:** arrow keys or WASD, or a joystick that appears wherever you touch the board.
-- **Deadlock warnings:** a box pushed where it can never reach a goal, like a corner, is crossed out. The move still counts, and undo takes it back.
-- **Undo, redo and restart,** from the toolbar or with Z, Y and R, with moves and pushes counted. Three undos per attempt; Restart gives them back, and redo is free. A half-played level picks up where you left it, undos used included. Every run is kept as LURD (`rRRuL…`, with `z` for undos) and replayed by the server, budget and all.
-- **Big levels:** the camera follows the player, and an overview (hold Space) shows the whole level.
-- **Sound,** off until you turn it on: short synthesized blips for steps, pushes, goals and solves.
-- **Light and dark,** following the system. The monochrome board tells pieces apart by shape, and the celebrations respect reduced motion.
-- **Your bests,** per level, on the profile page, and under the counter while you play.
-
-Planned features, and what the others have that this doesn't yet, are in [parity.md](docs/parity.md).
-
-## Layout
-
-| Folder | What's in it |
+| The play screen, light and dark | |
 | --- | --- |
-| `app/`, `server/`, `public/` | The Nuxt 4 app, at the repository root: pages, layouts, shadcn-vue components, and its server: who a request comes from (Spotcraft's user pool, through spotkit), the database (Drizzle, and its migrations, which hold the levels), the levels' routes and the one that checks a solution |
-| `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
-| `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
-| `scripts/` | `import-collection.ts` turns a collection in plain-text XSB into a migration; `solve-levels.ts` finds the known solutions the tests replay; `migrate.ts` applies the migrations (`pnpm db:migrate`) |
-| `docs/` | The roadmap and the parity comparison |
+| ![A Microban level half solved in the light theme: black walls, boxes on goals marked with ticks, and Undo, Redo and Restart below the board](.github/assets/play-light.png) | ![The same level in the dark theme, with the board's colours inverted](.github/assets/play-dark.png) |
+| **The Levels page** | **On a phone** |
+| ![The Levels page: a row of level cards per collection, each with its best result](.github/assets/levels.png) | ![The play screen on a phone, with the controls within thumb reach](.github/assets/play-phone.png) |
 
-## Getting started
+## What it is
 
-You need Node 26, pnpm 12 (`corepack enable`) and Docker, for Spotcraft's local stack.
+Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. Sokobanko brings it to any browser, on a phone or a computer:
 
-```sh
-pnpm install
-pnpm exec spotcraft dev   # Postgres and the user pool, the app's schema, .env, migrations
-pnpm dev                  # http://localhost:3000
-```
+- **159 levels:** four to learn the rules, then David W. Skinner's Microban, all 155.
+- **Play straight away.** No account. Your progress is kept even when you're offline.
+- **Fair scores:** every move and push is counted, each attempt gets three undos, and the server checks each result before keeping it.
+- **Made for everyone:** touch or keyboard, light and dark, screen-reader announcements, and a monochrome board that tells pieces apart by shape, not colour.
 
-`spotcraft dev` (from `@kodentuzo/spotcraft`) runs a stack for this repository like a Spotcraft server: Postgres with the `app_sokobanko` schema, the user pool, and Mailpit. It writes the settings to `.env` and runs `pnpm db:migrate` (`spotcraft.json`), which applies the migrations and, with them, the levels. `pnpm exec spotcraft dev db reset` empties the schema and migrates again, and `pnpm exec spotcraft dev stop` stops the stack; its data stays.
+## Engineering highlights
 
-| Script | What it does |
-| --- | --- |
-| `pnpm dev` | Runs the web app |
-| `pnpm build` | Builds the app (`.output/`) |
-| `pnpm test` | Unit tests (Vitest). With the stack's settings loaded (`set -a; . ./.env; set +a`), the database tests run too. |
-| `pnpm typecheck` | Type-checks the app and every package |
-| `pnpm lint` / `pnpm format` | Biome: check, or fix and format |
-| `pnpm db:generate` | Writes a new migration after a change to `server/db/schema.ts` |
-| `pnpm db:migrate` | Applies the migrations to `DATABASE_URL` |
+- **One set of rules, two places.** The game logic is a pure, dependency-free TypeScript package. The browser plays with it, and the server replays every result with it. ([Architecture](https://github.com/vindotski/sokobanko/wiki/Architecture))
+- **Results that can't be faked.** The browser sends a run's whole input log, undos included. The server replays it, enforces the undo budget and the unlock order, and keeps a best only if it really solves the level.
+- **Local first.** A solve counts immediately and unlocks the next level offline too. Progress syncs in play order once the server can be reached, and a run the server refuses is dropped.
+- **A real game canvas.** PixiJS v8, with a map-style camera (pinch, scroll, fit, recenter), a floating joystick, deadlock warnings and accessible announcements.
+- **Data with guarantees.** Postgres through Drizzle. Integrity constraints protect players' results, and the migrations carry the levels themselves.
+- **Shipping:**
+  - CI checks every pull request: branch names, lint, strict typecheck, unit and database tests, and the build.
+  - Images are multi-arch and distroless, with an SBOM and provenance.
+  - Releases are signed version tags that deploy with zero downtime to [Spotcraft](https://spotcraft.dev), the self-hosted platform the author also built.
 
-Levels come in collections and are added by a migration: `scripts/import-collection.ts` writes one from a plain-text XSB file, after checking every level with the game's parser. Then `scripts/solve-levels.ts` adds a solution for each new level to `server/utils/solutions.json`, and the database tests check that every level in Postgres replays its solution. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
+**Stack:** Nuxt 4 · Vue 3 · TypeScript · PixiJS v8 · Pinia · Tailwind CSS v4 · shadcn-vue · Postgres · Drizzle · Vitest · Biome · Docker · GitHub Actions · Spotcraft
 
-## Stack
+## Documentation
 
-Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (strict) · Vitest · Biome · pnpm. Postgres with Drizzle · Spotcraft for hosting and its user pool for guests.
+- **[The wiki](https://github.com/vindotski/sokobanko/wiki):**
+  - [Architecture](https://github.com/vindotski/sokobanko/wiki/Architecture)
+  - [Getting Started](https://github.com/vindotski/sokobanko/wiki/Getting-Started)
+  - [Development](https://github.com/vindotski/sokobanko/wiki/Development)
+  - [Deploying on Spotcraft](https://github.com/vindotski/sokobanko/wiki/Deploying-on-Spotcraft)
+  - [Self-Hosting](https://github.com/vindotski/sokobanko/wiki/Self-Hosting)
+- **[Contributing](CONTRIBUTING.md):** branches, pull requests and releases.
+- **[Changelog](CHANGELOG.md):** what changed in each version.
 
 ## Author
 

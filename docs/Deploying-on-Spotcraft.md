@@ -1,5 +1,3 @@
-# Deploying Sokobanko on Spotcraft
-
 Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://spotcraft.dev) 0.6, on our own Hetzner server behind a Cloudflare Tunnel. Spotcraft runs the app's container behind Caddy, gives it a schema in its Postgres and its user pool, runs its migrations, backs it up, and watches it from the dashboard at https://dash.spotcraft.dev.
 
 - **The image:** `vindotski/sokobanko` on Docker Hub. CI builds it for amd64 and arm64 and publishes it (`.github/workflows/ci.yml`). It has to be public, because Spotcraft's agent doesn't log in to registries.
@@ -17,7 +15,7 @@ Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://sp
 | --- | --- |
 | Name | `sokobanko` |
 | Image | `vindotski/sokobanko` |
-| Tag | a `sha-abc1234` tag from CI, never `latest`, so a rollback is picking the previous one. CI sets it on every release. |
+| Tag | a `sha-abc1234` tag from CI, never `latest`, so a rollback is picking the previous one. CI's deploy job sets it on every release. |
 | Domain | `sokobanko.app`, with **Take over existing DNS records** ticked. Spotcraft points it and `www.sokobanko.app` at the tunnel, and `www` redirects to the bare domain. |
 | Port | `3000` |
 | Memory, CPUs | `512m`, `1` |
@@ -26,18 +24,13 @@ Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://sp
 
 Spotcraft sets `PORT`, `PUBLIC_URL`, `DATABASE_URL`, `DATABASE_SCHEMA` and the `AUTH_*` settings itself. The container is healthy once `/api/health` answers 200: Postgres responds.
 
-## Moving to the user pool (once)
+## Moving to the user pool (once, done)
 
-Until Spotcraft 0.6, Sokobanko had its own database, `app_sokobanko`, with its guests in its `auth` schema through `@spotcraft/kit`, their cookies signed with the app's `AUTH_SECRET`. Spotcraft's [guide](https://spotcraft.dev/docs/guides/move-into-the-pool) moves it, once:
-
-1. Merge this version to `main`. CI's deploy job fails, as the app still has its own database (the migrate label can't run there), and the old version keeps serving. Note the image's `sha-…` tag.
-2. In the dashboard, open `sokobanko`; under **Own database**, enter that tag and press **Move**. Spotcraft backs the app up, deploys the tag into its schema, and copies the guests, their sessions and `progress`. The levels come from the new migrations. Guests keep their cookies: the pool accepts the old `AUTH_SECRET`.
-3. Run the smoke test below with a browser that played before the move: its progress is still there.
-4. Edit the app and remove `AUTH_SECRET` from its env. Later, drop the old database (the guide says how).
+Before Spotcraft 0.6, Sokobanko had its own database, with its guests in its own `auth` schema. It was moved into Spotcraft's shared Postgres and user pool once, with the dashboard's **Move**, following Spotcraft's [guide](https://spotcraft.dev/docs/guides/move-into-the-pool). The steps are in this page's history in git (`DEPLOY.md` at the `v0.4.0` tag) if they're ever needed again.
 
 ## Releasing
 
-A release is a version tag; merging to `main` only builds the image (`sha-<short>`). [CONTRIBUTING.md](CONTRIBUTING.md) has the steps.
+A release is a version tag; merging to `main` only builds the image (`sha-<short>`). [Contributing](Contributing.md) has the steps.
 
 1. Merge the `chore/release-x.y.z` pull request into `main`, then push a signed `vX.Y.Z` tag on its merge commit.
 2. CI verifies, pushes `X.Y.Z`, `X.Y`, `latest` and `sha-<short>`, then deploys `sha-<short>` through Spotcraft's deploy hook and waits until it is live (the `deploy` job). The `production` environment only accepts `v*.*.*` tags.
@@ -48,12 +41,12 @@ Spotcraft starts the new version next to the old one and moves traffic once it i
 - **Migrations only ever add.** For a few seconds both versions run against the same database, and a rollback runs an older image on a newer database. A migration that renames or drops something needs its own plan.
 - **Memory:** both versions run during a release, so the app briefly needs twice its 512 MB.
 - **Rolling back:** in the dashboard, edit `sokobanko` and pick the previous `sha-…` tag.
-- **Levels:** a migration adds or changes them (README, "Getting started"), then release. Deleting a level deletes its results with it.
+- **Levels:** a migration adds or changes them ([Development](Development.md)), then release. A level that players have solved can't be deleted (`RESTRICT`).
 - **Versions:** `@kodentuzo/spotkit` reads the user pool as Spotcraft's contract describes it; a spotkit release that needs a newer Spotcraft says so in its changelog.
 
 ### The deploy hook
 
-The `deploy` job runs on `main`, and deploys once GitHub's `production` environment has:
+The `deploy` job runs on version tags, and deploys once GitHub's `production` environment has:
 
 - the variable `SPOTCRAFT_HOOK_URL`: `https://dash.spotcraft.dev/hooks/deploy/sokobanko`;
 - the secret `SPOTCRAFT_DEPLOY_TOKEN`. In the dashboard, open `sokobanko`, then **Deploy hook → Turn on**, and copy the token. It is shown only once.
@@ -78,3 +71,5 @@ In a fresh private window:
 - **Hetzner's server backups** keep seven daily images of the whole server.
 
 To restore, follow Spotcraft's guide, [Backups and restoring](https://spotcraft.dev/docs/guides/backups). The levels could also be rebuilt from the migrations in git; the players' results are what a lost database would take with it.
+
+Running the same image somewhere other than Spotcraft is covered in [Self-Hosting](Self-Hosting.md).
