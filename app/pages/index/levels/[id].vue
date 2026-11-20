@@ -33,7 +33,7 @@ const boxes = computed(() =>
   level.value ? parseLevel(level.value).boxes.reduce((n, b) => n + b, 0) : 0,
 );
 const state = computed(() =>
-  view.value.ready && level.value
+  view.value.source !== "none" && level.value
     ? view.value.states[level.value.id]
     : undefined,
 );

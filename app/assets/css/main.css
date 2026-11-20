@@ -205,9 +205,22 @@
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
   }
+  /* A returning player's map stays hidden while the page scrolls it to the
+     level up next (pages/index.vue), so it doesn't show at the top and jump.
+     If that never happens, it shows anyway. */
+  html[data-map-placing] main {
+    visibility: hidden;
+    animation: map-placed 0s 2s forwards;
+  }
   /* One focus style everywhere: a solid outline with a gap. */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+@keyframes map-placed {
+  to {
+    visibility: visible;
   }
 }
