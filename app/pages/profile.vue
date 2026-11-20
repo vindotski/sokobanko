@@ -1,38 +1,11 @@
 <script setup lang="ts">
 import { UserIcon } from "@lucide/vue";
 
-const { data: guest } = await useAccount();
-const { data: completed } = await useCompletions();
-const { data: levels } = await useLevels();
+// The guest's "playing since" from the server; bests from the browser's
+// collections, the unsynced ones marked (useProgress).
+const { data: guest } = useAccount();
+const { levels, completions } = useProgress();
 
-const store = useProgressStore();
-
-// Bests with their level's title, newest first: the server's verified ones,
-// and better runs solved here that it hasn't verified yet. A level that has
-// since been removed is left out.
-const completions = computed(() => {
-  const titles = new Map((levels.value ?? []).map((l) => [l.id, l.title]));
-  const verified = (completed.value ?? []).filter(
-    (c) => !store.isUnsynced(c.level_id),
-  );
-  const unsynced = Object.entries(store.local)
-    .filter(([id]) => store.isUnsynced(id))
-    .map(([id, run]) => ({
-      level_id: id,
-      moves: run.moves,
-      pushes: run.pushes,
-      completed_at: run.solvedAt,
-    }));
-  return [
-    ...verified.map((c) => ({ ...c, synced: true })),
-    ...unsynced.map((c) => ({ ...c, synced: false })),
-  ]
-    .flatMap((c) => {
-      const title = titles.get(c.level_id);
-      return title ? [{ ...c, title }] : [];
-    })
-    .sort((a, b) => b.completed_at.localeCompare(a.completed_at));
-});
 const unsyncedCount = computed(
   () => completions.value.filter((c) => !c.synced).length,
 );
@@ -128,11 +101,11 @@ const stats = computed(() => {
           <TableBody>
             <TableRow
               v-for="completion in completions"
-              :key="completion.level_id"
+              :key="completion.levelId"
             >
               <TableCell>
                 <NuxtLink
-                  :to="`/play/${completion.level_id}`"
+                  :to="`/play/${completion.levelId}`"
                   class="font-medium hover:underline"
                 >
                   {{ completion.title }}
@@ -153,7 +126,7 @@ const stats = computed(() => {
               </TableCell>
               <TableCell class="text-right text-muted-foreground">
                 <NuxtTime
-                  :datetime="completion.completed_at"
+                  :datetime="completion.completedAt"
                   date-style="medium"
                   time-style="short"
                 />

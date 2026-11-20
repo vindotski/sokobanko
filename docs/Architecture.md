@@ -6,34 +6,45 @@ Sokobanko is one Nuxt 4 app at the repository root, plus two TypeScript packages
 | --- | --- |
 | `packages/core` (`@sokobanko/core`) | The rules as pure TypeScript, with no DOM and no dependencies: XSB parsing, moves and pushes, dead squares, LURD replay, input-log replay with the undo budget, unlock order, and comparing results. Used by the browser and the server alike, and unit-tested. |
 | `packages/game` (`@sokobanko/game`) | The PixiJS v8 board: drawing, the map-style camera (follow, zoom, pan, fit), keyboard, joystick, pinch and wheel input, and the celebration. It reports progress (moves, pushes, the input log, undos left) to whoever embeds it. |
-| `app/` | The Nuxt pages, layouts and components (shadcn-vue on Tailwind CSS v4), the Pinia progress store, and the client plugin that syncs progress |
+| `app/` | The Nuxt pages, layouts and components (shadcn-vue on Tailwind CSS v4), and the browser's data: TanStack DB collections and the upload outbox (`app/collections/`), read through `useProgress()` |
 | `server/` | Nitro routes, the database (Drizzle and its migrations, which hold the levels), and who a request comes from |
 | `scripts/` | Applying the migrations, importing a level collection, and finding solutions for the tests |
 | `docs/` | This wiki, published from `main` |
 
 ## Playing a level
 
-1. **`/play/:id`** renders the level from `/api/levels` and mounts the board from `@sokobanko/game`, which runs only in the browser.
+1. **`/play/:id`** renders in the browser only. It takes the level from the levels collection and mounts the board from `@sokobanko/game`.
 2. **Each move, undo and restart** reports the run: the moves, the pushes, and the **input log**, made of LURD letters, uppercase for pushes, with `z` for each undo. A half-played run is kept in `localStorage`, so a reload resumes it with its undos already used.
-3. **On a solve,** the run is recorded in the progress store (`app/stores/progress.ts`) at once, and the next level in its collection unlocks, whether or not the server can be reached.
+3. **On a solve,** the run is recorded in the `runs` collection at once, and the next level in its collection unlocks, whether or not the server can be reached.
 
 ## Progress: local first, verified by the server
 
-The store keeps two views and merges them:
+The browser's data lives in [TanStack DB](https://tanstack.com/db) collections (`app/collections/index.ts`), made once in the browser by `app/plugins/tanstack.client.ts`:
 
-- **`local`:** runs solved in this browser, kept with their input logs in `localStorage` (`sokobanko:progress:v1`).
-- **`server`:** the verified bests from `/api/me/completions`, also sent with the server-rendered page.
-- **`best`:** the better of the two for each level. Fewer moves wins, then fewer pushes. Unlocking (`levelStates` in `@sokobanko/core`) and the pages read this.
+| Collection | Holds | From |
+| --- | --- | --- |
+| `levels`, `collections` | The levels and collections, in play order | `/api/levels` and `/api/collections`, through TanStack Query |
+| `verified` | The server's verified bests | `/api/me/completions`, through TanStack Query |
+| `runs` | Each level's best run solved in this browser, with its input log | `localStorage` (`sokobanko:runs:v2`), shared by the browser's tabs |
 
-**Sync** (`sync()`, started by `app/plugins/progress.client.ts`) uploads the runs the server doesn't have yet, or has a worse result for. It runs:
-- once the page is ready
-- after each solve
-- when the browser comes back online
-- when the tab becomes visible again
+`useProgress()` (`app/composables/progress.ts`) reads them with live queries:
+- **`best`:** the better of `verified` and `runs` for each level. Fewer moves wins, then fewer pushes.
+- **`states`:** unlocking, through `levelStates` from `@sokobanko/core`.
+- **Unsynced runs:** which runs the server doesn't have yet.
 
-It uploads them in play order, so the server's own unlocking accepts each one in turn. How it handles failures:
-- **Offline, the server down, or rate-limited:** it stops and tries again on the next trigger.
-- **The server refuses a run** (it doesn't solve the level, or it's over the undo budget): the run is dropped from the browser too.
+Levels, Play and Profile render only in the browser, because the collections don't run on the server. Home and the FAQ are still server-rendered.
+
+**Uploading** goes through a durable outbox, [`@tanstack/offline-transactions`](https://tanstack.com/db):
+
+1. A solve that beats the browser's best becomes an offline transaction. The run is written to `runs` optimistically, so the UI updates at once, and the transaction is stored in IndexedDB, so it survives reloads and being offline.
+2. The outbox runs transactions one at a time, oldest first, so the server's own unlocking accepts each in turn. Each one posts the run's log. Without a session it answers 401: the browser makes a guest in the user pool and tries again.
+3. **Saved:** the run is kept in `runs`, and `verified` is refetched.
+4. **Refused** (400, 404, 422: the run doesn't solve the level, or it's over the undo budget): the transaction fails for good. The optimistic run rolls back, and the solved dialog says so.
+5. **Offline, a server error, or too many requests:** it retries with backoff, and also when the browser comes back online or the tab becomes visible again. "Locked" (403) is retried a few times, in case an earlier level is still on its way, then given up.
+
+**Only one tab runs the outbox** (leader election with Web Locks or BroadcastChannel):
+- A solve in another tab goes straight into `runs`, which `localStorage` shares. The leader sees the change and queues it.
+- **Re-queueing:** the leader also re-queues any run that beats the server's best but isn't in the outbox, for example after the guest's session was lost, or for progress kept from before the outbox.
 
 ## Verifying a result
 

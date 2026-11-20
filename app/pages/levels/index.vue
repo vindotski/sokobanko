@@ -1,31 +1,25 @@
 <script setup lang="ts">
-import { levelStates, parseLevel } from "@sokobanko/core";
+import { parseLevel } from "@sokobanko/core";
 import type { CarouselApi } from "~/components/ui/carousel";
 
-const progress = useProgressStore();
-const { data: levels } = await useLevels();
-const { data: collections } = await useCollections();
-await useAsyncData("completions", () => progress.load());
-
-// Each collection unlocks in its own order; the server enforces the same rule.
-const states = computed(() =>
-  levelStates(levels.value ?? [], (id) => id in progress.best),
-);
+// Levels and progress from the browser's collections (useProgress); each
+// collection unlocks in its own order, and the server enforces the same rule.
+const { levels, collections, best, states, isReady } = useProgress();
 
 const cards = computed(() =>
-  (levels.value ?? []).map((level) => {
+  levels.value.map((level) => {
     const parsed = parseLevel(level);
     return {
       level,
       boxes: parsed.boxes.reduce((n, box) => n + box, 0),
-      best: progress.best[level.id],
+      best: best.value[level.id],
       state: states.value.get(level.id),
     };
   }),
 );
 // One row per collection, in play order.
 const sections = computed(() =>
-  (collections.value ?? [])
+  collections.value
     .map((collection) => {
       const own = cards.value.filter(
         (c) => c.level.collection === collection.id,
@@ -69,7 +63,7 @@ const solvedPercent = computed(() =>
           Pick a puzzle. Your best result is saved when you solve it.
         </p>
       </div>
-      <div v-if="cards.length" class="flex items-center gap-3">
+      <div v-if="isReady && cards.length" class="flex items-center gap-3">
         <span class="text-label whitespace-nowrap text-muted-foreground">
           {{ solvedCount }} of {{ cards.length }} solved
         </span>
@@ -77,7 +71,9 @@ const solvedPercent = computed(() =>
       </div>
     </div>
 
-    <div v-if="sections.length" class="flex flex-col gap-10">
+    <!-- Rows open at the next level, so they wait for the progress. -->
+    <p v-if="!isReady" class="text-sm text-muted-foreground">Loading levels…</p>
+    <div v-else-if="sections.length" class="flex flex-col gap-10">
       <section
         v-for="section in sections"
         :key="section.collection.id"

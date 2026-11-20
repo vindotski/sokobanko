@@ -10,6 +10,15 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 ## [Unreleased]
 
 ### Changed
+- **Progress runs on TanStack DB.** Levels, collections and the server's bests are read through
+  TanStack Query into TanStack DB collections. Runs solved in the browser are a localStorage
+  collection, and live queries work out bests and unlocking. Uploads go through a durable outbox
+  in IndexedDB (`@tanstack/offline-transactions`): oldest first, retried with backoff, run by one
+  tab at a time, and kept across reloads. Solves in other tabs are queued by the tab that runs it.
+  This replaces the Pinia store and its hand-written sync, and Pinia is gone. Progress kept by
+  earlier versions is moved over on the first visit.
+- **Levels, Play and Profile render in the browser only**, from the collections. Home and the FAQ
+  are still server-rendered.
 - **Releases deploy from version tags.** Merging to `main` only builds the image; pushing a
   signed `vX.Y.Z` tag deploys it, and `latest` follows releases. `dev` is gone: work happens on
   `feature/`, `bugfix/` and `chore/` branches cut from `main` and merged back into it, which CI

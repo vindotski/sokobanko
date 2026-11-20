@@ -27,7 +27,7 @@ Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. 
 
 - **One set of rules, two places.** The game logic is a pure, dependency-free TypeScript package. The browser plays with it, and the server replays every result with it. ([Architecture](https://github.com/vindotski/sokobanko/wiki/Architecture))
 - **Results that can't be faked.** The browser sends a run's whole input log, undos included. The server replays it, enforces the undo budget and the unlock order, and keeps a best only if it really solves the level.
-- **Local first.** A solve counts immediately and unlocks the next level offline too. Progress syncs in play order once the server can be reached, and a run the server refuses is dropped.
+- **Local first.** A solve counts immediately and unlocks the next level offline too. TanStack DB collections hold the progress, and a durable outbox in IndexedDB uploads it in play order once the server can be reached, from one tab at a time. A run the server refuses is dropped.
 - **A real game canvas.** PixiJS v8, with a map-style camera (pinch, scroll, fit, recenter), a floating joystick, deadlock warnings and accessible announcements.
 - **Data with guarantees.** Postgres through Drizzle. Integrity constraints protect players' results, and the migrations carry the levels themselves.
 - **Shipping:**
@@ -35,7 +35,7 @@ Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. 
   - Images are multi-arch and distroless, with an SBOM and provenance.
   - Releases are signed version tags that deploy with zero downtime to [Spotcraft](https://spotcraft.dev), the self-hosted platform the author also built.
 
-**Stack:** Nuxt 4 · Vue 3 · TypeScript · PixiJS v8 · Pinia · Tailwind CSS v4 · shadcn-vue · Postgres · Drizzle · Vitest · Biome · Docker · GitHub Actions · Spotcraft
+**Stack:** Nuxt 4 · Vue 3 · TypeScript · PixiJS v8 · TanStack Query and DB · Tailwind CSS v4 · shadcn-vue · Postgres · Drizzle · Vitest · Biome · Docker · GitHub Actions · Spotcraft
 
 ## Documentation
 

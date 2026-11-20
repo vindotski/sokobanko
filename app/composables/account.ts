@@ -1,25 +1,6 @@
 import { createAuthClient } from "better-auth/client";
 import { anonymousClient } from "better-auth/client/plugins";
 
-/**
- * The visitor's guest, or null until they've saved something: the browser
- * makes one in Spotcraft's user pool before the first save (useUserPool), and
- * the pool keeps it in an HttpOnly cookie the browser can't read. Refresh it
- * after saving.
- */
-export const useAccount = () =>
-  useFetch("/api/me", {
-    key: "account",
-    transform: (me) => me.guest,
-  });
-
-/**
- * `$fetch` for Sokobanko's own API. During a server render it forwards the
- * browser's cookies, so the server knows who's asking; in the browser, they're
- * sent with the request anyway.
- */
-export const useApi = () => useRequestFetch();
-
 let pool: ReturnType<typeof makePool> | undefined;
 
 const makePool = (baseURL: string) =>
@@ -31,9 +12,12 @@ const makePool = (baseURL: string) =>
  * locally), so its session cookie is first-party. Browser only.
  */
 export function useUserPool() {
-  const configured = useRuntimeConfig().public.authUrl;
+  // Made once, from the plugin (plugins/tanstack.client.ts): later calls come
+  // from the upload outbox, outside any component, where the runtime config
+  // isn't available.
   pool ??= makePool(
-    configured || new URL("/_spotcraft/auth", location.origin).href,
+    useRuntimeConfig().public.authUrl ||
+      new URL("/_spotcraft/auth", location.origin).href,
   );
   return pool;
 }
