@@ -62,4 +62,6 @@ Nuxt 4 and Vue 3 · PixiJS v8 · Tailwind CSS v4 with shadcn-vue · TypeScript (
 
 ## License
 
-[MIT](LICENSE). The Hello World! level is from [DoctorLai/sokoban-web](https://github.com/DoctorLai/sokoban-web), also MIT licensed. The Microban levels are by David W. Skinner, from [his Sokoban page](https://web.archive.org/web/2010/http://users.bentonrea.com/~sasquatch/sokoban/): his sets "may be freely distributed provided they remain properly credited".
+Copyright © Ivan Vinski. The code is licensed under the [GNU Affero General Public License v3.0 only](LICENSE) (AGPL-3.0-only). In short, anyone who runs a modified version as a public site must offer its source to the site's users. Versions released before this change remain available under MIT.
+
+The levels keep their own terms. The Hello World! level is from [DoctorLai/sokoban-web](https://github.com/DoctorLai/sokoban-web), MIT licensed. The Microban levels are by David W. Skinner, from [his Sokoban page](https://web.archive.org/web/2010/http://users.bentonrea.com/~sasquatch/sokoban/): his sets "may be freely distributed provided they remain properly credited".
