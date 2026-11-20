@@ -53,25 +53,29 @@ const controls = [
           undos; Restart gives them all back.
         </SheetDescription>
       </SheetHeader>
-      <Table class="mx-4 w-auto">
-        <TableHeader>
-          <TableRow>
-            <TableHead>To</TableHead>
-            <TableHead>Touch</TableHead>
-            <!-- Phones have no keyboard; the column would only crowd them. -->
-            <TableHead class="hidden sm:table-cell">Keyboard and mouse</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="row in controls" :key="row.action">
-            <TableCell class="font-medium">{{ row.action }}</TableCell>
-            <TableCell class="whitespace-normal">{{ row.touch }}</TableCell>
-            <TableCell class="hidden whitespace-normal sm:table-cell">
-              {{ row.keys }}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
+      <!-- Padding outside the table, and wrapping cells, so it fits the
+           sheet instead of scrolling sideways. -->
+      <div class="px-4">
+        <Table class="[&_td]:whitespace-normal [&_th]:whitespace-normal">
+          <TableHeader>
+            <TableRow>
+              <TableHead>To</TableHead>
+              <TableHead>Touch</TableHead>
+              <!-- Phones have no keyboard; the column would only crowd them. -->
+              <TableHead class="hidden sm:table-cell">Keyboard and mouse</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="row in controls" :key="row.action">
+              <TableCell class="font-medium">{{ row.action }}</TableCell>
+              <TableCell class="whitespace-normal">{{ row.touch }}</TableCell>
+              <TableCell class="hidden whitespace-normal sm:table-cell">
+                {{ row.keys }}
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </div>
     </SheetContent>
   </Sheet>
 </template>

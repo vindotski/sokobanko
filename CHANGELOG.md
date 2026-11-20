@@ -9,6 +9,18 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+### Added
+- **Storybook** (`pnpm storybook`) documents the components: the shadcn-vue primitives, Sokobanko's
+  own (level previews and cards, the level switcher, the play page's menus and camera controls,
+  and the PixiJS board), and the design tokens. A Theme toolbar shows light and dark.
+- **Every story is a test** (`pnpm test:storybook`, CI's new `storybook` job): rendered in
+  headless Chromium in light and dark, it must pass its play function, axe accessibility checks,
+  and a screenshot comparison with its baseline. `update-screenshots.yml` renders new baselines.
+
+### Fixed
+- The footer's link to the author is named by its visible text, so voice control can follow it.
+- The controls help no longer scrolls sideways in its sheet; its cells wrap.
+
 ## [0.5.0] - 2026-11-20
 
 ### Changed

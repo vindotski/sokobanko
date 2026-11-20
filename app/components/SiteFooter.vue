@@ -15,7 +15,7 @@
       Made by
       <a
         href="https://www.vin.ski"
-        aria-label="Ivan Vinski"
+        title="Ivan Vinski"
         target="_blank"
         rel="noopener noreferrer"
         class="font-medium text-foreground hover:underline"
