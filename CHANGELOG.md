@@ -9,6 +9,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
 ### Changed
 - **Progress runs on TanStack DB.** Levels, collections and the server's bests are read through
   TanStack Query into TanStack DB collections. Runs solved in the browser are a localStorage
@@ -196,7 +198,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/vindotski/sokobanko/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/vindotski/sokobanko/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vindotski/sokobanko/compare/v0.2.0...v0.2.1
