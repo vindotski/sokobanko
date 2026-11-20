@@ -10,8 +10,16 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: "Sokobanko",
+      htmlAttrs: { lang: "en" },
       // Native scrollbars and form controls follow the theme too.
-      meta: [{ name: "color-scheme", content: "light dark" }],
+      meta: [
+        { name: "color-scheme", content: "light dark" },
+        // Content under the notch and home indicator; the bars pad for them.
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1, viewport-fit=cover",
+        },
+      ],
     },
   },
   css: [
