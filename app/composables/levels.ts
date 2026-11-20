@@ -1,29 +1,10 @@
 /**
- * Levels in play order, from server/api/levels.
- * The completion route in server/api/levels/[id]/complete.post.ts uses the
- * same list and order for unlocking.
+ * Ids of published levels, in play order, for the server-rendered home page.
+ * The other pages read levels from the browser's collections (useProgress).
  */
-export function useLevels() {
-  return useFetch("/api/levels", { key: "levels" });
-}
-
-/** Level collections in play order, with their authors and credits. */
-export function useCollections() {
-  return useFetch("/api/collections", { key: "collections" });
-}
-
-/** Ids of published levels, in play order. */
 export function useLevelIds() {
   return useFetch("/api/levels", {
     key: "level-ids",
     transform: (levels) => levels.map((level) => level.id),
   });
-}
-
-/** The player's server-verified bests, newest first; runs not synced yet are in the progress store. */
-export function useCompletions() {
-  const api = useApi();
-  return useAsyncData("my-completions", () =>
-    api("/api/me/completions").catch(() => []),
-  );
 }

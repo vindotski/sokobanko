@@ -2,6 +2,8 @@ packages:
   - "packages/*"
 allowBuilds:
   esbuild: true
+  # Picks Vue 2 or 3 builds; its default is already Vue 3 (vue-query uses it).
+  vue-demi: false
 # Wait a day before installing a newly published version, so a compromised
 # release has time to be caught and pulled.
 minimumReleaseAge: 1440

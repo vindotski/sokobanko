@@ -10,27 +10,48 @@ import {
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
-import { isBetter, levelStates, UNDO_BUDGET } from "@sokobanko/core";
+import { isBetter, UNDO_BUDGET } from "@sokobanko/core";
 import type { CameraState, GameProgress } from "@sokobanko/game";
-import { onKeyStroke, usePreferredReducedMotion } from "@vueuse/core";
+import {
+  onKeyStroke,
+  useOnline,
+  usePreferredReducedMotion,
+} from "@vueuse/core";
+import { localData } from "~/collections";
 
 definePageMeta({ layout: "game" });
 
 const route = useRoute();
-const { data: levels } = await useLevels();
-const level = levels.value?.find((l) => l.id === route.params.id);
+// Levels and progress from the browser's collections (useProgress). Waiting
+// for the server's bests too (or for it to fail, offline) means a level
+// solved before doesn't flash "locked".
+const local = localData();
+await Promise.all([
+  local.levels.preload(),
+  local.levelCollections.preload(),
+  local.verified.preload().catch(() => {}),
+]);
+const {
+  levels,
+  collections,
+  best: bests,
+  states,
+  isUnsynced,
+  rejected,
+  recordSolve,
+} = useProgress();
+const level = levels.value.find((l) => l.id === route.params.id);
 if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
 const levelId = level.id;
 // The collection and its author, under the title.
-const { data: collections } = await useCollections();
 const collection = computed(() =>
-  collections.value?.find((c) => c.id === level.collection),
+  collections.value.find((c) => c.id === level.collection),
 );
 /** How many levels the collection has, for "8 of 155". */
 const collectionSize = computed(
-  () => levels.value?.filter((l) => l.collection === level.collection).length,
+  () => levels.value.filter((l) => l.collection === level.collection).length,
 );
 
 // A half-played run is kept in the browser, so a reload or a visit to
@@ -93,42 +114,31 @@ onKeyStroke("?", (e) => {
   helpOpen.value = !helpOpen.value;
 });
 
-const store = useProgressStore();
-// Completions, so "New best!" knows the previous best even on a direct visit.
-await useAsyncData("completions", () => store.load());
-
 // Completion dialog: this run's numbers, and whether they beat the old best.
 const solvedOpen = ref(false);
 const run = ref({ moves: 0, pushes: 0 });
 const isNewBest = ref(false);
 // The next level in play order, solved or not, for the solved dialog.
 const levelIndex = computed(() =>
-  (levels.value ?? []).findIndex((l) => l.id === levelId),
+  levels.value.findIndex((l) => l.id === levelId),
 );
-const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
+const nextLevel = computed(() => levels.value[levelIndex.value + 1]);
 
 // Each collection unlocks in its own order; the server enforces the same rule.
-const states = computed(() =>
-  levelStates(levels.value ?? [], (id) => id in store.best),
-);
-// Not before this browser's progress is read: a level solved here while the
-// server was out of reach would flash "locked" first.
-const isLocked = computed(
-  () => store.localReady && states.value.get(levelId) === "locked",
-);
+const isLocked = computed(() => states.value.get(levelId) === "locked");
 const nextLocked = computed(
   () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
 );
 /** The level to solve to unlock this one: the current one in its collection. */
 const currentLevel = computed(() => {
-  const collection = levels.value?.[levelIndex.value]?.collection;
-  return levels.value?.find(
+  const collection = levels.value[levelIndex.value]?.collection;
+  return levels.value.find(
     (l) => l.collection === collection && states.value.get(l.id) === "current",
   );
 });
 
 /** The saved best, once the level is solved. */
-const best = computed(() => store.best[levelId]);
+const best = computed(() => bests.value[levelId]);
 
 const count = (n: number, one: string, many: string) =>
   `${n} ${n === 1 ? one : many}`;
@@ -210,18 +220,19 @@ function onChange(next: GameProgress) {
  * Where this level's best stands with the server: saved (verified), being
  * saved, kept on this device until the server can be reached, or refused.
  */
+const online = useOnline();
 const saveState = computed(() => {
-  if (store.rejected.includes(levelId)) return "rejected";
-  if (!store.isUnsynced(levelId)) return "saved";
-  return store.syncing ? "saving" : "local";
+  if (rejected.value.has(levelId)) return "rejected";
+  if (!isUnsynced(levelId)) return "saved";
+  return online.value ? "saving" : "local";
 });
 
 // A solve counts here at once, so the next level unlocks even when the server
-// can't be reached; the server then replays the solution and keeps it if it
-// really solves the level.
+// can't be reached: it goes into the upload outbox (collections/index.ts), and
+// the server replays the log and keeps it if it really solves the level.
 function onSolved({ log, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
-  isNewBest.value = isBetter({ moves, pushes }, store.best[levelId]);
+  isNewBest.value = isBetter({ moves, pushes }, bests.value[levelId]);
   clearTimeout(dialogTimer);
   dialogTimer = setTimeout(
     () => {
@@ -229,13 +240,12 @@ function onSolved({ log, moves, pushes }: GameProgress) {
     },
     reducedMotion.value === "reduce" ? 0 : CELEBRATION_MS,
   );
-  store.recordSolve(levelId, {
+  recordSolve(levelId, {
     log,
     moves,
     pushes,
     solvedAt: new Date().toISOString(),
   });
-  store.sync();
 }
 
 function replay() {
@@ -441,11 +451,11 @@ function replay() {
     <PlayControlsHelp v-model:open="helpOpen" />
     <LevelSwitcher
       v-model:open="switcherOpen"
-      :levels="levels ?? []"
-      :collections="collections ?? []"
+      :levels="levels"
+      :collections="collections"
       :current="level"
       :states="states"
-      :best="store.best"
+      :best="bests"
     />
 
     <Dialog v-model:open="solvedOpen">

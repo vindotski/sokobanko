@@ -23,7 +23,15 @@ const { data: levelIds } = await useLevelIds();
       Push every box onto a goal. You can't pull, so every move counts.
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
-      <PlayButton size="lg" />
+      <ClientOnly>
+        <LazyPlayButton size="lg" />
+        <!-- Until the browser knows the player's progress. -->
+        <template #fallback>
+          <Button size="lg" as-child>
+            <NuxtLink to="/play">Play</NuxtLink>
+          </Button>
+        </template>
+      </ClientOnly>
       <Button as-child size="lg" variant="outline">
         <NuxtLink to="/levels">
           Browse levels

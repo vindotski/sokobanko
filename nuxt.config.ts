@@ -6,7 +6,7 @@ const cnPath = new URL("./app/lib/utils.ts", import.meta.url);
 export default defineNuxtConfig({
   compatibilityDate: "2026-10-25",
   devtools: { enabled: true },
-  modules: ["@pinia/nuxt", "@nuxtjs/color-mode", "shadcn-nuxt"],
+  modules: ["@nuxtjs/color-mode", "shadcn-nuxt"],
   app: {
     head: {
       title: "Sokobanko",
@@ -69,8 +69,13 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
-    // Picks the next level from progress kept in the browser.
+    // These pages read levels and progress from the browser's collections
+    // (TanStack DB, app/collections), which don't run on the server. Home and
+    // the FAQ stay server-rendered.
+    "/levels": { ssr: false },
     "/play": { ssr: false },
+    "/play/**": { ssr: false },
+    "/profile": { ssr: false },
   },
   $production: {
     routeRules: {

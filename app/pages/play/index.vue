@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { TrophyIcon } from "@lucide/vue";
+import { localData } from "~/collections";
 
 definePageMeta({ layout: "play" });
 
 // /play without an id: jump to the first level in play order that the user
 // hasn't solved yet, or congratulate them once everything is solved. Rendered
-// in the browser only (routeRules), as progress solved here lives there.
-const { data: levels } = await useLevels();
-const store = useProgressStore();
-await store.load();
-if (!store.localReady) store.restoreLocal();
-const best = store.best;
-const all = levels.value ?? [];
+// in the browser only (routeRules), as progress lives there.
+const data = localData();
+// A best only the server knows counts too; offline, local progress is enough.
+await Promise.all([
+  data.levels.preload(),
+  data.verified.preload().catch(() => {}),
+]);
+const { levels, best: bests } = useProgress();
+const best = bests.value;
+const all = levels.value;
 const next = all.find((level) => !(level.id in best));
 
 if (next) {
