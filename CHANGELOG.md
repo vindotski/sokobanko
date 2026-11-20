@@ -9,6 +9,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-20
+
 ### Added
 - **Storybook** (`pnpm storybook`) documents the components: the shadcn-vue primitives, Sokobanko's
   own (level previews and cards, the level switcher, the play page's menus and camera controls,
@@ -210,7 +212,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/vindotski/sokobanko/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vindotski/sokobanko/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/vindotski/sokobanko/compare/v0.2.1...v0.3.0
