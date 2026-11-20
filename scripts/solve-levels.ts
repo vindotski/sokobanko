@@ -3,7 +3,7 @@
  * can replay each official level. Reads the levels as JSON on stdin (the
  * running app's /api/levels) and updates the solutions file in place:
  *
- *   curl -s localhost:3000/api/levels | node bin/solve-levels.ts server/utils/solutions.json
+ *   curl -s localhost:3000/api/levels | node scripts/solve-levels.ts server/utils/solutions.json
  *
  * Solutions needn't be short. Each level is searched best-first over box
  * positions, one push at a time: forwards from the start, and if that runs
@@ -30,7 +30,7 @@ const MAX_STATES = Math.min(
 const only = process.env.DIRECTION;
 const [file] = process.argv.slice(2);
 if (!file) {
-  console.error("usage: … | node bin/solve-levels.ts <solutions.json>");
+  console.error("usage: … | node scripts/solve-levels.ts <solutions.json>");
   process.exit(1);
 }
 

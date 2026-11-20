@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UNDO_BUDGET } from "@sokoban/core";
+import { UNDO_BUDGET } from "@sokobanko/core";
 import { useMediaQuery } from "@vueuse/core";
 
 // Every way to play, on a touch screen and with a keyboard and mouse.

@@ -18,6 +18,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
   moved up from `apps/web`, and the root `package.json` is the app's; `packages/core` and
   `packages/game` stay workspace packages. Docker, CI and `spotcraft dev` run from the root, and
   `.env` is written there.
+- **Packages are `@sokobanko/core` and `@sokobanko/game`** (were `@sokoban/*`), and the scripts
+  are in one `scripts/` folder (`import-collection.ts` and `solve-levels.ts` were in `bin/`).
 
 ## [0.4.0] - 2026-11-20
 

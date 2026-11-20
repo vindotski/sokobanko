@@ -1,9 +1,9 @@
-import { parseLevel, replay } from "@sokoban/core";
+import { parseLevel, replay } from "@sokobanko/core";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { type Level, readLevels } from "./levels";
-// A known solution for each level, made by bin/solve-levels.ts. They're kept
+// A known solution for each level, made by scripts/solve-levels.ts. They're kept
 // here rather than in the database, which players can read.
 import solutions from "./solutions.json";
 

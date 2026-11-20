@@ -1,4 +1,4 @@
-import { isBetter, pendingUploads, type Score } from "@sokoban/core";
+import { isBetter, pendingUploads, type Score } from "@sokobanko/core";
 
 export type BestResult = Score;
 

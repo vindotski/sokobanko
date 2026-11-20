@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckIcon, LockIcon, PlayIcon } from "@lucide/vue";
-import type { LevelJson, LevelState } from "@sokoban/core";
+import type { LevelJson, LevelState } from "@sokobanko/core";
 import { useMediaQuery } from "@vueuse/core";
 
 /**

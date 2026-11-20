@@ -2,8 +2,8 @@
  * Turns a level collection in plain-text XSB into a SQL migration that adds
  * it to Postgres, the levels' only source:
  *
- *   pnpm --filter @sokoban/web exec drizzle-kit generate --custom --name microban
- *   node bin/import-collection.ts microban.txt server/db/migrations/0002_microban.sql \
+ *   pnpm exec drizzle-kit generate --custom --name microban
+ *   node scripts/import-collection.ts microban.txt server/db/migrations/0002_microban.sql \
  *     --id microban --title Microban --order 2 --author "David W. Skinner" --credit "…"
  *
  * Every run of map rows is one level; any other line (`Level 1`, `; comment`,
@@ -29,7 +29,7 @@ const [source, out] = positionals;
 const { id, title, order, author, credit } = values;
 if (!source || !out || !id || !title || !order || !/^\d+$/.test(order)) {
   console.error(
-    "usage: node bin/import-collection.ts <source.txt> <migration.sql> --id <slug> --title <title> --order <n> [--author <name>] [--credit <text>]",
+    "usage: node scripts/import-collection.ts <source.txt> <migration.sql> --id <slug> --title <title> --order <n> [--author <name>] [--credit <text>]",
   );
   process.exit(1);
 }
@@ -72,7 +72,7 @@ const text = (value: string | undefined) =>
   value === undefined ? "NULL" : `'${value.replaceAll("'", "''")}'`;
 
 const sql = [
-  `-- ${title}: ${levels.length} levels, made by bin/import-collection.ts.`,
+  `-- ${title}: ${levels.length} levels, made by scripts/import-collection.ts.`,
   `INSERT INTO ${SCHEMA}."collections" ("id", "title", "author", "credit", "order") VALUES`,
   `\t(${text(id)}, ${text(title)}, ${text(author)}, ${text(credit)}, ${order});`,
   "--> statement-breakpoint",

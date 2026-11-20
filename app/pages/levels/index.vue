@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { levelStates, parseLevel } from "@sokoban/core";
+import { levelStates, parseLevel } from "@sokobanko/core";
 import type { CarouselApi } from "~/components/ui/carousel";
 
 const progress = useProgressStore();

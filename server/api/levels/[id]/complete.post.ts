@@ -4,7 +4,7 @@ import {
   ReplayError,
   replayLog,
   UNDO_BUDGET,
-} from "@sokoban/core";
+} from "@sokobanko/core";
 
 // An input log: LURD moves and z for undos. A generous upper bound; real
 // runs are hundreds of moves at most.

@@ -1,5 +1,5 @@
 {
-  "name": "@sokoban/core",
+  "name": "@sokobanko/core",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",

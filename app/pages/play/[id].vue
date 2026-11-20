@@ -10,8 +10,8 @@ import {
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
-import { isBetter, levelStates, UNDO_BUDGET } from "@sokoban/core";
-import type { CameraState, GameProgress } from "@sokoban/game";
+import { isBetter, levelStates, UNDO_BUDGET } from "@sokobanko/core";
+import type { CameraState, GameProgress } from "@sokobanko/game";
 import { onKeyStroke, usePreferredReducedMotion } from "@vueuse/core";
 
 definePageMeta({ layout: "game" });

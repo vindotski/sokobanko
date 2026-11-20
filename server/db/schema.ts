@@ -24,7 +24,7 @@ const app = pgSchema(SCHEMA);
 
 /**
  * Level collections, such as Basics and Microban, in play order. Postgres is
- * their source: they're written by migrations (bin/import-collection.ts).
+ * their source: they're written by migrations (scripts/import-collection.ts).
  */
 export const collections = app.table(
   "collections",

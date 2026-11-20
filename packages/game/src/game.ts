@@ -12,7 +12,7 @@ import {
   replayLog,
   UNDO,
   UNDO_BUDGET,
-} from "@sokoban/core";
+} from "@sokobanko/core";
 import { Application, type ColorSource, Graphics } from "pixi.js";
 // Pixi's shader code without eval, so the site's CSP needs no 'unsafe-eval'.
 import "pixi.js/unsafe-eval";

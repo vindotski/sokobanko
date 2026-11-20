@@ -24,7 +24,7 @@ Planned features, and what the others have that this doesn't yet, are in [parity
 | `app/`, `server/`, `public/` | The Nuxt 4 app, at the repository root: pages, layouts, shadcn-vue components, and its server: who a request comes from (Spotcraft's user pool, through spotkit), the database (Drizzle, and its migrations, which hold the levels), the levels' routes and the one that checks a solution |
 | `packages/core` | The game rules as pure TypeScript: XSB level parsing, moves, LURD replay, unlock order. Unit-tested. |
 | `packages/game` | The PixiJS v8 board: rendering, camera, keyboard and joystick input, celebrations |
-| `bin/` | `import-collection.ts` turns a collection in plain-text XSB into a migration; `solve-levels.ts` finds the known solutions the tests replay |
+| `scripts/` | `import-collection.ts` turns a collection in plain-text XSB into a migration; `solve-levels.ts` finds the known solutions the tests replay; `migrate.ts` applies the migrations (`pnpm db:migrate`) |
 | `docs/` | The roadmap and the parity comparison |
 
 ## Getting started
@@ -49,7 +49,7 @@ pnpm dev                  # http://localhost:3000
 | `pnpm db:generate` | Writes a new migration after a change to `server/db/schema.ts` |
 | `pnpm db:migrate` | Applies the migrations to `DATABASE_URL` |
 
-Levels come in collections and are added by a migration: `bin/import-collection.ts` writes one from a plain-text XSB file, after checking every level with the game's parser. Then `bin/solve-levels.ts` adds a solution for each new level to `server/utils/solutions.json`, and the database tests check that every level in Postgres replays its solution. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
+Levels come in collections and are added by a migration: `scripts/import-collection.ts` writes one from a plain-text XSB file, after checking every level with the game's parser. Then `scripts/solve-levels.ts` adds a solution for each new level to `server/utils/solutions.json`, and the database tests check that every level in Postgres replays its solution. The Docker image is built with `docker build -t sokobanko .`; CI publishes it, and deploying it is described in [DEPLOY.md](DEPLOY.md).
 
 ## Stack
 

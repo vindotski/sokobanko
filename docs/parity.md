@@ -84,7 +84,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 - **Microban and Sasquatch** (David W. Skinner) "may be freely distributed provided they remain properly credited". Microban is in, all 155, and Sasquatch is a candidate for a harder collection (18).
 
 **Worth knowing:**
-- **XSB floor characters:** standard XSB also accepts `-` and `_` for floor, and needs at least one of them on an empty row inside a puzzle. Run-length encoding (`4#|…`) and the SOK format with its `Title:`/`Author:` headers are common when exchanging levels. The game's parser (3) accepts only the space; `bin/import-collection.ts` turns `-` and `_` into spaces.
+- **XSB floor characters:** standard XSB also accepts `-` and `_` for floor, and needs at least one of them on an empty row inside a puzzle. Run-length encoding (`4#|…`) and the SOK format with its `Title:`/`Author:` headers are common when exchanging levels. The game's parser (3) accepts only the space; `scripts/import-collection.ts` turns `-` and `_` into spaces.
 
 ## Progress, community and tools
 

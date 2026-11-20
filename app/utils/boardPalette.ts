@@ -1,4 +1,4 @@
-import type { GamePalette } from "@sokoban/game";
+import type { GamePalette } from "@sokobanko/game";
 
 const PALETTE_VARS: Record<keyof GamePalette, string> = {
   wall: "--board-wall",

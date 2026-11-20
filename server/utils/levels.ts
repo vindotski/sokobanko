@@ -1,4 +1,4 @@
-import type { LevelJson } from "@sokoban/core";
+import type { LevelJson } from "@sokobanko/core";
 import { asc, eq } from "drizzle-orm";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 import { collections, levels } from "../db/schema";
