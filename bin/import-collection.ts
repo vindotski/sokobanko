@@ -3,7 +3,7 @@
  * it to Postgres, the levels' only source:
  *
  *   pnpm --filter @sokoban/web exec drizzle-kit generate --custom --name microban
- *   node bin/import-collection.ts microban.txt apps/web/server/db/migrations/0002_microban.sql \
+ *   node bin/import-collection.ts microban.txt server/db/migrations/0002_microban.sql \
  *     --id microban --title Microban --order 2 --author "David W. Skinner" --credit "…"
  *
  * Every run of map rows is one level; any other line (`Level 1`, `; comment`,
@@ -64,7 +64,7 @@ const levels = maps.map((map, index) => {
   return level;
 });
 
-// The app's schema (SCHEMA in apps/web/server/db/schema.ts), named so the
+// The app's schema (SCHEMA in server/db/schema.ts), named so the
 // migration doesn't depend on the role's search path.
 const SCHEMA = '"app_sokobanko"';
 

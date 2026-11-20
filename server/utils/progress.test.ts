@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { levels } from "../db/schema";
 import { type Completion, readProgress, recordBest } from "./progress";
 
-// Against the local stack: from apps/web, `pnpm exec spotcraft dev`, then
+// Against the local stack: `pnpm exec spotcraft dev`, then
 // `set -a; . ./.env; set +a; pnpm test`. Players are guests of its user pool,
 // as on Spotcraft. Skipped without DATABASE_URL.
 const url = process.env.DATABASE_URL;

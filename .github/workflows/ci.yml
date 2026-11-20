@@ -57,14 +57,13 @@ jobs:
       - run: pnpm typecheck
       # The database tests run against Spotcraft's local stack, set up as on its
       # servers: Postgres with the app's schema, and the user pool. It also
-      # applies the migrations and writes apps/web/.env.
+      # applies the migrations and writes .env.
       - name: Start Spotcraft's local stack
-        working-directory: apps/web
         run: pnpm exec spotcraft dev
       - name: Test
         run: |
           set -a
-          . apps/web/.env
+          . ./.env
           set +a
           pnpm test
       - run: pnpm build

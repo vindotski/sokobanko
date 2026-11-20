@@ -3,7 +3,7 @@
  * can replay each official level. Reads the levels as JSON on stdin (the
  * running app's /api/levels) and updates the solutions file in place:
  *
- *   curl -s localhost:3000/api/levels | node bin/solve-levels.ts apps/web/server/utils/solutions.json
+ *   curl -s localhost:3000/api/levels | node bin/solve-levels.ts server/utils/solutions.json
  *
  * Solutions needn't be short. Each level is searched best-first over box
  * positions, one push at a time: forwards from the start, and if that runs

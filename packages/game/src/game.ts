@@ -46,7 +46,7 @@ export interface GamePalette {
   player: ColorSource;
 }
 
-// The light --board-* colors in apps/web/app/assets/css/main.css: black
+// The light --board-* colors in app/assets/css/main.css: black
 // pieces on white floor, told apart by shape rather than color.
 const DEFAULT_PALETTE: GamePalette = {
   wall: 0x000000,
@@ -571,7 +571,7 @@ function replaySteps(start: ParsedLevel, solution: string): Step[] {
 
 /**
  * Square pieces on a 64-unit tile, told apart by shape and fill, not color.
- * apps/web/app/components/LevelPreview.vue draws the same shapes in SVG.
+ * app/components/LevelPreview.vue draws the same shapes in SVG.
  * A box on a dead square gets a cross for its centre: a warning only, since
  * the move stays allowed and undo takes it back.
  */

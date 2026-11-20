@@ -5,9 +5,9 @@ Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://sp
 - **The image:** `vindotski/sokobanko` on Docker Hub. CI builds it for amd64 and arm64 and publishes it (`.github/workflows/ci.yml`). It has to be public, because Spotcraft's agent doesn't log in to registries.
 - **The database:** the schema `app_sokobanko` in Spotcraft's `apps` database, given to it as `DATABASE_URL` (its role's search path is the schema).
   - **Sokobanko's tables:** `collections`, `levels` and `progress`, plus `__drizzle_migrations`, the applied migrations.
-  - **The migrations** run before a new version starts: Spotcraft runs the image's `dev.spotcraft.migrate` label, `node .output/server/index.mjs migrate` (`apps/web/server/plugins/database.ts`). They also write the levels: Postgres is the levels' only source. If they fail, the new version never starts.
+  - **The migrations** run before a new version starts: Spotcraft runs the image's `dev.spotcraft.migrate` label, `node .output/server/index.mjs migrate` (`server/plugins/database.ts`). They also write the levels: Postgres is the levels' only source. If they fail, the new version never starts.
 - **Guests:** Spotcraft's user pool, shared by the server's apps, answers at `/_spotcraft/auth` on the app's own domain. Before a visitor's first save (a solved level), the browser makes them a guest there with Better Auth's client; the pool sets an HttpOnly cookie that lasts a year. The server reads it with `@kodentuzo/spotkit` (`AUTH_URL`, `AUTH_ISSUER`, `AUTH_JWKS_URL`, which Spotcraft sets). `progress.user_id` points at `auth.users`: deleting a guest in the dashboard's **Users** page deletes their results.
-- **Headers:** Spotcraft's Caddy adds HSTS, `X-Frame-Options`, `Permissions-Policy` and the rest. The app sends its own Content Security Policy (`apps/web/nuxt.config.ts`).
+- **Headers:** Spotcraft's Caddy adds HSTS, `X-Frame-Options`, `Permissions-Policy` and the rest. The app sends its own Content Security Policy (`nuxt.config.ts`).
 
 ## The app in Spotcraft's dashboard
 

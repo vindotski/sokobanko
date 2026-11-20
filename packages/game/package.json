@@ -14,6 +14,7 @@
     "pixi.js": "^8.22.0"
   },
   "devDependencies": {
-    "@types/web": "^0.0.359"
+    "@types/web": "^0.0.359",
+    "typescript": "^7.0.2"
   }
 }
