@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { MenuIcon, UserIcon } from "@lucide/vue";
+import { cn } from "cn";
+import { buttonVariants } from "~/components/ui/button";
 
 const route = useRoute();
 // Everyone plays as a guest for now; accounts come later.
@@ -114,7 +116,12 @@ watch(
           to="/profile"
           aria-label="Profile"
           :aria-current="isActive('/profile') ? 'page' : undefined"
-          class="btn btn-ghost btn-icon btn-compact hidden md:inline-flex aria-[current=page]:ring-2 aria-[current=page]:ring-foreground"
+          :class="
+            cn(
+              buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
+              'hidden md:inline-flex aria-[current=page]:ring-2 aria-[current=page]:ring-foreground',
+            )
+          "
         >
           <Avatar class="size-8">
             <AvatarFallback><UserIcon class="size-4" /></AvatarFallback>

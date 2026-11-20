@@ -1,10 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-/* Spotstrap's Sokobanko theme: black and white, square, no shadows, Geist. The
-   colors follow @nuxtjs/color-mode's .dark class on <html>, not the system. */
-@import "@kodentuzo/spotstrap/tailwind.css";
-@import "@kodentuzo/spotstrap/themes/sokobanko.css";
-@import "@kodentuzo/spotstrap/dark-class.css";
+
+/* Black and white, square, no shadows, Geist. The colors follow
+   @nuxtjs/color-mode's .dark class on <html>, not the system. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Small capitals in Geist Mono: card labels, level meta, badges. */
 @utility text-label {
@@ -25,11 +24,14 @@
 }
 
 @theme inline {
+  --font-sans:
+    "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
+  --font-mono:
+    "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    monospace;
   /* Type scale, shared with www.vin.ski: every font size is one of these.
-     Tailwind's xs/sm/base/lg are remapped onto it so shadcn components fit.
-     Spotstrap's Apple scale (text-title-1, text-footnote…) is there too, but
-     unused; its text-body (17px on 22px) is replaced by ours below, which
-     sets the body text through spotstrap's base styles as well. */
+     Tailwind's xs/sm/base/lg are remapped onto it so shadcn components fit. */
   --text-xs: 12px;
   --text-sm: 14px;
   --text-base: 17px;
@@ -56,6 +58,48 @@
   --text-display--line-height: 1.1;
   --text-display--letter-spacing: -0.03em;
   --text-display--font-weight: 600;
+  /* Square everywhere: every rounded-* utility resolves to 0. */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+  /* High contrast: edges are borders, never soft shadows. */
+  --shadow-2xs: none;
+  --shadow-xs: none;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
+  --shadow-2xl: none;
+  /* Touch sizes: 44px controls; compact ones are 36px with a 44px hit area. */
+  --spacing-control: 2.75rem;
+  --spacing-control-compact: 2.25rem;
+  /* Compact controls' text: 15px. */
+  --text-control: 15px;
+  --text-control--line-height: 1.6;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-grid: var(--grid);
   --color-board-wall: var(--board-wall);
   --color-board-floor: var(--board-floor);
@@ -66,7 +110,31 @@
 }
 
 :root {
+  /* Native scrollbars and form controls match the active theme. */
+  color-scheme: light;
+  --radius: 0;
   --display-size: 44px;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0 0 0);
+  --primary: oklch(0 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.961 0 0);
+  --secondary-foreground: oklch(0 0 0);
+  --muted: oklch(0.961 0 0);
+  /* About 7.5:1 on white, the same grey as www.vin.ski. */
+  --muted-foreground: oklch(0.45 0 0);
+  --accent: oklch(0.961 0 0);
+  --accent-foreground: oklch(0 0 0);
+  /* No red: errors say what went wrong in words. */
+  --destructive: oklch(0 0 0);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0 0 0);
+  --input: oklch(0 0 0);
+  --ring: oklch(0 0 0);
   /* Decorative tile grid; quieter than real borders. */
   --grid: #e5e5e5;
   /* Sokoban board; packages/game/src/game.ts uses the same colors. Pieces are
@@ -80,6 +148,26 @@
 }
 
 .dark {
+  color-scheme: dark;
+  --background: oklch(0 0 0);
+  --foreground: oklch(1 0 0);
+  --card: oklch(0 0 0);
+  --card-foreground: oklch(1 0 0);
+  --popover: oklch(0 0 0);
+  --popover-foreground: oklch(1 0 0);
+  --primary: oklch(1 0 0);
+  --primary-foreground: oklch(0 0 0);
+  --secondary: oklch(0.218 0 0);
+  --secondary-foreground: oklch(1 0 0);
+  --muted: oklch(0.218 0 0);
+  --muted-foreground: oklch(0.738 0 0);
+  --accent: oklch(0.218 0 0);
+  --accent-foreground: oklch(1 0 0);
+  --destructive: oklch(1 0 0);
+  --destructive-foreground: oklch(0.145 0 0);
+  --border: oklch(1 0 0);
+  --input: oklch(1 0 0);
+  --ring: oklch(1 0 0);
   --grid: #262626;
   --board-wall: #fff;
   --board-floor: #000;
@@ -96,13 +184,21 @@
 }
 
 @layer base {
-  /* Spotstrap sets borders, the body's colors, font and size. Outlines stay
-     at full contrast; spotstrap's default is the ring at 50%. */
-  * {
-    @apply outline-ring;
+  *,
+  ::before,
+  ::after {
+    @apply border-border outline-ring;
   }
+  /* 17px on 22px, as a ratio: text with its own size inherits a line height
+     to match. Paragraphs set text-body (1.6) themselves. */
   body {
-    @apply antialiased;
+    @apply bg-background font-sans text-body/[1.2941] text-foreground antialiased;
+  }
+  /* iOS Safari zooms into text inputs smaller than 16px. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
   }
   /* Every underline looks the same: thin and clear of the letters. */
   a {

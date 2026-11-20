@@ -8,6 +8,17 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+### Changed
+- **The controls are plain shadcn-vue and Tailwind again**, without `@kodentuzo/spotstrap`. The
+  colors, square corners, flat edges and fonts are our own tokens in `main.css`, with the same
+  values as spotstrap's Sokobanko theme, so the pages look the same. Buttons, toggles and menu rows
+  stay 44px tall, and compact ones keep a 44px hit area; `cn` knows the `control` sizes. The
+  solved dialog still becomes a sheet at the bottom on phones.
+- pnpm's one-day wait for new packages no longer has a spotstrap exception.
+
+### Fixed
+- A stray quote in the dialog's and the drawer's close button markup.
+
 ## [0.3.0] - 2026-11-19
 
 Guests and their progress move into Spotcraft's user pool, shared by every app on the server,

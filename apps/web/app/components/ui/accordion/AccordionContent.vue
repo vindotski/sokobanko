@@ -16,7 +16,7 @@ const delegatedProps = reactiveOmit(props, "class")
     v-bind="delegatedProps"
     class="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden"
   >
-    <div :class="cn('disclosure-panel', props.class)">
+    <div :class="cn('pb-4 text-muted-foreground', props.class)">
       <slot />
     </div>
   </AccordionContent>

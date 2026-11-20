@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { AccordionTriggerProps } from "reka-ui"
 import type { HTMLAttributes } from "vue"
+import { ChevronDown } from "@lucide/vue"
 import { reactiveOmit } from "@vueuse/core"
 import { cn } from "cn"
 import {
@@ -20,14 +21,17 @@ const delegatedProps = reactiveOmit(props, "class")
       v-bind="delegatedProps"
       :class="
         cn(
-          'disclosure-button flex-1 text-left hover:underline disabled:pointer-events-none disabled:opacity-50',
+          'flex min-h-control flex-1 cursor-pointer items-center justify-between gap-3 py-2 text-left text-body font-medium hover:underline disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180',
           props.class,
         )
       "
     >
       <slot />
-      <!-- disclosure-button draws the chevron, turned when data-state="open". -->
-      <slot name="icon" />
+      <slot name="icon">
+        <ChevronDown
+          class="pointer-events-none size-5 shrink-0 transition-transform duration-200 motion-reduce:transition-none"
+        />
+      </slot>
     </AccordionTrigger>
   </AccordionHeader>
 </template>
