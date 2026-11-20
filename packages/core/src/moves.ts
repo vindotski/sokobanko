@@ -169,3 +169,64 @@ export function replay(level: ParsedLevel, solution: string): ReplayResult {
     solution: normalised,
   };
 }
+
+/** Undos allowed in one run (from the start or a restart). */
+export const UNDO_BUDGET = 3;
+
+/** The letter that marks an undo in an input log. */
+export const UNDO = "z";
+
+export interface LogReplayResult extends ReplayResult {
+  /** Undos the log used. */
+  undos: number;
+}
+
+/**
+ * Plays an input log from `level`: LURD letters for moves (a redo is written
+ * as the move it replays) and `z` for an undo. The result is the final path,
+ * with undone moves taken out. A log without `z` is a plain solution. Throws
+ * `ReplayError` on an unknown letter, a blocked move, an undo with nothing to
+ * undo, or more undos than `undoBudget`.
+ */
+export function replayLog(
+  level: ParsedLevel,
+  log: string,
+  { undoBudget = UNDO_BUDGET }: { undoBudget?: number } = {},
+): LogReplayResult {
+  const path: { level: ParsedLevel; letter: string; pushed: boolean }[] = [];
+  let undos = 0;
+
+  for (const [i, letter] of [...log].entries()) {
+    if (letter === UNDO) {
+      if (!path.length) throw new ReplayError(i, `nothing to undo at ${i}`);
+      if (++undos > undoBudget) {
+        throw new ReplayError(i, `too many undos at ${i}`);
+      }
+      path.pop();
+      continue;
+    }
+    const direction = letterToDirection(letter);
+    if (!direction)
+      throw new ReplayError(i, `unknown move '${letter}' at ${i}`);
+
+    const result = move(path.at(-1)?.level ?? level, direction);
+    if (!result)
+      throw new ReplayError(i, `move '${letter}' at ${i} is blocked`);
+
+    path.push({
+      level: result.level,
+      letter: directionToLetter(direction, result.pushed),
+      pushed: result.pushed,
+    });
+  }
+
+  const end = path.at(-1)?.level ?? level;
+  return {
+    level: end,
+    moves: path.length,
+    pushes: path.filter((s) => s.pushed).length,
+    solved: isSolved(end),
+    solution: path.map((s) => s.letter).join(""),
+    undos,
+  };
+}

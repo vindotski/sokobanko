@@ -2,23 +2,33 @@ import { isBetter, pendingUploads, type Score } from "@sokoban/core";
 
 export type BestResult = Score;
 
-/** A run solved in this browser, kept with its solution so it can be uploaded later. */
+/** A run solved in this browser, kept with its input log so it can be uploaded later. */
 export interface LocalRun extends Score {
-  solution: string;
+  /** Everything played in the run, undos included (GameProgress.log). */
+  log: string;
   /** ISO 8601. */
   solvedAt: string;
 }
 
 const STORAGE_KEY = "sokobanko:progress:v1";
 
-const isLocalRun = (run: unknown): run is LocalRun => {
-  const r = run as Partial<LocalRun> | null;
-  return (
-    typeof r?.solution === "string" &&
-    Number.isInteger(r.moves) &&
-    Number.isInteger(r.pushes) &&
-    typeof r.solvedAt === "string"
-  );
+/** A stored run, from before logs too: those kept a plain `solution`, a log without undos. */
+const toLocalRun = (run: unknown): LocalRun | undefined => {
+  const r = run as (Partial<LocalRun> & { solution?: unknown }) | null;
+  const log = r?.log ?? r?.solution;
+  if (
+    typeof log === "string" &&
+    Number.isInteger(r?.moves) &&
+    Number.isInteger(r?.pushes) &&
+    typeof r?.solvedAt === "string"
+  ) {
+    return {
+      log,
+      moves: r.moves as number,
+      pushes: r.pushes as number,
+      solvedAt: r.solvedAt as string,
+    };
+  }
 };
 
 const statusOf = (error: unknown) =>
@@ -72,12 +82,10 @@ export const useProgressStore = defineStore("progress", () => {
   function restoreLocal() {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
-      const runs = Object.entries(stored ?? {}).filter(([, run]) =>
-        isLocalRun(run),
-      ) as [string, LocalRun][];
       // Anything solved in memory before the read wins if it's better.
-      for (const [id, run] of runs) {
-        if (isBetter(run, local.value[id])) local.value[id] = run;
+      for (const [id, entry] of Object.entries(stored ?? {})) {
+        const run = toLocalRun(entry);
+        if (run && isBetter(run, local.value[id])) local.value[id] = run;
       }
     } catch {}
     localReady.value = true;
@@ -103,20 +111,20 @@ export const useProgressStore = defineStore("progress", () => {
     persist();
   }
 
-  const save = (id: string, solution: string) =>
+  const save = (id: string, log: string) =>
     $fetch<{ best: BestResult }>(`/api/levels/${id}/complete`, {
       method: "POST",
-      body: { solution },
+      body: { log },
     });
 
-  async function upload(id: string, solution: string) {
+  async function upload(id: string, log: string) {
     try {
-      return await save(id, solution);
+      return await save(id, log);
     } catch (error) {
       // Their session ended since: a new guest, then save again.
       if (statusOf(error) !== 401) throw error;
       await ensureGuest();
-      return save(id, solution);
+      return save(id, log);
     }
   }
 
@@ -152,7 +160,7 @@ export const useProgressStore = defineStore("progress", () => {
         const entry = local.value[id];
         if (!entry) continue;
         try {
-          const result = await upload(id, entry.solution);
+          const result = await upload(id, entry.log);
           server.value[id] = result.best;
           saved++;
         } catch (error) {

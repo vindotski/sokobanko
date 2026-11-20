@@ -11,8 +11,8 @@ const props = defineProps<{
   level: LevelJson;
   /** Space to keep free around the board, e.g. for overlays. */
   padding?: GamePadding;
-  /** Moves to start from, as LURD, e.g. a half-played run. */
-  solution?: string;
+  /** A half-played run to resume, as an input log (GameProgress.log). */
+  log?: string;
   /** What screen readers call the board, with its controls. */
   label?: string;
 }>();
@@ -36,7 +36,7 @@ onMounted(async () => {
   const created = await createGame(el, initialLevel, {
     ...(props.padding && { padding: props.padding }),
     palette: readBoardPalette(),
-    ...(props.solution && { initialSolution: props.solution }),
+    ...(props.log && { initialLog: props.log }),
     onChange: (progress) => emit("change", progress),
     onSolved: (progress) => emit("solved", progress),
     onCameraChange: (state) => emit("camera", state),

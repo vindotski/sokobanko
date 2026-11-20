@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { UNDO_BUDGET } from "@sokoban/core";
 import { useMediaQuery } from "@vueuse/core";
 
 // Every way to play, on a touch screen and with a keyboard and mouse.
@@ -9,7 +10,11 @@ const wide = useMediaQuery("(min-width: 640px)");
 
 const controls = [
   { action: "Move", touch: "Drag on the board", keys: "Arrows or WASD" },
-  { action: "Undo", touch: "Undo button", keys: "Z or U" },
+  {
+    action: `Undo (${UNDO_BUDGET} per attempt)`,
+    touch: "Undo button",
+    keys: "Z or U",
+  },
   { action: "Redo", touch: "Redo button", keys: "Y" },
   { action: "Restart", touch: "Restart button", keys: "R" },
   {
@@ -44,7 +49,8 @@ const controls = [
         <SheetTitle>Controls</SheetTitle>
         <SheetDescription>
           Push every box onto a goal. You can't pull, so plan ahead; a crossed
-          box can't reach a goal any more.
+          box can't reach a goal any more. Each attempt has {{ UNDO_BUDGET }}
+          undos; Restart gives them all back.
         </SheetDescription>
       </SheetHeader>
       <Table class="mx-4 w-auto">

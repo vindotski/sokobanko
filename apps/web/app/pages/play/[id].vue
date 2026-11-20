@@ -10,7 +10,7 @@ import {
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
-import { isBetter, levelStates } from "@sokoban/core";
+import { isBetter, levelStates, UNDO_BUDGET } from "@sokoban/core";
 import type { CameraState, GameProgress } from "@sokoban/game";
 import { onKeyStroke, usePreferredReducedMotion } from "@vueuse/core";
 
@@ -45,10 +45,10 @@ function readRun() {
     return undefined;
   }
 }
-function saveRun({ solution, solved }: GameProgress) {
+function saveRun({ log, solved }: GameProgress) {
   try {
     // Nothing to resume at the start, or once solved.
-    if (solution && !solved) localStorage.setItem(runKey, solution);
+    if (log && !solved) localStorage.setItem(runKey, log);
     else localStorage.removeItem(runKey);
   } catch {}
 }
@@ -59,6 +59,8 @@ const progress = ref<GameProgress>({
   moves: 0,
   pushes: 0,
   solution: "",
+  log: "",
+  undosLeft: UNDO_BUDGET,
   solved: false,
   canRedo: false,
   boxes: 0,
@@ -149,12 +151,13 @@ function announce(prev: GameProgress, next: GameProgress) {
   // The status line in the bottom bar is hidden from screen readers, so every
   // announcement that leaves a box stuck says so. A warning only; the move
   // stands until undone.
+  const fix = next.undosLeft > 0 ? "undo with Z" : "restart with R";
   const stuck =
     next.deadBoxes === 0
       ? ""
       : next.deadBoxes === 1
-        ? " A box can't reach a goal from where it is; undo with Z."
-        : ` ${next.deadBoxes} boxes can't reach a goal from where they are; undo with Z.`;
+        ? ` A box can't reach a goal from where it is; ${fix}.`
+        : ` ${next.deadBoxes} boxes can't reach a goal from where they are; ${fix}.`;
   let text = "";
   if (!started) {
     started = true;
@@ -164,7 +167,7 @@ function announce(prev: GameProgress, next: GameProgress) {
   } else if (next.moves === 0 && prev.moves > 0) {
     text = `Back at the start. ${goals}.`;
   } else if (next.moves < prev.moves) {
-    text = `Undone. ${counts}. ${goals}.${stuck}`;
+    text = `Undone, ${count(next.undosLeft, "undo", "undos")} left. ${counts}. ${goals}.${stuck}`;
   } else if (next.pushes > prev.pushes) {
     text = `Pushed. ${goals}.${stuck}`;
   }
@@ -216,7 +219,7 @@ const saveState = computed(() => {
 // A solve counts here at once, so the next level unlocks even when the server
 // can't be reached; the server then replays the solution and keeps it if it
 // really solves the level.
-function onSolved({ solution, moves, pushes }: GameProgress) {
+function onSolved({ log, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
   isNewBest.value = isBetter({ moves, pushes }, store.best[levelId]);
   clearTimeout(dialogTimer);
@@ -227,7 +230,7 @@ function onSolved({ solution, moves, pushes }: GameProgress) {
     reducedMotion.value === "reduce" ? 0 : CELEBRATION_MS,
   );
   store.recordSolve(levelId, {
-    solution,
+    log,
     moves,
     pushes,
     solvedAt: new Date().toISOString(),
@@ -328,7 +331,7 @@ function replay() {
           <SokobanGame
             ref="game"
             :level="level"
-            :solution="savedRun"
+            :log="savedRun"
             :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart, plus and minus to zoom; question mark for all controls.`"
             class="size-full touch-none select-none"
             @change="onChange"
@@ -374,8 +377,14 @@ function replay() {
             class="truncate text-foreground"
           >
             A crossed box can't reach a goal ·
-            <span class="sm:hidden">Undo</span>
-            <span class="hidden sm:inline">Z to undo</span>
+            <template v-if="progress.undosLeft > 0">
+              <span class="sm:hidden">Undo</span>
+              <span class="hidden sm:inline">Z to undo</span>
+            </template>
+            <template v-else>
+              <span class="sm:hidden">Restart</span>
+              <span class="hidden sm:inline">R to restart</span>
+            </template>
           </span>
           <span v-else class="truncate font-mono">
             {{ count(progress.moves, "move", "moves") }} ·
@@ -391,13 +400,17 @@ function replay() {
           <Button
             variant="outline"
             size="sm"
-            title="Undo (Z)"
+            :title="`Undo (Z), ${count(progress.undosLeft, 'undo', 'undos')} left this attempt`"
+            :aria-label="`Undo, ${progress.undosLeft} left`"
             aria-keyshortcuts="Z U"
-            :disabled="progress.moves === 0"
+            :disabled="progress.moves === 0 || progress.undosLeft === 0"
             @click="game?.undo()"
           >
             <Undo2Icon data-icon="inline-start" />
             Undo
+            <span class="font-mono text-muted-foreground">
+              {{ progress.undosLeft }}
+            </span>
           </Button>
           <Button
             variant="outline"
@@ -413,9 +426,9 @@ function replay() {
           <Button
             variant="outline"
             size="sm"
-            title="Restart (R)"
+            title="Restart (R), with all undos back"
             aria-keyshortcuts="R"
-            :disabled="progress.moves === 0"
+            :disabled="progress.moves === 0 && progress.undosLeft === UNDO_BUDGET"
             @click="game?.restart()"
           >
             <RotateCcwIcon data-icon="inline-start" />
