@@ -8,6 +8,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-20
+
 ### Added
 - **A map-style camera on the play page.** Pinch to zoom and drag with two fingers to look
   around; on a computer, Ctrl/⌘ and scroll (or a trackpad pinch) zooms around the pointer, scroll
@@ -164,7 +166,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/vindotski/sokobanko/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/vindotski/sokobanko/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/vindotski/sokobanko/compare/v0.1.0...v0.2.0
