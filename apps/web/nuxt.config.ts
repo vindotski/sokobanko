@@ -68,6 +68,10 @@ export default defineNuxtConfig({
         : {},
     },
   },
+  routeRules: {
+    // Picks the next level from progress kept in the browser.
+    "/play": { ssr: false },
+  },
   $production: {
     routeRules: {
       // Spotcraft's Caddy adds HSTS, nosniff, Referrer-Policy, X-Frame-Options,

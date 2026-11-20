@@ -5,15 +5,37 @@ const { data: guest } = await useAccount();
 const { data: completed } = await useCompletions();
 const { data: levels } = await useLevels();
 
-// Bests with their level's title. A level that has since been removed is
-// left out.
+const store = useProgressStore();
+
+// Bests with their level's title, newest first: the server's verified ones,
+// and better runs solved here that it hasn't verified yet. A level that has
+// since been removed is left out.
 const completions = computed(() => {
   const titles = new Map((levels.value ?? []).map((l) => [l.id, l.title]));
-  return (completed.value ?? []).flatMap((c) => {
-    const title = titles.get(c.level_id);
-    return title ? [{ ...c, title }] : [];
-  });
+  const verified = (completed.value ?? []).filter(
+    (c) => !store.isUnsynced(c.level_id),
+  );
+  const unsynced = Object.entries(store.local)
+    .filter(([id]) => store.isUnsynced(id))
+    .map(([id, run]) => ({
+      level_id: id,
+      moves: run.moves,
+      pushes: run.pushes,
+      completed_at: run.solvedAt,
+    }));
+  return [
+    ...verified.map((c) => ({ ...c, synced: true })),
+    ...unsynced.map((c) => ({ ...c, synced: false })),
+  ]
+    .flatMap((c) => {
+      const title = titles.get(c.level_id);
+      return title ? [{ ...c, title }] : [];
+    })
+    .sort((a, b) => b.completed_at.localeCompare(a.completed_at));
 });
+const unsyncedCount = computed(
+  () => completions.value.filter((c) => !c.synced).length,
+);
 
 const stats = computed(() => {
   const done = completions.value;
@@ -66,7 +88,9 @@ const stats = computed(() => {
         </CardHeader>
         <!-- Same height as the Solved card's progress bar, so the rows line up. -->
         <CardContent class="flex h-2 items-center">
-          <p class="text-label text-muted-foreground">Server-verified</p>
+          <p class="text-label text-muted-foreground">
+            {{ unsyncedCount ? `${unsyncedCount} not synced yet` : "Server-verified" }}
+          </p>
         </CardContent>
       </Card>
       <Card>
@@ -77,14 +101,19 @@ const stats = computed(() => {
           </CardTitle>
         </CardHeader>
         <CardContent class="flex h-2 items-center">
-          <p class="text-label text-muted-foreground">Server-verified</p>
+          <p class="text-label text-muted-foreground">
+            {{ unsyncedCount ? `${unsyncedCount} not synced yet` : "Server-verified" }}
+          </p>
         </CardContent>
       </Card>
     </div>
     <Card>
       <CardHeader>
         <CardTitle>Completed levels</CardTitle>
-        <CardDescription>Your best verified result for each level.</CardDescription>
+        <CardDescription>
+          Your best result for each level. Ones solved while the server was
+          out of reach sync when it's back.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Table v-if="completions.length">
@@ -108,6 +137,13 @@ const stats = computed(() => {
                 >
                   {{ completion.title }}
                 </NuxtLink>
+                <Badge
+                  v-if="!completion.synced"
+                  variant="outline"
+                  class="ml-2"
+                >
+                  Not synced yet
+                </Badge>
               </TableCell>
               <TableCell class="text-right font-mono">
                 {{ completion.moves }}

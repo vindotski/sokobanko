@@ -35,3 +35,33 @@ export function levelStates(
   }
   return states;
 }
+
+/** A run's score: fewer moves is better, then fewer pushes. */
+export interface Score {
+  moves: number;
+  pushes: number;
+}
+
+/** Whether `a` beats `b`: fewer moves, or as many in fewer pushes. A tie isn't better. */
+export function isBetter(a: Score, b: Score | undefined): boolean {
+  if (!b) return true;
+  return a.moves < b.moves || (a.moves === b.moves && a.pushes < b.pushes);
+}
+
+/**
+ * The ids of levels solved here that the server doesn't know about yet, or
+ * knows a worse result for, in play order, so the server's own unlocking
+ * accepts each one in turn.
+ */
+export function pendingUploads(
+  levels: readonly LevelRef[],
+  local: Readonly<Record<string, Score>>,
+  server: Readonly<Record<string, Score>>,
+): string[] {
+  return levels
+    .filter(({ id }) => {
+      const mine = local[id];
+      return !!mine && isBetter(mine, server[id]);
+    })
+    .map(({ id }) => id);
+}

@@ -17,6 +17,11 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
 - **Controls help:** every gesture and shortcut in one sheet, from Settings or the ? key.
 
 ### Changed
+- **Progress is local first.** A solve counts as soon as it happens and unlocks the next level
+  even when the server can't be reached. It's kept in the browser and uploaded once the server is
+  back (on the next visit, on reconnecting, or on returning to the tab), in play order. The server
+  still replays every solution and keeps the verified best. A run it refuses is dropped from the
+  browser too. The profile marks results that haven't synced yet.
 - **Sokobanko's code is now licensed AGPL-3.0-only** (was MIT), so anyone who runs a modified
   version as a public site must offer its source. Versions released before this change stay
   available under MIT. The levels keep their own terms.
