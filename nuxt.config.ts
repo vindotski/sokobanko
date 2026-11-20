@@ -88,14 +88,17 @@ export default defineNuxtConfig({
     tsConfig: { include: ["../stories/**/*", "../.storybook/**/*"] },
   },
   routeRules: {
-    // These pages read levels and progress from the browser's collections
-    // (TanStack DB, app/collections), which don't run on the server. The map
-    // and the FAQ stay server-rendered.
-    "/play": { ssr: false },
-    "/play/**": { ssr: false },
-    "/profile": { ssr: false },
-    // The Levels page became the map.
+    // The game and Progress read the browser's collections (TanStack DB,
+    // app/collections), which don't run on the server, and are personal, so
+    // search engines skip them. The map, level cards and Help are
+    // server-rendered and indexed.
+    "/play": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    "/play/**": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    "/progress": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    // Pages that moved.
     "/levels": { redirect: { to: "/", statusCode: 301 } },
+    "/profile": { redirect: { to: "/progress", statusCode: 301 } },
+    "/faq": { redirect: { to: "/help", statusCode: 301 } },
   },
   $production: {
     routeRules: {
