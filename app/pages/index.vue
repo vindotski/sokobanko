@@ -67,16 +67,21 @@ const total = computed(() => levels.value?.length ?? 0);
 const solved = computed(
   () => Object.values(view.value.states).filter((s) => s === "solved").length,
 );
-const next = computed(() => {
-  const level = (levels.value ?? []).find(
-    (l) => view.value.states[l.id] === "current",
-  );
+function withCollection(
+  level: NonNullable<typeof levels.value>[number] | undefined,
+) {
   if (!level) return undefined;
   const collectionTitle = collections.value?.find(
     (c) => c.id === level.collection,
   )?.title;
   return { ...level, collectionTitle };
-});
+}
+const next = computed(() =>
+  withCollection(
+    (levels.value ?? []).find((l) => view.value.states[l.id] === "current"),
+  ),
+);
+const first = computed(() => withCollection(levels.value?.[0]));
 const levelIds = computed(() => (levels.value ?? []).map((l) => l.id));
 
 // Bring the level up next into view, but not when a card was opened
@@ -133,6 +138,7 @@ watch(
       <ContinueCard
         :ready="known"
         :next="next"
+        :first="first"
         :solved="solved"
         :total="total"
         :level-ids="levelIds"

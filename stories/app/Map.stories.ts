@@ -4,7 +4,7 @@ import { expect } from "storybook/test";
 import ContinueCard from "~/components/ContinueCard.vue";
 import LevelNode from "~/components/LevelNode.vue";
 import LevelPath from "~/components/LevelPath.vue";
-import { microban7 } from "../fixtures/levels";
+import { firstPush, microban7 } from "../fixtures/levels";
 
 /**
  * The map: a collection's levels as a winding path, solved ones filled, the
@@ -77,12 +77,23 @@ export const Nodes: Story = {
 export const Continue: Story = {
   render: () => ({
     components: { ContinueCard },
-    setup: () => ({ next: { ...microban7, collectionTitle: "Microban" } }),
+    setup: () => ({
+      next: { ...microban7, collectionTitle: "Microban" },
+      first: { ...firstPush, collectionTitle: "Basics" },
+    }),
     template: `
       <div class="flex w-[22rem] flex-col gap-4">
-        <ContinueCard :ready="false" :solved="0" :total="159" :level-ids="[]" />
+        <ContinueCard :ready="false" :first="first" :solved="0" :total="159" :level-ids="[]" />
         <ContinueCard ready :next="next" :solved="16" :total="159" :level-ids="[]" />
         <ContinueCard ready :solved="159" :total="159" :level-ids="['a']" />
       </div>`,
   }),
+  // One height whatever it says, so the map below never moves.
+  play: async ({ canvasElement }) => {
+    const heights = [...canvasElement.querySelectorAll("section")].map(
+      (s) => s.getBoundingClientRect().height,
+    );
+    await expect(heights).toHaveLength(3);
+    await expect(new Set(heights).size).toBe(1);
+  },
 };
