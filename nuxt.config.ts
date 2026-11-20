@@ -89,12 +89,13 @@ export default defineNuxtConfig({
   },
   routeRules: {
     // These pages read levels and progress from the browser's collections
-    // (TanStack DB, app/collections), which don't run on the server. Home and
-    // the FAQ stay server-rendered.
-    "/levels": { ssr: false },
+    // (TanStack DB, app/collections), which don't run on the server. The map
+    // and the FAQ stay server-rendered.
     "/play": { ssr: false },
     "/play/**": { ssr: false },
     "/profile": { ssr: false },
+    // The Levels page became the map.
+    "/levels": { redirect: { to: "/", statusCode: 301 } },
   },
   $production: {
     routeRules: {

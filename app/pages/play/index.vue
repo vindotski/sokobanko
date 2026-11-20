@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { TrophyIcon } from "@lucide/vue";
+import { MapIcon, ShuffleIcon, TrophyIcon } from "@lucide/vue";
 import { localData } from "~/collections";
-
-definePageMeta({ layout: "play" });
 
 // /play without an id: jump to the first level in play order that the user
 // hasn't solved yet, or congratulate them once everything is solved. Rendered
@@ -22,6 +20,11 @@ if (next) {
   await navigateTo(`/play/${next.id}`, { replace: true });
 } else if (!all.length) {
   await navigateTo("/levels", { replace: true });
+}
+
+function playRandom() {
+  const id = all[Math.floor(Math.random() * all.length)]?.id;
+  if (id) navigateTo(`/play/${id}`);
 }
 
 const totals = all.reduce(
@@ -62,7 +65,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div
-    class="flex flex-1 items-center justify-center bg-tile-grid px-4 py-8 [--tile-grid-size:24px]"
+    class="flex flex-1 items-center justify-center bg-tile-grid px-4 py-8 pt-[max(2rem,env(safe-area-inset-top))] [--tile-grid-size:24px]"
   >
     <!-- A solid card keeps the text readable over the grid. -->
     <Card class="w-full max-w-md py-8">
@@ -79,9 +82,17 @@ onBeforeUnmount(() => {
               are on the way.
             </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent>
-            <!-- Everything is solved here, so this is "Random level". -->
-            <PlayButton />
+          <EmptyContent class="flex-row flex-wrap justify-center">
+            <Button size="lg" @click="playRandom">
+              <ShuffleIcon data-icon="inline-start" />
+              Random level
+            </Button>
+            <Button size="lg" variant="outline" as-child>
+              <NuxtLink to="/">
+                <MapIcon data-icon="inline-start" />
+                Map
+              </NuxtLink>
+            </Button>
           </EmptyContent>
         </Empty>
       </CardContent>
