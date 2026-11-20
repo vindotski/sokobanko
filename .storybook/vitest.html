@@ -16,6 +16,9 @@
       };
     </script>
     <style>
+      /* The screenshot is of <body>: as big as the viewport, so stories that
+         are only a fixed sheet or dialog still have something to capture. */
+      html, body { height: 100%; margin: 0; }
       /* Animations finish at once, so play tests and screenshots don't race them. */
       *, *::before, *::after {
         animation-duration: 0.01ms !important;
