@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sokobanko stories</title>
+    <script>
+      // As .storybook/color-mode.js, for Vitest's browser page.
+      window.__NUXT_COLOR_MODE__ = {
+        preference: "light",
+        value: "light",
+        getColorScheme: () =>
+          document.documentElement.classList.contains("dark") ? "dark" : "light",
+        addColorScheme: (v) => document.documentElement.classList.add(v),
+        removeColorScheme: (v) => document.documentElement.classList.remove(v),
+      };
+    </script>
+    <style>
+      /* Animations finish at once, so play tests and screenshots don't race them. */
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        caret-color: transparent !important;
+      }
+    </style>
+  </head>
+  <body></body>
+</html>

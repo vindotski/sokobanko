@@ -1,0 +1,24 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Introduction" />
+
+# Sokobanko's components
+
+The components behind [Sokobanko](https://sokobanko.app), each in its states, in light and dark.
+
+- **UI** are the shadcn-vue primitives in `app/components/ui`, styled with the tokens in `app/assets/css/main.css`: square corners, no shadows, black on white (or white on black), 44px controls.
+- **App** are Sokobanko's own components: level previews and cards, the level switcher, the play page's menus and camera controls, and the PixiJS board itself.
+- **Design** shows the tokens: colours, type, sizing and the board's pieces, drawn from the live CSS variables.
+
+Switch light and dark with the **Theme** toolbar, and phone or desktop with **Viewport**.
+
+## Every story is a test
+
+`pnpm test:storybook` renders every story in headless Chromium, in light and then dark (the projects `storybook-light` and `storybook-dark` in `vitest.config.ts`). Each story must:
+
+- **render** without errors;
+- **pass its play function**, if it has one: clicks, keys and the events they emit;
+- **pass axe** (the Accessibility panel): contrast, names, roles. A violation fails CI;
+- **match its screenshot** in `__screenshots__/`, on CI's Linux. A story opts out with `parameters: { visual: false }`.
+
+Stories live in `stories/` (not next to the components, where Nuxt would register them as components). The [wiki's Development page](https://github.com/vindotski/sokobanko/wiki/Development#storybook) has how to write them and update the screenshots.

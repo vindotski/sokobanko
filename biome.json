@@ -50,6 +50,16 @@
           }
         }
       }
+    },
+    {
+      "includes": [".storybook/vitest.html"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
+          }
+        }
+      }
     }
   ],
   "assist": {

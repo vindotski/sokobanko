@@ -68,6 +68,10 @@ export default defineNuxtConfig({
         : {},
     },
   },
+  typescript: {
+    // The stories and Storybook's config use the app's aliases and types.
+    tsConfig: { include: ["../stories/**/*", "../.storybook/**/*"] },
+  },
   routeRules: {
     // These pages read levels and progress from the browser's collections
     // (TanStack DB, app/collections), which don't run on the server. Home and

@@ -85,7 +85,8 @@ The schema `app_sokobanko` (`server/db/schema.ts`):
 `.github/workflows/ci.yml`:
 
 - **`branch-name`** (pull requests): branches are `feature/`, `bugfix/` or `chore/`, and target `main`.
-- **`verify`:** lint (Biome), typecheck (vue-tsc for the app, TypeScript 7 for the packages), then the tests, with the database tests run against Spotcraft's local stack, then a build.
+- **`verify`:** lint (Biome), typecheck (vue-tsc for the app and the stories, TypeScript 7 for the packages), then the unit tests, with the database tests run against Spotcraft's local stack, then a build.
+- **`storybook`:** every story in `stories/` as a test in headless Chromium, in light and dark: it must render, pass its play function and axe, and match its screenshot. Then the static Storybook builds ([Development](Development.md#storybook)).
 - **`image`:** a multi-arch (amd64, arm64) distroless image from the `Dockerfile`. On `main` and tags it's pushed to Docker Hub with an SBOM and provenance.
 - **`deploy`** (version tags only): the tagged commit's image goes to Spotcraft through its deploy hook, with zero downtime.
 - **`wiki`** (`main`): publishes `docs/` to this wiki.

@@ -5,6 +5,8 @@
  * entry chunk, and the server-rendered pages don't wait for it.
  */
 export default defineNuxtPlugin((nuxtApp) => {
+  // Storybook renders components without the app's server.
+  if (import.meta.env.STORYBOOK) return;
   const start = () =>
     import("~/collections")
       .then(({ localData }) => nuxtApp.runWithContext(() => localData()))

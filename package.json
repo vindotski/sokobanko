@@ -18,7 +18,11 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.ts"
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.ts",
+    "test:storybook": "vitest run --project 'storybook-*'",
+    "storybook": "storybook dev -p 6006 --no-open --disable-telemetry",
+    "build-storybook": "storybook build -o storybook-static --disable-telemetry",
+    "test:unit": "vitest run --project unit"
   },
   "dependencies": {
     "@fontsource-variable/geist": "5.3.0",
@@ -55,13 +59,20 @@
   "devDependencies": {
     "@biomejs/biome": "^2.6.3",
     "@kodentuzo/spotcraft": "0.6.1",
+    "@storybook-vue/nuxt": "10.0.3",
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-docs": "10.6.7",
+    "@storybook/addon-vitest": "10.6.7",
     "@types/canvas-confetti": "1.9.0",
     "@types/node": "^26.6.5",
     "@types/pg": "^8.23.1",
+    "@vitest/browser-playwright": "5.1.1",
     "drizzle-kit": "^0.31.11",
+    "playwright": "1.65.1",
     "shadcn-nuxt": "^2.8.2",
+    "storybook": "10.6.7",
     "typescript": "^6.0.3",
-    "vitest": "^5.0.5",
+    "vitest": "^5.1.1",
     "vue-tsc": "^3.3.13"
   }
 }

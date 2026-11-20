@@ -7,7 +7,11 @@ Start with [Getting Started](Getting-Started.md) to get the app and its local st
 | `pnpm dev` | Runs the app at http://localhost:3000 |
 | `pnpm build` | Builds the app into `.output/` |
 | `pnpm preview` | Serves the built app |
-| `pnpm test` | Unit tests (Vitest); the database tests run too once the stack's settings are loaded (below) |
+| `pnpm test` | Every test: the unit tests and the Storybook stories |
+| `pnpm test:unit` | Unit tests (Vitest); the database tests run too once the stack's settings are loaded (below) |
+| `pnpm storybook` | Storybook at http://localhost:6006 |
+| `pnpm test:storybook` | Every story as a test, in light and dark ([below](#storybook)) |
+| `pnpm build-storybook` | The static Storybook, in `storybook-static/` |
 | `pnpm typecheck` | Type-checks the app (`nuxt typecheck`, TypeScript 6) and each package (TypeScript 7) |
 | `pnpm lint` / `pnpm format` | Biome: checks, or fixes and formats |
 | `pnpm db:generate` | Writes a migration after a change to `server/db/schema.ts` |
@@ -24,7 +28,7 @@ Load the stack's settings, then test:
 
 ```bash
 set -a; . ./.env; set +a
-pnpm test
+pnpm test:unit
 ```
 
 CI does the same, against a fresh stack.
@@ -63,6 +67,38 @@ Levels live only in Postgres, so a collection is a migration.
 4. Run the database tests: every level must replay its solution.
 
 Only add levels whose terms allow it, and keep their credit (the README lists the current ones).
+
+## Storybook
+
+[Storybook](https://storybook.js.org) documents the components and tests them. It runs inside the Nuxt app (`@storybook-vue/nuxt`), so auto-imports, color mode and Tailwind work in stories.
+
+- **Where things are:** stories live in `stories/`: `ui/` for the shadcn-vue primitives, `app/` for Sokobanko's components, and `docs/` for the Introduction and the design tokens (colours, type, sizing, the board's pieces). Level fixtures are in `stories/fixtures/levels.ts`. Stories stay out of `app/components`, because Nuxt would register them as components there.
+- **Toolbars:** **Theme** switches light and dark (the `dark` class on `<html>`, as color mode sets it), and **Viewport** switches phone and desktop.
+- **Leaving out:** components that read the TanStack collections or the server (the pages, `PlayButton`) aren't storied.
+
+### Every story is a test
+
+`pnpm test:storybook` runs each story in headless Chromium twice, in light and in dark: the Vitest projects `storybook-light` and `storybook-dark`, in `vitest.config.ts`. A story fails if:
+
+- it doesn't render;
+- its `play` function fails: the clicks, keys and emitted events it checks;
+- axe finds a violation. Every story runs with `a11y: { test: "error" }`. To turn off one rule for one story, explain why in a comment, as the open dropdown menus do;
+- its screenshot differs from its baseline in `__screenshots__/`, next to the story file.
+
+### Screenshots
+
+- **Linux only:** baselines are rendered on CI's Linux Chromium, and only compared there; fonts render differently on a Mac. A local run checks everything else. `VISUAL=1` forces the comparison anywhere.
+- **What's captured:** the whole page, in each theme, so dialogs and menus portalled to `<body>` are included. On the test page, animations finish at once (`.storybook/vitest.html`).
+- **Opting out:** a story opts out with `parameters: { visual: false }`. The PixiJS board does, because screenshots don't capture its WebGL canvas.
+
+After an intended visual change, CI's `storybook` job fails, and its `screenshot-diffs` artifact holds the actual and diff images. To take new baselines:
+
+```bash
+gh workflow run update-screenshots.yml --ref <branch>
+gh run download <run id> -n screenshots -D stories
+```
+
+Review the images, then commit them (signed) with the change. A new story's first CI run also writes its baseline into `screenshot-diffs`.
 
 ## Code style
 
