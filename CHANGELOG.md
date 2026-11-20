@@ -20,6 +20,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
   `.env` is written there.
 - **Packages are `@sokobanko/core` and `@sokobanko/game`** (were `@sokoban/*`), and the scripts
   are in one `scripts/` folder (`import-collection.ts` and `solve-levels.ts` were in `bin/`).
+- **The agents' skills are no longer committed:** `skills-lock.json` lists them, and
+  `npx skills experimental_install` restores them (`CONTRIBUTING.md`).
 
 ## [0.4.0] - 2026-11-20
 

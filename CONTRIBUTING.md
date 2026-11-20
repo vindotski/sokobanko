@@ -40,3 +40,7 @@ Merging to `main` builds and publishes the image (`sha-<short>`), but deploys no
 An urgent fix is a `bugfix/` pull request followed by these same steps. A tiny fix may carry its own version bump instead of a separate release pull request.
 
 Rolling back is picking the previous `sha-…` tag in Spotcraft's dashboard (`DEPLOY.md`).
+
+## Agent skills
+
+The coding agents' skills (Nuxt, Vue, PixiJS, shadcn-vue and others) aren't committed. `skills-lock.json` records them, and `npx skills experimental_install` restores them into `.agents/skills`, which `.claude/skills` links to.

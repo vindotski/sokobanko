@@ -10,3 +10,7 @@ coverage/
 .DS_Store
 .env*
 !.env.example
+
+# Agent skills, restored from skills-lock.json (CONTRIBUTING.md)
+.agents/
+.claude/skills/

@@ -7,13 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": [
-      "**",
-      "!.agents",
-      "!**/*.md",
-      "!pnpm-lock.yaml",
-      "!app/components/ui"
-    ]
+    "includes": ["**", "!**/*.md", "!pnpm-lock.yaml", "!app/components/ui"]
   },
   "formatter": {
     "enabled": true,
