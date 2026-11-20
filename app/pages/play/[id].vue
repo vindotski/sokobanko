@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  ChevronDownIcon,
-  LockIcon,
-  PlayIcon,
-  Redo2Icon,
-  RotateCcwIcon,
-  TrophyIcon,
-  Undo2Icon,
-} from "@lucide/vue";
+import { ArrowLeftIcon, ChevronDownIcon, PauseIcon } from "@lucide/vue";
 import { isBetter, UNDO_BUDGET } from "@sokobanko/core";
 import type { CameraState, GameProgress } from "@sokobanko/game";
 import {
@@ -45,6 +35,9 @@ if (!level) {
   throw createError({ statusCode: 404, statusMessage: "Level not found" });
 }
 const levelId = level.id;
+// Personal and interactive, so search engines skip it (routeRules sends the
+// same as a header); the level's card is the page to index.
+useSeoMeta({ title: `${level.title} · Sokobanko`, robots: "noindex" });
 // The collection and its author, under the title.
 const collection = computed(() =>
   collections.value.find((c) => c.id === level.collection),
@@ -95,9 +88,11 @@ const camera = ref<CameraState>({
   following: true,
 });
 
-// The controls help: from Settings, or the ? key anywhere but a text field
-// or another dialog.
+// The controls help: from the pause menu, or the ? key anywhere but a text
+// field or another dialog.
 const helpOpen = ref(false);
+// The pause menu: resume, restart, levels, settings, controls, the map.
+const pauseOpen = ref(false);
 // The level picker, opened from the level's name.
 const switcherOpen = ref(false);
 onKeyStroke("?", (e) => {
@@ -125,16 +120,37 @@ const levelIndex = computed(() =>
 const nextLevel = computed(() => levels.value[levelIndex.value + 1]);
 
 // Each collection unlocks in its own order; the server enforces the same rule.
+// A locked level has nothing to play: its card says what unlocks it.
 const isLocked = computed(() => states.value.get(levelId) === "locked");
+if (isLocked.value) await navigateTo(`/levels/${levelId}`, { replace: true });
 const nextLocked = computed(
   () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
 );
-/** The level to solve to unlock this one: the current one in its collection. */
-const currentLevel = computed(() => {
-  const collection = levels.value[levelIndex.value]?.collection;
-  return levels.value.find(
-    (l) => l.collection === collection && states.value.get(l.id) === "current",
-  );
+/**
+ * One line under the HUD: how to start, a stuck box and what to do about it,
+ * or nothing. The live region tells screen readers the same.
+ */
+const coarse = import.meta.client && matchMedia("(pointer: coarse)").matches;
+const status = computed(() => {
+  const p = progress.value;
+  if (p.solved) return "";
+  if (p.moves === 0) {
+    return coarse
+      ? "Drag to move · pinch to zoom"
+      : "Arrows or WASD to move · ? for all controls";
+  }
+  if (p.deadBoxes > 0) {
+    const fix =
+      p.undosLeft > 0
+        ? coarse
+          ? "Undo"
+          : "Z to undo"
+        : coarse
+          ? "Restart"
+          : "R to restart";
+    return `A crossed box can't reach a goal · ${fix}`;
+  }
+  return "";
 });
 
 /** The saved best, once the level is solved. */
@@ -257,28 +273,27 @@ function replay() {
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
     <!--
-      The level, with every way to leave it: back to Levels, its name (which
-      opens the level picker), and Settings. The same on every screen.
+      Every way out of the level: back to its card on the map, its name (which
+      opens the level picker), and Pause. The same on every screen.
     -->
-    <header class="border-b">
+    <header class="border-b pt-[env(safe-area-inset-top)]">
       <div
-        class="mx-auto grid h-14 w-full max-w-5xl grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-4"
+        class="mx-auto grid h-14 w-full grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-2 px-2 sm:px-4"
       >
         <Button
           variant="ghost"
-          size="sm"
           as-child
-          class="justify-self-start max-sm:w-control-compact max-sm:px-0"
+          class="justify-self-start max-sm:w-control max-sm:px-0"
         >
-          <NuxtLink to="/levels" aria-label="All levels" title="All levels">
+          <NuxtLink :to="`/levels/${levelId}`" aria-label="Map" title="Map">
             <ArrowLeftIcon data-icon="inline-start" />
-            <span class="max-sm:sr-only">Levels</span>
+            <span class="max-sm:sr-only">Map</span>
           </NuxtLink>
         </Button>
         <!-- The level's name opens the level picker. -->
         <Button
           variant="ghost"
-          class="h-auto min-w-0 flex-col gap-0 px-3 py-1"
+          class="h-auto min-h-control min-w-0 flex-col gap-0 px-3 py-1"
           aria-haspopup="dialog"
           :aria-label="`${level.title}: choose a level`"
           title="Choose a level"
@@ -296,158 +311,101 @@ function replay() {
             {{ collectionSize }}
           </span>
         </Button>
-        <div class="justify-self-end">
-          <PlaySettingsMenu @help="helpOpen = true" />
-        </div>
+        <Button
+          variant="ghost"
+          class="justify-self-end max-sm:w-control max-sm:px-0"
+          aria-haspopup="dialog"
+          aria-label="Pause"
+          title="Pause"
+          @click="pauseOpen = true"
+        >
+          <PauseIcon data-icon="inline-start" />
+          <span class="max-sm:sr-only">Pause</span>
+        </Button>
       </div>
     </header>
 
-    <div
-      class="relative min-h-0 flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]"
-    >
-      <!-- No game on a locked level, so there's nothing to play or record. -->
+    <!-- The run at a glance; in the side panel on large screens. -->
+    <GameHud :progress="progress" :best="best" class="border-b lg:hidden" />
+
+    <div class="flex min-h-0 flex-1">
       <div
-        v-if="isLocked"
-        class="absolute inset-0 flex items-center justify-center px-4 py-8"
+        class="relative min-h-0 flex-1 bg-muted bg-tile-grid [--tile-grid-size:24px]"
       >
-        <!-- A solid card keeps the text readable over the grid. -->
-        <Card class="w-full max-w-md py-8">
-          <CardContent>
-            <Empty class="p-0 md:p-0">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <LockIcon />
-                </EmptyMedia>
-                <EmptyTitle>This level is locked</EmptyTitle>
-                <EmptyDescription v-if="currentLevel">
-                  Solve {{ currentLevel.title }} to unlock it.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent v-if="currentLevel">
-                <Button as-child>
-                  <NuxtLink :to="`/play/${currentLevel.id}`">
-                    <PlayIcon data-icon="inline-start" />
-                    Play {{ currentLevel.title }}
-                  </NuxtLink>
-                </Button>
-              </EmptyContent>
-            </Empty>
-          </CardContent>
-        </Card>
+        <template v-if="!isLocked">
+          <div class="absolute inset-0">
+            <SokobanGame
+              ref="game"
+              :level="level"
+              :log="savedRun"
+              :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart, plus and minus to zoom; question mark for all controls.`"
+              class="size-full touch-none select-none"
+              @change="onChange"
+              @solved="onSolved"
+              @camera="camera = $event"
+            />
+          </div>
+          <BoardMapControls
+            :camera="camera"
+            class="absolute right-3 bottom-3"
+            @zoom-in="game?.zoomIn()"
+            @zoom-out="game?.zoomOut()"
+            @fit="game?.fit()"
+            @recenter="game?.recenter()"
+          />
+          <p class="sr-only" aria-live="polite">{{ announcement }}</p>
+        </template>
       </div>
 
-      <template v-else>
-        <div class="absolute inset-0">
-          <SokobanGame
-            ref="game"
-            :level="level"
-            :log="savedRun"
-            :label="`${level.title}, a Sokoban board. Arrow keys or WASD to move, Z to undo, Y to redo, R to restart, plus and minus to zoom; question mark for all controls.`"
-            class="size-full touch-none select-none"
-            @change="onChange"
-            @solved="onSolved"
-            @camera="camera = $event"
+      <!-- Large screens: the HUD and the controls beside the board. -->
+      <aside
+        class="hidden w-80 shrink-0 flex-col gap-6 border-l bg-background p-4 lg:flex"
+        aria-label="Run"
+      >
+        <GameHud :progress="progress" :best="best" layout="column" />
+        <p aria-hidden="true" class="min-h-12 text-small text-muted-foreground">
+          {{ status }}
+        </p>
+        <div class="flex flex-col gap-2">
+          <GameButtons
+            :progress="progress"
+            @undo="game?.undo()"
+            @redo="game?.redo()"
+            @restart="game?.restart()"
           />
         </div>
-        <BoardMapControls
-          :camera="camera"
-          class="absolute right-3 bottom-3"
-          @zoom-in="game?.zoomIn()"
-          @zoom-out="game?.zoomOut()"
-          @fit="game?.fit()"
-          @recenter="game?.recenter()"
-        />
-        <p class="sr-only" aria-live="polite">{{ announcement }}</p>
-      </template>
+      </aside>
     </div>
 
-    <!-- The run and the game's buttons, within thumb reach. Nothing on a locked
-         level, which has its own way out. -->
+    <!-- Phones and tablets: the status, then the controls in thumb reach. -->
     <footer
-      v-if="!isLocked"
-      class="border-t bg-background pb-[env(safe-area-inset-bottom)]"
+      class="border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      <div class="mx-auto flex w-full max-w-5xl flex-col gap-2 px-4 py-2">
-        <!--
-          One line of status: how to start, a stuck box, or the counts. The
-          live region says the same, so this one stays silent.
-        -->
-        <div
+      <div class="mx-auto flex w-full max-w-xl flex-col gap-2 px-4 py-2">
+        <p
           aria-hidden="true"
-          class="flex min-h-6 items-center justify-between gap-3 text-sm text-muted-foreground"
+          class="min-h-6 truncate text-small text-muted-foreground"
         >
-          <template v-if="!progress.solved && progress.moves === 0">
-            <span class="truncate sm:hidden">Drag to move · pinch to zoom</span>
-            <span class="hidden truncate sm:inline">
-              Arrows or WASD to move · ? for all controls
-            </span>
-          </template>
-          <span
-            v-else-if="!progress.solved && progress.deadBoxes > 0"
-            class="truncate text-foreground"
-          >
-            A crossed box can't reach a goal ·
-            <template v-if="progress.undosLeft > 0">
-              <span class="sm:hidden">Undo</span>
-              <span class="hidden sm:inline">Z to undo</span>
-            </template>
-            <template v-else>
-              <span class="sm:hidden">Restart</span>
-              <span class="hidden sm:inline">R to restart</span>
-            </template>
-          </span>
-          <span v-else class="truncate font-mono">
-            {{ count(progress.moves, "move", "moves") }} ·
-            {{ count(progress.pushes, "push", "pushes") }}
-          </span>
-          <span v-if="best" class="shrink-0 font-mono">
-            Best {{ best.moves }}
-          </span>
-        </div>
-
-        <!-- Labelled at every width; the keys are in the tooltips. -->
-        <div class="grid grid-cols-3 gap-2 sm:flex">
-          <Button
-            variant="outline"
-            size="sm"
-            :title="`Undo (Z), ${count(progress.undosLeft, 'undo', 'undos')} left this attempt`"
-            :aria-label="`Undo, ${progress.undosLeft} left`"
-            aria-keyshortcuts="Z U"
-            :disabled="progress.moves === 0 || progress.undosLeft === 0"
-            @click="game?.undo()"
-          >
-            <Undo2Icon data-icon="inline-start" />
-            Undo
-            <span class="font-mono text-muted-foreground">
-              {{ progress.undosLeft }}
-            </span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title="Redo (Y)"
-            aria-keyshortcuts="Y"
-            :disabled="!progress.canRedo"
-            @click="game?.redo()"
-          >
-            <Redo2Icon data-icon="inline-start" />
-            Redo
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            title="Restart (R), with all undos back"
-            aria-keyshortcuts="R"
-            :disabled="progress.moves === 0 && progress.undosLeft === UNDO_BUDGET"
-            @click="game?.restart()"
-          >
-            <RotateCcwIcon data-icon="inline-start" />
-            Restart
-          </Button>
+          {{ status }}
+        </p>
+        <div class="grid grid-cols-3 gap-2">
+          <GameButtons
+            :progress="progress"
+            @undo="game?.undo()"
+            @redo="game?.redo()"
+            @restart="game?.restart()"
+          />
         </div>
       </div>
     </footer>
 
+    <PauseSheet
+      v-model:open="pauseOpen"
+      :level-id="levelId"
+      @restart="game?.restart()"
+      @levels="switcherOpen = true"
+      @help="helpOpen = true"
+    />
     <PlayControlsHelp v-model:open="helpOpen" />
     <LevelSwitcher
       v-model:open="switcherOpen"
@@ -457,92 +415,17 @@ function replay() {
       :states="states"
       :best="bests"
     />
-
-    <Dialog v-model:open="solvedOpen">
-      <DialogContent class="sm:max-w-md">
-        <DialogHeader>
-          <!-- Centred on phones, like the rest of the dialog header. -->
-          <div class="flex items-center justify-center gap-2 sm:justify-start">
-            <TrophyIcon class="size-5" />
-            <DialogTitle>Level solved!</DialogTitle>
-            <Badge v-if="isNewBest">New best!</Badge>
-          </div>
-          <DialogDescription>{{ level.title }}</DialogDescription>
-        </DialogHeader>
-
-        <div class="grid grid-cols-2 gap-3">
-          <Card class="gap-1 py-4">
-            <CardHeader class="px-4">
-              <CardDescription class="text-label">This run</CardDescription>
-              <CardTitle class="font-mono text-title">
-                {{ count(run.moves, "move", "moves") }}
-              </CardTitle>
-              <p class="font-mono text-sm text-muted-foreground">
-                {{ count(run.pushes, "push", "pushes") }}
-              </p>
-            </CardHeader>
-          </Card>
-          <Card class="gap-1 py-4">
-            <CardHeader class="px-4">
-              <CardDescription class="text-label">Your best</CardDescription>
-              <template v-if="best">
-                <CardTitle class="font-mono text-title">
-                  {{ count(best.moves, "move", "moves") }}
-                </CardTitle>
-                <p class="font-mono text-sm text-muted-foreground">
-                  {{ count(best.pushes, "push", "pushes") }}
-                </p>
-              </template>
-              <p
-                v-if="saveState === 'rejected'"
-                class="text-sm text-destructive"
-              >
-                The server couldn't verify this run
-              </p>
-              <p
-                v-else-if="saveState === 'saving'"
-                class="text-sm text-muted-foreground"
-              >
-                Saving…
-              </p>
-              <p
-                v-else-if="saveState === 'local'"
-                class="text-sm text-muted-foreground"
-              >
-                Saved on this device; it'll sync when the server is back
-              </p>
-            </CardHeader>
-          </Card>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" @click="replay">
-            <RotateCcwIcon data-icon="inline-start" />
-            Replay
-          </Button>
-          <!--
-            Solving unlocks the next level at once, saved or not; it stays
-            locked only if the server refused this run.
-          -->
-          <Button v-if="nextLocked" disabled>
-            Next level
-            <LockIcon data-icon="inline-end" />
-          </Button>
-          <Button v-else-if="nextLevel" as-child>
-            <NuxtLink :to="`/play/${nextLevel.id}`">
-              Next level
-              <ArrowRightIcon data-icon="inline-end" />
-            </NuxtLink>
-          </Button>
-          <!-- The last level. -->
-          <Button v-else as-child>
-            <NuxtLink to="/play">
-              <TrophyIcon data-icon="inline-start" />
-              Finish
-            </NuxtLink>
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <LevelComplete
+      v-model:open="solvedOpen"
+      :title="level.title"
+      :level-id="levelId"
+      :run="run"
+      :best="best"
+      :is-new-best="isNewBest"
+      :save-state="saveState"
+      :next="nextLevel"
+      :next-locked="nextLocked"
+      @replay="replay"
+    />
   </div>
 </template>

@@ -44,6 +44,11 @@ const preview: Preview = {
           styles: { width: "390px", height: "844px" },
           type: "mobile",
         },
+        tablet: {
+          name: "Tablet",
+          styles: { width: "820px", height: "1180px" },
+          type: "tablet",
+        },
         desktop: {
           name: "Desktop",
           styles: { width: "1280px", height: "800px" },

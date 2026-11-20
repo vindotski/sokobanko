@@ -10,8 +10,20 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: "Sokobanko",
+      htmlAttrs: { lang: "en" },
       // Native scrollbars and form controls follow the theme too.
-      meta: [{ name: "color-scheme", content: "light dark" }],
+      meta: [
+        { name: "color-scheme", content: "light dark" },
+        // Content under the notch and home indicator; the bars pad for them.
+        {
+          name: "viewport",
+          content: "width=device-width, initial-scale=1, viewport-fit=cover",
+        },
+      ],
+      link: [
+        { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
+      ],
     },
   },
   css: [
@@ -47,6 +59,9 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
+      // The site's own address, for canonical links, link previews and the
+      // sitemap (NUXT_PUBLIC_SITE_URL elsewhere).
+      siteUrl: "https://sokobanko.app",
       // Where the browser reaches Spotcraft's user pool. Empty, so it's the
       // app's own /_spotcraft/auth: on Spotcraft, and in `nuxt dev` through
       // the proxy below, so phones on the same network can save too.
@@ -73,13 +88,17 @@ export default defineNuxtConfig({
     tsConfig: { include: ["../stories/**/*", "../.storybook/**/*"] },
   },
   routeRules: {
-    // These pages read levels and progress from the browser's collections
-    // (TanStack DB, app/collections), which don't run on the server. Home and
-    // the FAQ stay server-rendered.
-    "/levels": { ssr: false },
-    "/play": { ssr: false },
-    "/play/**": { ssr: false },
-    "/profile": { ssr: false },
+    // The game and Progress read the browser's collections (TanStack DB,
+    // app/collections), which don't run on the server, and are personal, so
+    // search engines skip them. The map, level cards and Help are
+    // server-rendered and indexed.
+    "/play": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    "/play/**": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    "/progress": { ssr: false, headers: { "x-robots-tag": "noindex" } },
+    // Pages that moved.
+    "/levels": { redirect: { to: "/", statusCode: 301 } },
+    "/profile": { redirect: { to: "/progress", statusCode: 301 } },
+    "/faq": { redirect: { to: "/help", statusCode: 301 } },
   },
   $production: {
     routeRules: {

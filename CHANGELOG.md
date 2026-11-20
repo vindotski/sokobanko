@@ -9,6 +9,30 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+### Changed
+- **Rebuilt phone-first, after Candy Crush's flow and Apple's Human Interface Guidelines.** Every
+  feature is kept:
+  - **Navigation:** on phones a tab bar at the bottom (Play, Progress, Help); on tablets a rail,
+    and on desktops a sidebar. Settings (theme and sound together) opens as a sheet from any page.
+  - **The map is home:** a Continue card for your next level, then each collection as a winding
+    path of numbered levels, solved, up next or locked, scrolled to where you are.
+  - **Level cards:** tapping a level opens its card, a sheet on phones or a panel beside the map
+    on desktops, with the board, your best or what unlocks it, and a big Play. Each card has its
+    own address, `/levels/<id>`.
+  - **The game:** a HUD (goals, moves, undos, best), Undo, Redo and Restart at 44px, a pause menu
+    (resume, restart, levels, theme, sound, controls, the map), and a Level complete screen with a
+    big Next. On desktops the counts and controls sit beside the board. A locked level goes to
+    its card.
+  - **Progress** (was the profile) and **Help** (the FAQ, with how to play, the controls and
+    About) are sections of their own. `/levels`, `/profile` and `/faq` redirect.
+  - **Safe areas:** the bars pad for the notch and home indicator.
+- **Search engines can find the levels:**
+  - The map and every level card are server-rendered, with titles, descriptions, canonical
+    links and link previews.
+  - There's a sitemap, `robots.txt`, `VideoGame` structured data, a favicon and an Apple touch
+    icon.
+  - The game and Progress aren't indexed.
+
 ## [0.6.0] - 2026-11-20
 
 ### Added

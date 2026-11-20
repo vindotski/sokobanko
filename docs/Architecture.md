@@ -11,9 +11,35 @@ Sokobanko is one Nuxt 4 app at the repository root, plus two TypeScript packages
 | `scripts/` | Applying the migrations, importing a level collection, and finding solutions for the tests |
 | `docs/` | This wiki, published from `main` |
 
+## Pages and navigation
+
+The app is built phone-first:
+- **Phones** get a tab bar at the bottom with **Play**, **Progress** and **Help**.
+- **Tablets** get the same three as a rail down the left, from `md`.
+- **Desktops** get a sidebar, from `lg`.
+
+Settings (theme, sound) is an action, not a section, so it opens as a sheet: from a page's header on phones, from the sidebar elsewhere, and from the pause menu in the game. Every control a finger lands on is at least 44px, and the bars pad for the notch and home indicator (`viewport-fit=cover`).
+
+| Route | Page | Rendered | Indexed |
+| --- | --- | --- | --- |
+| `/` | **The map**: a Continue card, then each collection as a winding path of level nodes | On the server; your progress fills in after load (`ProgressSync` → `useProgressView`) | yes |
+| `/levels/:id` | **A level's card**: the board, your best or what unlocks it, and Play. A sheet over the map on phones, a panel beside it on desktops | On the server, with the map behind it | yes |
+| `/play/:id` | **The game**: a HUD (goals, moves, undos, best), the board, Undo, Redo and Restart, a pause menu, and Level complete | In the browser | no |
+| `/play` | The next level, or the all-solved celebration | In the browser | no |
+| `/progress` | Solved count, totals, completed levels | In the browser | no |
+| `/help` | How to play, the controls, the FAQ, About | On the server | yes |
+
+`/levels`, `/profile` and `/faq` redirect (301) to `/`, `/progress` and `/help`.
+
+**Search engines:**
+- Every indexed page has its own title, description, canonical URL and link preview (`usePageSeo`, `public/og.png`). The map also has `VideoGame` structured data.
+- `/sitemap.xml` lists the map, Help and every level card, and `/robots.txt` points to it.
+- The game and Progress send `X-Robots-Tag: noindex`.
+- The site's address is `runtimeConfig.public.siteUrl` (`NUXT_PUBLIC_SITE_URL`).
+
 ## Playing a level
 
-1. **`/play/:id`** renders in the browser only. It takes the level from the levels collection and mounts the board from `@sokobanko/game`.
+1. **`/play/:id`** renders in the browser only. It takes the level from the levels collection and mounts the board from `@sokobanko/game`. A locked level goes to its card instead.
 2. **Each move, undo and restart** reports the run: the moves, the pushes, and the **input log**, made of LURD letters, uppercase for pushes, with `z` for each undo. A half-played run is kept in `localStorage`, so a reload resumes it with its undos already used.
 3. **On a solve,** the run is recorded in the `runs` collection at once, and the next level in its collection unlocks, whether or not the server can be reached.
 

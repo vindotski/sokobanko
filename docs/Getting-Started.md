@@ -16,7 +16,7 @@ pnpm dev
 - **`pnpm exec spotcraft dev`** (from `@kodentuzo/spotcraft`) starts a stack for this checkout that's set up like a Spotcraft server: Postgres with the `app_sokobanko` schema, the user pool, and Mailpit. It writes the settings to `.env` at the repository root, then runs `pnpm db:migrate` (from `spotcraft.json`), which applies the migrations and with them the levels.
 - **`pnpm dev`** serves the app at http://localhost:3000.
 
-Solve the first level, and the browser makes you a guest in the local user pool. Your best then shows on the Levels page and the profile.
+Solve the first level, and the browser makes you a guest in the local user pool. Your best then shows on the map and in Progress.
 
 ## Managing the stack
 

@@ -6,7 +6,7 @@ import { useMediaQuery } from "@vueuse/core";
 /**
  * Pick another level without leaving the game: one collection at a time,
  * opening on the level being played. Locked levels are listed but aren't
- * links, as on the Levels page.
+ * links, as on the map.
  */
 const props = defineProps<{
   levels: (LevelJson & { collection: string; number: number })[];

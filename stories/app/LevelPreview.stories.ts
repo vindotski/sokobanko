@@ -10,7 +10,7 @@ import {
 } from "../fixtures/levels";
 
 /**
- * A level drawn in SVG, as on the Levels page and in the level switcher. The
+ * A level drawn in SVG, as on the level cards and in the level switcher. The
  * same shapes as the game's board: pieces differ by shape, not colour.
  */
 const meta = {
