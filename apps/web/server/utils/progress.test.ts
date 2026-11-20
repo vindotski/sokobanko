@@ -43,13 +43,16 @@ describe.skipIf(!url)("progress in Postgres", () => {
       id: level,
       collectionId: "basics",
       title: "Test",
+      // Unique within Basics, and after its levels.
+      order: 1000 + Math.floor(Math.random() * 1_000_000),
       map: ["#@$.#"],
     });
   });
 
   afterAll(async () => {
-    // Their results go with the level. The guests stay in the local pool,
-    // which deletes idle ones.
+    // A level with results can't be deleted, so they go first. The guests stay
+    // in the local pool, which deletes idle ones.
+    await db.execute(sql`delete from progress where level_id = ${level}`);
     await db.execute(sql`delete from levels where id = ${level}`);
     await pool.end();
   });
@@ -68,6 +71,33 @@ describe.skipIf(!url)("progress in Postgres", () => {
     const better = run(7, 3, "2026-11-09T00:00:00.000Z");
     expect(await recordBest(db, player, better)).toEqual(better);
     expect(await readProgress(db, player)).toEqual([better]);
+  });
+
+  it("at equal moves, keeps the fewer pushes", async () => {
+    const player = await newPlayer();
+    await recordBest(db, player, run(10, 4));
+    expect(await recordBest(db, player, run(10, 6))).toEqual(run(10, 4));
+    const fewerPushes = run(10, 2, "2026-11-09T00:00:00.000Z");
+    expect(await recordBest(db, player, fewerPushes)).toEqual(fewerPushes);
+    // Fewer moves still wins, whatever the pushes.
+    const fewerMoves = run(9, 5, "2026-11-10T00:00:00.000Z");
+    expect(await recordBest(db, player, fewerMoves)).toEqual(fewerMoves);
+  });
+
+  it("refuses impossible results", async () => {
+    const player = await newPlayer();
+    await expect(recordBest(db, player, run(0, 0))).rejects.toThrow();
+    // More pushes than moves.
+    await expect(recordBest(db, player, run(3, 4))).rejects.toThrow();
+  });
+
+  it("keeps results when their level is deleted", async () => {
+    const player = await newPlayer();
+    await recordBest(db, player, run(5));
+    await expect(
+      db.execute(sql`delete from levels where id = ${level}`),
+    ).rejects.toThrow();
+    expect(await readProgress(db, player)).toHaveLength(1);
   });
 
   it("keeps the best when two saves race", async () => {

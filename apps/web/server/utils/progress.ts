@@ -34,8 +34,8 @@ export async function readProgress(
 
 /**
  * Records a run, already replayed and verified, if it beats the player's best
- * for that level (fewer moves; a tie keeps the older one), and answers the
- * best. One statement, so two tabs saving at once can't lose the better run.
+ * for that level (fewer moves, or as many in fewer pushes; a tie keeps the
+ * older one), and answers the best. One statement, so two tabs saving at once can't lose the better run.
  */
 export async function recordBest(
   db: NodePgDatabase,
@@ -58,7 +58,7 @@ export async function recordBest(
         pushes: sql`excluded.pushes`,
         completedAt: sql`excluded.completed_at`,
       },
-      setWhere: sql`excluded.moves < ${progress.moves}`,
+      setWhere: sql`(excluded.moves, excluded.pushes) < (${progress.moves}, ${progress.pushes})`,
     })
     .returning();
   if (saved) return completion(saved);

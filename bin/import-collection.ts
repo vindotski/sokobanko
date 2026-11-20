@@ -64,15 +64,19 @@ const levels = maps.map((map, index) => {
   return level;
 });
 
+// The app's schema (SCHEMA in apps/web/server/db/schema.ts), named so the
+// migration doesn't depend on the role's search path.
+const SCHEMA = '"app_sokobanko"';
+
 const text = (value: string | undefined) =>
   value === undefined ? "NULL" : `'${value.replaceAll("'", "''")}'`;
 
 const sql = [
   `-- ${title}: ${levels.length} levels, made by bin/import-collection.ts.`,
-  `INSERT INTO "collections" ("id", "title", "author", "credit", "order") VALUES`,
+  `INSERT INTO ${SCHEMA}."collections" ("id", "title", "author", "credit", "order") VALUES`,
   `\t(${text(id)}, ${text(title)}, ${text(author)}, ${text(credit)}, ${order});`,
   "--> statement-breakpoint",
-  `INSERT INTO "levels" ("id", "collection_id", "title", "order", "map") VALUES`,
+  `INSERT INTO ${SCHEMA}."levels" ("id", "collection_id", "title", "order", "map") VALUES`,
   `${levels
     .map(
       (level) =>

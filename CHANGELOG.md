@@ -15,9 +15,19 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflo
   stay 44px tall, and compact ones keep a 44px hit area; `cn` knows the `control` sizes. The
   solved dialog still becomes a sheet at the bottom on phones.
 - pnpm's one-day wait for new packages no longer has a spotstrap exception.
+- **A best ranks by moves, then pushes:** a run with as many moves and fewer pushes is the new
+  best. A tie still keeps the older run.
+- **Players' results outlive level changes:** a level that someone has solved can't be deleted
+  (the foreign key is `RESTRICT`, no longer `CASCADE`), so a migration can't erase results.
+- `bin/import-collection.ts` writes schema-qualified table names, so a collection's migration
+  doesn't depend on the role's search path.
 
 ### Fixed
 - A stray quote in the dialog's and the drawer's close button markup.
+- **The database guards its own data** (migration `0002_integrity`): collection order is
+  unique, so two collections can't interleave their levels; every level has an order, unique in
+  its collection; orders are positive, maps are arrays, results have at least one move and no
+  more pushes than moves. `levels.updated_at`, never updated or read, is gone.
 
 ## [0.3.0] - 2026-11-19
 
