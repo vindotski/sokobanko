@@ -49,10 +49,12 @@ function playRandom() {
           </p>
         </template>
         <template v-else>
-          <p class="text-label text-muted-foreground">All solved</p>
-          <h2 :id="titleId" class="truncate text-title">Every level solved</h2>
+          <p class="text-label text-muted-foreground">
+            All {{ total }} levels
+          </p>
+          <h2 :id="titleId" class="truncate text-title">All solved</h2>
           <p class="truncate text-small text-muted-foreground">
-            All {{ total }}. Replay any to beat your best.
+            Now beat your bests
           </p>
         </template>
       </div>

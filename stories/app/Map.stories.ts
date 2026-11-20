@@ -95,5 +95,9 @@ export const Continue: Story = {
     );
     await expect(heights).toHaveLength(3);
     await expect(new Set(heights).size).toBe(1);
+    // And at this width, none of it is cut short.
+    for (const line of canvasElement.querySelectorAll("section .truncate")) {
+      await expect(line.scrollWidth).toBeLessThanOrEqual(line.clientWidth);
+    }
   },
 };
