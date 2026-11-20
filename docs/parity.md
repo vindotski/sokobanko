@@ -57,7 +57,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Swipe | ◐ the joystick follows a drag | ✖ | ✖ | ✅ | ✅ | ✅ |
 | Tap to walk (pathfinding) | ⏳ 8 (16) | ✖ | ✖ | ✅ | ? | ◐ double tap |
 | Drag a box to push it there | ⏳ 8 (16) | ✖ | ✖ | ◐ long press | ? | ? |
-| Big levels: camera and overview | ✅ the camera follows the player; Space shows the whole level | ✖ | ✖ | ? | ? | ? |
+| Big levels: camera and overview | ✅ the camera follows the player; pinch or Ctrl/⌘-scroll to zoom, two fingers or scroll to pan, buttons to zoom, fit and recenter; Space shows the whole level | ✖ | ✖ | ? | ? | ? |
 | Themes | ✅ light and dark, following the system | ✖ | ◐ colours | ? | ? | ✅ |
 | Sound | ✅ synthesized, muted by default | ? | ✅ | ✅ | ? | ✅ |
 | Reduced motion | ✅ celebrations respect it | ✖ | ✖ | ? | ? | ? |

@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   centerAxis,
+  clampTile,
   ease,
   fitTileSize,
   followAxis,
+  panAxis,
   tileSize,
-  zoomTarget,
+  zoomAround,
+  zoomBounds,
 } from "./camera.ts";
 
 describe("tileSize", () => {
@@ -26,31 +29,61 @@ describe("fitTileSize", () => {
   });
 });
 
-describe("zoomTarget", () => {
+describe("zoomBounds", () => {
   const area = { width: 1200, height: 600 };
 
-  it("uses the normal zoom outside the overview", () => {
-    expect(zoomTarget(area, 30, 20, false)).toEqual({
-      tile: 60,
-      available: true,
+  it("zooms out no further than the whole level", () => {
+    expect(zoomBounds(area, 30, 20)).toEqual({
+      normal: 60,
+      fit: 30,
+      min: 30,
+      max: 96,
     });
   });
 
-  it("zooms out to fit a big board in the overview", () => {
-    expect(zoomTarget(area, 30, 20, true)).toEqual({
-      tile: 30,
-      available: true,
-    });
-  });
-
-  it("never zooms in on a board that already fits", () => {
-    expect(zoomTarget(area, 7, 3, true)).toEqual({
-      tile: 60,
-      available: false,
-    });
+  it("starts at the default zoom when the level fits already", () => {
+    expect(zoomBounds(area, 5, 5).min).toBe(60);
   });
 });
 
+describe("clampTile", () => {
+  const bounds = zoomBounds({ width: 1200, height: 600 }, 30, 20);
+
+  it("keeps the zoom within its bounds", () => {
+    expect(clampTile(10, bounds)).toBe(30);
+    expect(clampTile(50, bounds)).toBe(50);
+    expect(clampTile(200, bounds)).toBe(96);
+  });
+});
+
+describe("zoomAround", () => {
+  it("keeps the point under the focus still", () => {
+    // The board point at 100 px sits under the focus at 300; doubling the
+    // zoom moves the board so that it still does.
+    const offset = zoomAround(200, 40, 80, 300);
+    expect(offset).toBe(100);
+    expect(((300 - offset) / 80) * 40).toBe(100);
+  });
+
+  it("changes nothing at the same zoom", () => {
+    expect(zoomAround(-50, 60, 60, 123)).toBe(-50);
+  });
+});
+
+describe("panAxis", () => {
+  it("moves the board with the drag", () => {
+    expect(panAxis(500, 2000, -600, 100)).toBe(-500);
+  });
+
+  it("stops at the board's edges", () => {
+    expect(panAxis(500, 2000, -100, 300)).toBe(0);
+    expect(panAxis(500, 2000, -1400, -300)).toBe(-1500);
+  });
+
+  it("keeps a board that fits centred", () => {
+    expect(panAxis(500, 300, 100, 80)).toBe(100);
+  });
+});
 describe("centerAxis", () => {
   it("centres a board that fits", () => {
     expect(centerAxis(1000, 400, 50)).toBe(300);

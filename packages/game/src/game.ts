@@ -13,12 +13,23 @@ import {
 import { Application, type ColorSource, Graphics } from "pixi.js";
 // Pixi's shader code without eval, so the site's CSP needs no 'unsafe-eval'.
 import "pixi.js/unsafe-eval";
-import { centerAxis, ease, followAxis, zoomTarget } from "./camera.ts";
+import {
+  centerAxis,
+  clampTile,
+  ease,
+  followAxis,
+  panAxis,
+  zoomAround,
+  zoomBounds,
+} from "./camera.ts";
 import { Celebration } from "./celebration.ts";
+import { listenToGestures, type Point } from "./gestures.ts";
 import { Joystick } from "./joystick.ts";
 import { listenToKeys } from "./keyboard.ts";
 
 const TILE = 64;
+/** How much the zoom buttons and keys zoom per press. */
+const ZOOM_STEP = 1.25;
 /** Default space kept free around the board, in CSS pixels. */
 const MARGIN = 24;
 
@@ -65,11 +76,14 @@ export interface GamePadding {
   left?: number;
 }
 
-export interface OverviewState {
-  /** The level is bigger than the screen, so an overview shows more. */
-  available: boolean;
-  /** The overview is showing (toggled on, or Space held). */
-  active: boolean;
+export interface CameraState {
+  /** Zoom in or out would change anything (the zoom is within its bounds). */
+  canZoomIn: boolean;
+  canZoomOut: boolean;
+  /** The whole level is on screen. */
+  fitted: boolean;
+  /** The camera follows the player; panning or zooming by hand stops that. */
+  following: boolean;
 }
 
 export interface GameOptions {
@@ -86,8 +100,8 @@ export interface GameOptions {
   onChange?: (progress: GameProgress) => void;
   /** Called on the move that solves the level. */
   onSolved?: (progress: GameProgress) => void;
-  /** Called whenever the overview's availability or visibility changes. */
-  onOverviewChange?: (state: OverviewState) => void;
+  /** Called whenever the camera's state changes. */
+  onCameraChange?: (state: CameraState) => void;
 }
 
 export interface Game {
@@ -99,8 +113,13 @@ export interface Game {
   redo(): void;
   /** Returns to the start of the level. */
   restart(): void;
-  /** Zooms out to show the whole level, or back to the player. */
-  setOverview(on: boolean): void;
+  /** Zooms in or out a step, around the player if the camera follows them. */
+  zoomIn(): void;
+  zoomOut(): void;
+  /** Zooms out until the whole level is on screen. */
+  fit(): void;
+  /** Follows the player again, after panning or zooming away. */
+  recenter(): void;
   /** Redraws the board in new colors, e.g. when the theme changes. */
   setPalette(palette: Partial<GamePalette>): void;
   destroy(): void;
@@ -151,6 +170,12 @@ export async function createGame(
     step(direction),
   );
   app.stage.addChild(board, celebration.view, joystick);
+  // Two fingers or a wheel move the camera; one finger stays the joystick.
+  const stopGestures = listenToGestures(app.stage, app.canvas, {
+    onPinchStart: () => joystick.cancel(),
+    onZoom: (factor, at) => zoomAt(factor, at),
+    onPan: (dx, dy) => pan(dx, dy),
+  });
   app.ticker.add((ticker) => {
     joystick.update(ticker.deltaMS);
     followCamera(ticker.deltaMS);
@@ -164,7 +189,8 @@ export async function createGame(
     onAction: (action) => {
       if (action === "undo") undo();
       else if (action === "redo") redo();
-      else restart();
+      else if (action === "restart") restart();
+      else zoomBy(action === "zoomIn" ? ZOOM_STEP : 1 / ZOOM_STEP);
     },
   });
 
@@ -177,19 +203,28 @@ export async function createGame(
 
   // Where the board's top-left corner sits within the play area.
   const camera = { x: 0, y: 0 };
-  // On-screen tile size; eases towards the zoom target.
+  // On-screen tile size; eases towards `zoom` (or the fit while peeking).
   let tile = 1;
-  let toggled = false;
+  // The tile size the player chose; the screen's default until they zoom.
+  let zoom: number | undefined;
+  // Follows the player, until they pan or zoom by hand; any move resumes it.
+  let following = true;
+  // Where a zoom eases around while the camera doesn't follow the player.
+  let focus: Point | undefined;
   let peeking = false;
-  let overview: OverviewState = { available: false, active: false };
+  let state: CameraState | undefined;
 
   const playArea = () => ({
     width: Math.max(app.screen.width - left - right, 0),
     height: Math.max(app.screen.height - top - bottom, 0),
   });
-
-  const zoom = () =>
-    zoomTarget(playArea(), start.width, start.height, toggled || peeking);
+  const bounds = () => zoomBounds(playArea(), start.width, start.height);
+  /** The tile size the camera eases towards. */
+  const target = () => {
+    const b = bounds();
+    const chosen = clampTile(zoom ?? b.normal, b);
+    return peeking ? Math.min(chosen, b.fit) : chosen;
+  };
 
   /** Board size and player centre at a tile size, in screen pixels. */
   const measure = (size: number) => {
@@ -210,47 +245,129 @@ export async function createGame(
     celebration.view.position.copyFrom(board.position);
   };
 
-  const reportOverview = (available: boolean) => {
-    const active = available && (toggled || peeking);
-    if (overview.available === available && overview.active === active) {
+  const reportCamera = () => {
+    const b = bounds();
+    const chosen = clampTile(zoom ?? b.normal, b);
+    const next: CameraState = {
+      canZoomIn: chosen < b.max - 0.5,
+      canZoomOut: chosen > b.min + 0.5,
+      fitted: target() <= b.fit + 0.5,
+      following,
+    };
+    if (
+      state &&
+      state.canZoomIn === next.canZoomIn &&
+      state.canZoomOut === next.canZoomOut &&
+      state.fitted === next.fitted &&
+      state.following === next.following
+    ) {
       return;
     }
-    overview = { available, active };
-    options.onOverviewChange?.(overview);
+    state = next;
+    options.onCameraChange?.(next);
+  };
+
+  /** Keeps the board within the play area at the current zoom. */
+  const clampCamera = () => {
+    const area = playArea();
+    const { board: size } = measure(tile);
+    camera.x = panAxis(area.width, size.width, camera.x, 0);
+    camera.y = panAxis(area.height, size.height, camera.y, 0);
   };
 
   /** Jumps to the player, e.g. when a level loads or the canvas resizes. */
   const snapCamera = () => {
     const area = playArea();
-    const target = zoom();
-    tile = Math.max(target.tile, 1);
+    if (zoom !== undefined) zoom = clampTile(zoom, bounds());
+    tile = Math.max(target(), 1);
     const { board: size, player } = measure(tile);
     camera.x = centerAxis(area.width, size.width, player.x);
     camera.y = centerAxis(area.height, size.height, player.y);
+    following = true;
+    focus = undefined;
     placeBoard();
-    reportOverview(target.available);
+    reportCamera();
   };
 
-  /** Eases the zoom and follows the player once they leave the dead zone. */
+  /** Eases the zoom, and follows the player once they leave the dead zone. */
   function followCamera(deltaMs: number) {
     const area = playArea();
-    const target = zoom();
-    const next = Math.max(ease(tile, target.tile, deltaMs), 1);
+    const next = Math.max(ease(tile, target(), deltaMs), 1);
 
-    // Zoom around the player, so they stay put on screen while it changes.
-    const before = measure(tile).player;
-    const after = measure(next).player;
-    camera.x += before.x - after.x;
-    camera.y += before.y - after.y;
+    // Zoom around the player while following, so they stay put on screen;
+    // otherwise around where the zoom was asked for.
+    if (following || !focus) {
+      const before = measure(tile).player;
+      const after = measure(next).player;
+      camera.x += before.x - after.x;
+      camera.y += before.y - after.y;
+    } else {
+      camera.x = zoomAround(camera.x, tile, next, focus.x);
+      camera.y = zoomAround(camera.y, tile, next, focus.y);
+    }
     tile = next;
 
-    const { board: size, player } = measure(tile);
-    const x = followAxis(area.width, size.width, player.x, camera.x);
-    const y = followAxis(area.height, size.height, player.y, camera.y);
-    camera.x = ease(camera.x, x, deltaMs);
-    camera.y = ease(camera.y, y, deltaMs);
+    if (following) {
+      const { board: size, player } = measure(tile);
+      const x = followAxis(area.width, size.width, player.x, camera.x);
+      const y = followAxis(area.height, size.height, player.y, camera.y);
+      camera.x = ease(camera.x, x, deltaMs);
+      camera.y = ease(camera.y, y, deltaMs);
+    } else {
+      clampCamera();
+    }
     placeBoard();
-    reportOverview(target.available);
+    reportCamera();
+  }
+
+  /**
+   * Zooms by `factor`, eased, around a point in the play area: the player
+   * while following, else the middle of the screen.
+   */
+  function zoomBy(factor: number) {
+    const b = bounds();
+    zoom = clampTile((zoom ?? b.normal) * factor, b);
+    const area = playArea();
+    focus = { x: area.width / 2, y: area.height / 2 };
+    reportCamera();
+  }
+
+  /**
+   * Zooms by `factor` at once around `at` (canvas pixels), as fingers or a
+   * wheel do. Stops following the player.
+   */
+  function zoomAt(factor: number, at: Point) {
+    const b = bounds();
+    const next = clampTile((zoom ?? b.normal) * factor, b);
+    // Already as far in or out as it goes: nothing moves, so keep following.
+    if (Math.abs(next - tile) < 0.01) return;
+    zoom = next;
+    const focal = { x: at.x - left, y: at.y - top };
+    camera.x = zoomAround(camera.x, tile, zoom, focal.x);
+    camera.y = zoomAround(camera.y, tile, zoom, focal.y);
+    tile = zoom;
+    following = false;
+    focus = focal;
+    clampCamera();
+    placeBoard();
+    reportCamera();
+  }
+
+  /**
+   * Drags the board by (dx, dy) pixels. Stops following the player, unless
+   * the board couldn't move (it fits, or is at its edge).
+   */
+  function pan(dx: number, dy: number) {
+    const area = playArea();
+    const { board: size } = measure(tile);
+    const x = panAxis(area.width, size.width, camera.x, dx);
+    const y = panAxis(area.height, size.height, camera.y, dy);
+    if (Math.abs(x - camera.x) < 0.5 && Math.abs(y - camera.y) < 0.5) return;
+    camera.x = x;
+    camera.y = y;
+    following = false;
+    placeBoard();
+    reportCamera();
   }
 
   const update = () => {
@@ -281,6 +398,8 @@ export async function createGame(
 
   function step(direction: Direction) {
     if (isSolved(current())) return;
+    // Moving brings the camera back to the player, at the chosen zoom.
+    following = true;
     const result = move(current(), direction);
     if (!result) return;
 
@@ -355,7 +474,7 @@ export async function createGame(
       dead = deadSquares(start);
       history = [];
       future = [];
-      toggled = false;
+      zoom = undefined;
       celebration.clear();
       update();
       snapCamera();
@@ -363,8 +482,16 @@ export async function createGame(
     undo,
     redo,
     restart,
-    setOverview(on) {
-      toggled = on;
+    zoomIn: () => zoomBy(ZOOM_STEP),
+    zoomOut: () => zoomBy(1 / ZOOM_STEP),
+    fit() {
+      zoom = bounds().fit;
+      following = true;
+      reportCamera();
+    },
+    recenter() {
+      following = true;
+      reportCamera();
     },
     setPalette(next) {
       palette = { ...DEFAULT_PALETTE, ...next };
@@ -373,6 +500,7 @@ export async function createGame(
     },
     destroy() {
       stopKeyboard();
+      stopGestures();
       observer.disconnect();
       app.destroy(
         { removeView: true, releaseGlobalResources: true },
