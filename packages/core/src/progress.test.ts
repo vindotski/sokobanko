@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { levelStates } from "./progress.ts";
+import { isBetter, levelStates, pendingUploads } from "./progress.ts";
 
 /** Levels as `collection/id`, in play order; the state of each, by id. */
 const states = (levels: string[], solved: string[]) =>
@@ -81,5 +81,55 @@ describe("levelStates", () => {
 
   it("handles no levels", () => {
     expect(states([], [])).toEqual({});
+  });
+});
+
+describe("isBetter", () => {
+  it("prefers fewer moves, then fewer pushes", () => {
+    expect(isBetter({ moves: 9, pushes: 5 }, { moves: 10, pushes: 1 })).toBe(
+      true,
+    );
+    expect(isBetter({ moves: 10, pushes: 2 }, { moves: 10, pushes: 3 })).toBe(
+      true,
+    );
+    expect(isBetter({ moves: 10, pushes: 3 }, { moves: 10, pushes: 3 })).toBe(
+      false,
+    );
+    expect(isBetter({ moves: 11, pushes: 0 }, { moves: 10, pushes: 3 })).toBe(
+      false,
+    );
+  });
+
+  it("beats no result", () => {
+    expect(isBetter({ moves: 10, pushes: 3 }, undefined)).toBe(true);
+  });
+});
+
+describe("pendingUploads", () => {
+  const levels = [
+    { id: "a", collection: "one" },
+    { id: "b", collection: "one" },
+    { id: "x", collection: "two" },
+    { id: "c", collection: "one" },
+  ];
+
+  it("lists local results the server lacks or has worse, in play order", () => {
+    const local = {
+      c: { moves: 5, pushes: 1 },
+      a: { moves: 5, pushes: 1 },
+      b: { moves: 5, pushes: 1 },
+      x: { moves: 5, pushes: 1 },
+    };
+    const server = {
+      a: { moves: 5, pushes: 1 },
+      b: { moves: 6, pushes: 1 },
+    };
+    expect(pendingUploads(levels, local, server)).toEqual(["b", "x", "c"]);
+  });
+
+  it("skips levels that aren't published", () => {
+    expect(
+      pendingUploads(levels, { gone: { moves: 1, pushes: 1 } }, {}),
+    ).toEqual([]);
   });
 });

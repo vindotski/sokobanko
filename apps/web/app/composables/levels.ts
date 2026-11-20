@@ -20,7 +20,7 @@ export function useLevelIds() {
   });
 }
 
-/** The player's best completions, newest first. */
+/** The player's server-verified bests, newest first; runs not synced yet are in the progress store. */
 export function useCompletions() {
   const api = useApi();
   return useAsyncData("my-completions", () =>

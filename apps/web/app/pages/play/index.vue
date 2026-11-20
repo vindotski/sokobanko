@@ -4,9 +4,13 @@ import { TrophyIcon } from "@lucide/vue";
 definePageMeta({ layout: "play" });
 
 // /play without an id: jump to the first level in play order that the user
-// hasn't solved yet, or congratulate them once everything is solved.
+// hasn't solved yet, or congratulate them once everything is solved. Rendered
+// in the browser only (routeRules), as progress solved here lives there.
 const { data: levels } = await useLevels();
-const best = await useProgressStore().load();
+const store = useProgressStore();
+await store.load();
+if (!store.localReady) store.restoreLocal();
+const best = store.best;
 const all = levels.value ?? [];
 const next = all.find((level) => !(level.id in best));
 

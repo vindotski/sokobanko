@@ -10,7 +10,7 @@ import {
   TrophyIcon,
   Undo2Icon,
 } from "@lucide/vue";
-import { levelStates } from "@sokoban/core";
+import { isBetter, levelStates } from "@sokoban/core";
 import type { CameraState, GameProgress } from "@sokoban/game";
 import { onKeyStroke, usePreferredReducedMotion } from "@vueuse/core";
 
@@ -91,11 +91,6 @@ onKeyStroke("?", (e) => {
   helpOpen.value = !helpOpen.value;
 });
 
-type Verification =
-  | { state: "idle" | "pending" }
-  | { state: "verified"; best: { moves: number; pushes: number } }
-  | { state: "failed"; message: string };
-const verification = ref<Verification>({ state: "idle" });
 const store = useProgressStore();
 // Completions, so "New best!" knows the previous best even on a direct visit.
 await useAsyncData("completions", () => store.load());
@@ -114,7 +109,11 @@ const nextLevel = computed(() => levels.value?.[levelIndex.value + 1]);
 const states = computed(() =>
   levelStates(levels.value ?? [], (id) => id in store.best),
 );
-const isLocked = computed(() => states.value.get(levelId) === "locked");
+// Not before this browser's progress is read: a level solved here while the
+// server was out of reach would flash "locked" first.
+const isLocked = computed(
+  () => store.localReady && states.value.get(levelId) === "locked",
+);
 const nextLocked = computed(
   () => !!nextLevel.value && states.value.get(nextLevel.value.id) === "locked",
 );
@@ -201,16 +200,25 @@ function onChange(next: GameProgress) {
   if (!next.solved) {
     // An undo or restart during the burst cancels the dialog.
     clearTimeout(dialogTimer);
-    verification.value = { state: "idle" };
   }
 }
 
-// The server replays the solution and records it only if it really solves
-// the level.
-async function onSolved({ solution, moves, pushes }: GameProgress) {
+/**
+ * Where this level's best stands with the server: saved (verified), being
+ * saved, kept on this device until the server can be reached, or refused.
+ */
+const saveState = computed(() => {
+  if (store.rejected.includes(levelId)) return "rejected";
+  if (!store.isUnsynced(levelId)) return "saved";
+  return store.syncing ? "saving" : "local";
+});
+
+// A solve counts here at once, so the next level unlocks even when the server
+// can't be reached; the server then replays the solution and keeps it if it
+// really solves the level.
+function onSolved({ solution, moves, pushes }: GameProgress) {
   run.value = { moves, pushes };
-  const previousBest = store.best[levelId];
-  isNewBest.value = false;
+  isNewBest.value = isBetter({ moves, pushes }, store.best[levelId]);
   clearTimeout(dialogTimer);
   dialogTimer = setTimeout(
     () => {
@@ -218,32 +226,13 @@ async function onSolved({ solution, moves, pushes }: GameProgress) {
     },
     reducedMotion.value === "reduce" ? 0 : CELEBRATION_MS,
   );
-  verification.value = { state: "pending" };
-  try {
-    const save = () =>
-      $fetch<{ best: { moves: number; pushes: number } }>(
-        `/api/levels/${levelId}/complete`,
-        { method: "POST", body: { solution } },
-      );
-    // A first save needs a guest: the browser makes one in the user pool.
-    if (Object.keys(store.best).length === 0) await ensureGuest();
-    const result = await save().catch(async (error) => {
-      // Their session ended since: a new guest, then save again.
-      if ((error as { statusCode?: number }).statusCode !== 401) throw error;
-      await ensureGuest();
-      return save();
-    });
-    store.markCompleted(levelId, result.best);
-    // The first save is what makes the visitor a guest.
-    if (!previousBest) refreshNuxtData("account");
-    verification.value = { state: "verified", best: result.best };
-    isNewBest.value = !previousBest || moves < previousBest.moves;
-  } catch (error) {
-    const message =
-      (error as { data?: { message?: string } }).data?.message ??
-      "Could not save your result";
-    verification.value = { state: "failed", message };
-  }
+  store.recordSolve(levelId, {
+    solution,
+    moves,
+    pushes,
+    solvedAt: new Date().toISOString(),
+  });
+  store.sync();
 }
 
 function replay() {
@@ -473,21 +462,32 @@ function replay() {
           <Card class="gap-1 py-4">
             <CardHeader class="px-4">
               <CardDescription class="text-label">Your best</CardDescription>
-              <template v-if="verification.state === 'verified'">
+              <template v-if="best">
                 <CardTitle class="font-mono text-title">
-                  {{ count(verification.best.moves, "move", "moves") }}
+                  {{ count(best.moves, "move", "moves") }}
                 </CardTitle>
                 <p class="font-mono text-sm text-muted-foreground">
-                  {{ count(verification.best.pushes, "push", "pushes") }}
+                  {{ count(best.pushes, "push", "pushes") }}
                 </p>
               </template>
               <p
-                v-else-if="verification.state === 'failed'"
+                v-if="saveState === 'rejected'"
                 class="text-sm text-destructive"
               >
-                Not saved: {{ verification.message }}
+                The server couldn't verify this run
               </p>
-              <p v-else class="text-sm text-muted-foreground">Saving…</p>
+              <p
+                v-else-if="saveState === 'saving'"
+                class="text-sm text-muted-foreground"
+              >
+                Saving…
+              </p>
+              <p
+                v-else-if="saveState === 'local'"
+                class="text-sm text-muted-foreground"
+              >
+                Saved on this device; it'll sync when the server is back
+              </p>
             </CardHeader>
           </Card>
         </div>
@@ -498,8 +498,8 @@ function replay() {
             Replay
           </Button>
           <!--
-            The next level unlocks once this result is saved, so this waits
-            for the save, or stays disabled if it failed.
+            Solving unlocks the next level at once, saved or not; it stays
+            locked only if the server refused this run.
           -->
           <Button v-if="nextLocked" disabled>
             Next level
@@ -511,14 +511,7 @@ function replay() {
               <ArrowRightIcon data-icon="inline-end" />
             </NuxtLink>
           </Button>
-          <!--
-            The last level. Wait for the save, or /play wouldn't count this
-            level as solved yet.
-          -->
-          <Button v-else-if="verification.state === 'pending'" disabled>
-            <TrophyIcon data-icon="inline-start" />
-            Finish
-          </Button>
+          <!-- The last level. -->
           <Button v-else as-child>
             <NuxtLink to="/play">
               <TrophyIcon data-icon="inline-start" />
