@@ -22,7 +22,7 @@ Settings (theme, sound) is an action, not a section, so it opens as a sheet: fro
 
 | Route | Page | Rendered | Indexed |
 | --- | --- | --- | --- |
-| `/` | **The map**: a Continue card, then each collection as a winding path of level nodes | On the server; your progress fills in after load (`ProgressSync` → `useProgressView`) | yes |
+| `/` | **The map**: a Continue card, then each collection as a winding path of level nodes | On the server, from the map hint for a returning player (below); the browser's progress replaces it after load (`ProgressSync` → `useProgressView`) | yes |
 | `/levels/:id` | **A level's card**: the board, your best or what unlocks it, and Play. A sheet over the map on phones, a panel beside it on desktops | On the server, with the map behind it | yes |
 | `/play/:id` | **The game**: a HUD (goals, moves, undos, best), the board, Undo, Redo and Restart, a pause menu, and Level complete | In the browser | no |
 | `/play` | The next level, or the all-solved celebration | In the browser | no |
@@ -30,6 +30,12 @@ Settings (theme, sound) is an action, not a section, so it opens as a sheet: fro
 | `/help` | How to play, the controls, the FAQ, About | On the server | yes |
 
 `/levels`, `/profile` and `/faq` redirect (301) to `/`, `/progress` and `/help`.
+
+**The map hint.** Progress lives in the browser, so on its own the server would draw every map empty, and a returning player's map would jump when their progress loaded. So once a level is solved, the browser keeps two small cookies for the server (`app/utils/mapHint.ts`):
+- **`sokobanko-map`:** each collection's level up next, e.g. `basics:*|microban:microban-041` (`*` once a collection is solved). Collections unlock in order, so this gives every level's state (`seedProgressView`).
+- **`sokobanko-map-columns`:** how many levels per row the path last fit, so it isn't drawn 4 wide and then re-flowed.
+
+With the hint, the map is hidden for a moment while a script right after the level up next scrolls to it, and only then shown, so it never appears at the top and jumps (a CSS fallback shows it after 2s anyway). The Continue card has the same height in every state. A page drawn from a hint is the player's own, so it's sent with `Cache-Control: private`. Without the cookies (a first visit, or a search engine) the map is drawn without progress, as before. The hint is only a hint: the browser's progress replaces it, and a solved level after the one up next (one added later) shows as locked until then.
 
 **Search engines:**
 - Every indexed page has its own title, description, canonical URL and link preview (`usePageSeo`, `public/og.png`). The map also has `VideoGame` structured data.

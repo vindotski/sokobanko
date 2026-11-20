@@ -33,6 +33,12 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
     icon.
   - The game and Progress aren't indexed.
 
+### Fixed
+- **The map no longer jumps when it loads.** The server draws a returning player's map with their
+  progress, from a small cookie the browser keeps, already scrolled to the level up next and at
+  the width it fits. The Continue card has the same height whatever it shows, and the tab bar no
+  longer grows as the page streams in.
+
 ## [0.6.0] - 2026-11-20
 
 ### Added
