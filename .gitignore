@@ -1,7 +1,16 @@
 node_modules/
+.nuxt/
+.output/
+.data/
+.nitro/
+.cache/
 dist/
 coverage/
 *.tsbuildinfo
 .DS_Store
 .env*
 !.env.example
+
+# Agent skills, restored from skills-lock.json (CONTRIBUTING.md)
+.agents/
+.claude/skills/

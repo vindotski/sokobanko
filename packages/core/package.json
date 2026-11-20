@@ -1,5 +1,5 @@
 {
-  "name": "@sokoban/core",
+  "name": "@sokobanko/core",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -8,5 +8,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }

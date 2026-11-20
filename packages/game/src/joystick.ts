@@ -1,4 +1,4 @@
-import type { Direction } from "@sokoban/core";
+import type { Direction } from "@sokobanko/core";
 import {
   type ColorSource,
   Container,

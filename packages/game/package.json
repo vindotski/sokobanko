@@ -1,5 +1,5 @@
 {
-  "name": "@sokoban/game",
+  "name": "@sokobanko/game",
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
@@ -10,10 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sokoban/core": "workspace:*",
+    "@sokobanko/core": "workspace:*",
     "pixi.js": "^8.22.0"
   },
   "devDependencies": {
-    "@types/web": "^0.0.359"
+    "@types/web": "^0.0.359",
+    "typescript": "^7.0.2"
   }
 }

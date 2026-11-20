@@ -6,20 +6,20 @@ FROM --platform=$BUILDPLATFORM node:26.13.0-slim@sha256:5adad64f9a1fca2d51972caa
 RUN npm install --global pnpm@12.4.1
 WORKDIR /repo
 COPY . .
-RUN pnpm install --frozen-lockfile --filter @sokoban/web... \
-  && pnpm --filter @sokoban/web build
+RUN pnpm install --frozen-lockfile \
+  && pnpm build
 
 # Distroless: Node and nothing else (no shell, no package manager). The Nuxt
 # build bundles its own dependencies and the migrations, which hold the levels,
 # into .output.
 FROM gcr.io/distroless/nodejs26-debian13:nonroot@sha256:9b945e92c1b5463a4b75f11e8417515e4bea7355f6adfd79ec220fbbe905dda8
 WORKDIR /app
-COPY --from=build /repo/apps/web/.output ./.output
+COPY --from=build /repo/.output ./.output
 ENV NODE_ENV=production PORT=3000
 EXPOSE 3000
 USER 1000:1000
 # Spotcraft runs this once per deploy, before the new version starts: it applies
-# the migrations and exits (apps/web/server/plugins/database.ts).
+# the migrations and exits (server/plugins/database.ts).
 LABEL dev.spotcraft.migrate='["/nodejs/bin/node", ".output/server/index.mjs", "migrate"]'
 # Healthy once Postgres answers.
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s \

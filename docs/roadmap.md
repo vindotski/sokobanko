@@ -5,6 +5,8 @@ description: The demo (on Vercel, with Spotcraft's old hosted API), the proof of
 
 # Roadmap
 
+> Since 2026-11-20 the app lives at the repository root (`app/`, `server/`), not `apps/web`; paths below are as they were.
+
 **Numbering:** a bare number in parentheses, like "(12)", is one of this repository's [decision records](decisions/README.md). Spotcraft's records are always written out as "Spotcraft's decision N", since the two sets of numbers overlap. Gameplay features are compared in [parity.md](parity.md).
 
 ## Demo: Sokobanko on Spotcraft
