@@ -4,9 +4,16 @@ All notable changes to Sokobanko are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A `vX.Y.Z` tag
-publishes the image `vindotski/sokobanko` as `X.Y.Z` and `X.Y` (`.github/workflows/ci.yml`).
+publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and deploys it
+(`.github/workflows/ci.yml`, `CONTRIBUTING.md`).
 
 ## [Unreleased]
+
+### Changed
+- **Releases deploy from version tags.** Merging to `main` only builds the image; pushing a
+  signed `vX.Y.Z` tag deploys it, and `latest` follows releases. `dev` is gone: work happens on
+  `feature/`, `bugfix/` and `chore/` branches cut from `main` and merged back into it, which CI
+  checks (`CONTRIBUTING.md`).
 
 ## [0.4.0] - 2026-11-20
 

@@ -37,8 +37,11 @@ Until Spotcraft 0.6, Sokobanko had its own database, `app_sokobanko`, with its g
 
 ## Releasing
 
-1. Merge `dev` into `main`. CI verifies, pushes `latest` and `sha-<short>`, then deploys `sha-<short>` through Spotcraft's deploy hook and waits until it is live (the `deploy` job). A `v1.2.3` tag also pushes `1.2.3` and `1.2`, but deploys nothing.
-2. Smoke test (below).
+A release is a version tag; merging to `main` only builds the image (`sha-<short>`). [CONTRIBUTING.md](CONTRIBUTING.md) has the steps.
+
+1. Merge the `chore/release-x.y.z` pull request into `main`, then push a signed `vX.Y.Z` tag on its merge commit.
+2. CI verifies, pushes `X.Y.Z`, `X.Y`, `latest` and `sha-<short>`, then deploys `sha-<short>` through Spotcraft's deploy hook and waits until it is live (the `deploy` job). The `production` environment only accepts `v*.*.*` tags.
+3. Smoke test (below).
 
 Spotcraft starts the new version next to the old one and moves traffic once it is healthy, so a release has no downtime. If the new version doesn't turn healthy within two minutes, it is removed, the old one keeps serving, and the `deploy` job fails.
 
