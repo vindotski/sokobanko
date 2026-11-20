@@ -9,6 +9,8 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-21
+
 ### Changed
 - **Rebuilt phone-first, after Candy Crush's flow and Apple's Human Interface Guidelines.** Every
   feature is kept:
@@ -242,7 +244,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/vindotski/sokobanko/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/vindotski/sokobanko/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vindotski/sokobanko/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/vindotski/sokobanko/compare/v0.3.0...v0.4.0
