@@ -12,9 +12,9 @@ const makePool = (baseURL: string) =>
  * locally), so its session cookie is first-party. Browser only.
  */
 export function useUserPool() {
-  // Made once, from the plugin (plugins/tanstack.client.ts): later calls come
-  // from the upload outbox, outside any component, where the runtime config
-  // isn't available.
+  // Made once, when the local collections start (collections/index.ts):
+  // later calls come from the upload outbox, outside any component, where the
+  // runtime config isn't available.
   pool ??= makePool(
     useRuntimeConfig().public.authUrl ||
       new URL("/_spotcraft/auth", location.origin).href,

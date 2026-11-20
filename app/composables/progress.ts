@@ -115,8 +115,13 @@ export function useProgress() {
 
 /** The visitor's guest, from /api/me; null until their first save. */
 export function useAccount() {
-  return useQuery({
-    queryKey: ["me", "account"],
-    queryFn: async () => (await $fetch("/api/me")).guest,
-  });
+  return useQuery(
+    {
+      queryKey: ["me", "account"],
+      queryFn: async () => (await $fetch("/api/me")).guest,
+    },
+    // The collections' client, passed in rather than installed app-wide, so
+    // TanStack stays out of the entry chunk.
+    localData().queryClient,
+  );
 }

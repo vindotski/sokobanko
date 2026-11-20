@@ -56,6 +56,10 @@ const OLD_PROGRESS = "sokobanko:progress:v1";
 const RUNS = "sokobanko:runs:v2";
 
 function create() {
+  // The user pool's client reads the runtime config, which uploads made later
+  // by the outbox can't; make it now (create runs with the app's context).
+  useUserPool();
+
   // Batches requests to queue runs again (requeueMissing): one solve in
   // another tab, or taking over the outbox, can bring several.
   let requeueTimer: ReturnType<typeof setTimeout> | undefined;
@@ -329,7 +333,10 @@ function create() {
 
 let instance: ReturnType<typeof create> | undefined;
 
-/** The browser's collections and outbox, made on first use. Browser only. */
+/**
+ * The browser's collections and outbox, made on first use: in a page's setup,
+ * or by plugins/tanstack.client.ts. Browser only.
+ */
 export function localData() {
   if (import.meta.server) {
     throw new Error("The local collections are only available in the browser");

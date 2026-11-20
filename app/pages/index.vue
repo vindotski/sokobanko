@@ -24,7 +24,7 @@ const { data: levelIds } = await useLevelIds();
     </p>
     <div class="flex flex-col gap-3 sm:flex-row">
       <ClientOnly>
-        <PlayButton size="lg" />
+        <LazyPlayButton size="lg" />
         <!-- Until the browser knows the player's progress. -->
         <template #fallback>
           <Button size="lg" as-child>
