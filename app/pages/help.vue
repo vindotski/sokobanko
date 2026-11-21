@@ -39,6 +39,12 @@ const questions = [
       "Yes. A solve counts at once in this browser, even offline, and is checked and saved by the server whenever it can be reached; your first one makes you a guest. Signing up to keep it across devices is coming soon.",
   },
   {
+    question: "What do you keep about me?",
+    answer:
+      "Only what's needed to save your progress: a guest with a random id, its session, and your best moves and pushes per level. No name, email, ads or tracking. You can download or delete it all from Progress → Your data. The details are in the",
+    link: { to: "/privacy", label: "privacy policy" },
+  },
+  {
     question: "Where do the levels come from?",
     answer:
       "The first four were made for Sokobanko, except Hello World!, from DoctorLai's sokoban-web. The rest are David W. Skinner's Microban, 155 small puzzles that each show an idea, shared freely as long as he's credited.",
@@ -94,6 +100,14 @@ const questions = [
           <AccordionTrigger>{{ item.question }}</AccordionTrigger>
           <AccordionContent>
             {{ item.answer }}
+            <template v-if="item.link">
+              <NuxtLink
+                :to="item.link.to"
+                class="font-medium underline underline-offset-4"
+              >
+                {{ item.link.label }}</NuxtLink
+              >.
+            </template>
             <a
               v-if="item.email"
               :href="`mailto:${item.email}`"
@@ -139,6 +153,7 @@ const questions = [
         >. Hello World! is from DoctorLai's sokoban-web (MIT). The Microban
         levels are by David W. Skinner, shared freely with credit.
       </p>
+      <LegalLinks />
     </section>
   </div>
 </template>
