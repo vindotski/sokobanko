@@ -66,6 +66,16 @@ export default defineNuxtConfig({
       // app's own /_spotcraft/auth: on Spotcraft, and in `nuxt dev` through
       // the proxy below, so phones on the same network can save too.
       authUrl: "",
+      // Who runs Sokobanko, for the privacy policy, terms and legal notice
+      // (pages/privacy.vue, terms.vue, legal.vue). The address is set where
+      // it's deployed, never in the repository: NUXT_PUBLIC_LEGAL_ADDRESS,
+      // lines separated by "\n". Public, as the legal notice shows it.
+      legal: {
+        name: "Ivan Vinski",
+        email: "ivan@vin.ski",
+        address: "",
+        country: "Croatia",
+      },
     },
   },
   $development: {
