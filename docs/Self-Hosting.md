@@ -1,5 +1,17 @@
 Sokobanko is built for [Spotcraft](https://spotcraft.dev) ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)), but its image is an ordinary container. This page lists what it needs, so you can run it on any host with Docker: a VPS with Compose, Kubernetes, or a container platform.
 
+## Try it locally
+
+[`self-host/`](https://github.com/vindotski/sokobanko/tree/main/self-host) is a whole stack in one Compose file: Postgres, the user pool, the app and Caddy, set up as this page describes, with example legal facts. From the repository root, with Docker:
+
+```bash
+pnpm self-host
+```
+
+It builds the image, starts the stack, applies the migrations, and serves the game at <http://localhost:8080>. `pnpm self-host:smoke` runs the smoke test against it (`scripts/smoke.ts`), and `pnpm self-host:down` stops it and deletes its data. CI runs the same test on every pull request, so this page stays true.
+
+Its passwords and secret are fixed and it serves plain HTTP: it's a starting point, not a deployment. Before running it anywhere else, change them, give the Caddyfile your domain instead of `:8080` (Caddy then gets a certificate), set `AUTH_PROTOCOL=https` and `AUTH_ISSUER` to your own name, and put your own details in `legal-facts.json`.
+
 ## The image
 
 `vindotski/sokobanko` on Docker Hub, for amd64 and arm64:

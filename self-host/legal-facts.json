@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "updated": "2026-11-21",
+  "controller": {
+    "name": "Ana Example",
+    "address": ["Example Street 1", "10000 Example City"],
+    "email": "privacy@example.test",
+    "authority": {
+      "name": "Example Data Protection Authority",
+      "url": "https://authority.example.test"
+    }
+  },
+  "processing": [
+    {
+      "id": "hosting",
+      "basis": "contract",
+      "retentionDays": null,
+      "processor": { "name": "Example Hosting", "country": "DE" }
+    },
+    { "id": "accounts", "basis": "contract", "retentionDays": 180 },
+    { "id": "sessions", "basis": "legitimate-interests", "retentionDays": 30 }
+  ]
+}

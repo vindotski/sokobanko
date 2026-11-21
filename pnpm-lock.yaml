@@ -306,8 +306,8 @@ importers:
         specifier: ^2.6.3
         version: 2.6.3
       '@kodentuzo/spotcraft':
-        specifier: 0.6.1
-        version: 0.6.1
+        specifier: 0.9.1
+        version: 0.9.1
       '@storybook-vue/nuxt':
         specifier: 10.0.3
         version: 10.0.3(25000140dabb00baea7667e3c916738a)
@@ -1230,8 +1230,8 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@kodentuzo/spotcraft@0.6.1':
-    resolution: {integrity: sha512-QCeFVFGS1URK2EBGzt/deFcRrJvIkEf2nNKuRUMyq8S250osdNc7wrezT/lteFrHe6kmRkwVLVPFklk4+4pa5w==}
+  '@kodentuzo/spotcraft@0.9.1':
+    resolution: {integrity: sha512-eAXAC+0glLehxc4vyC7cHK6UfDa0nLXCmkIo55JvbxYR+SeU0B9ohFxWLEZ7b7jUeiAfvLPl/W8GD5dFX0hvww==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -6375,7 +6375,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
 
-  '@kodentuzo/spotcraft@0.6.1':
+  '@kodentuzo/spotcraft@0.9.1':
     dependencies:
       pg: 8.23.1
     transitivePeerDependencies:

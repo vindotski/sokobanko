@@ -1,0 +1,35 @@
+# The routes Spotcraft's Caddy gives an app, on plain HTTP for a local run. In
+# production, give it the site's domain instead of :8080 and Caddy gets a
+# certificate (then set the pool's AUTH_PROTOCOL to https).
+{
+	admin off
+	auto_https off
+}
+
+:8080 {
+	encode zstd gzip
+
+	# The user pool, on the app's own origin so its cookie is first-party. The
+	# pool limits new guests per address, which it reads from this header.
+	handle /_spotcraft/auth/* {
+		reverse_proxy auth:3000 {
+			header_up X-Spotcraft-Client-IP {client_ip}
+		}
+	}
+
+	# The legal facts, for clients without a server of their own.
+	handle /_spotcraft/legal.json {
+		header Content-Type "application/json"
+		header Cache-Control "public, max-age=300"
+		header Access-Control-Allow-Origin "*"
+		root * /srv
+		rewrite * /legal.json
+		file_server
+	}
+
+	handle {
+		reverse_proxy app:3000 {
+			header_up X-Forwarded-For {client_ip}
+		}
+	}
+}
