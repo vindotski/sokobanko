@@ -9,6 +9,18 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+### Added
+- **A self-hosting stack** in `self-host/`: Postgres, Spotcraft's user pool, the app and Caddy in
+  one Compose file, with example legal facts. `pnpm self-host` runs it on
+  <http://localhost:8080>, and `pnpm self-host:smoke` checks it end to end: the legal pages, a
+  guest's solve in both exports, and that deleting the guest deletes the result. CI's new
+  `self-host` job runs it on every pull request, so Sokobanko keeps working without Spotcraft
+  ([Self-Hosting](docs/Self-Hosting.md)).
+
+### Changed
+- Local development uses `spotcraft dev` from `@kodentuzo/spotcraft` 0.9.1, whose user pool has
+  the export that Progress → Your data downloads.
+
 ## [0.8.0] - 2026-11-21
 
 ### Added
