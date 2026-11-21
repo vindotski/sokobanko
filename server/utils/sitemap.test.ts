@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { sitemap } from "./sitemap";
+import { PAGES, sitemap } from "./sitemap";
 
 describe("sitemap", () => {
   it("lists every path on the site", () => {
@@ -15,5 +15,9 @@ describe("sitemap", () => {
     expect(sitemap("https://a.example", ["/?a=1&b=<2>"])).toContain(
       "<loc>https://a.example/?a=1&amp;b=&lt;2&gt;</loc>",
     );
+  });
+
+  it("lists the map, Help and the legal pages", () => {
+    expect(PAGES).toEqual(["/", "/help", "/privacy", "/terms", "/legal"]);
   });
 });

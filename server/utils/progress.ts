@@ -69,3 +69,19 @@ export async function recordBest(
   if (!best) throw new Error(`No result for ${run.level} after saving one`);
   return completion(best);
 }
+
+/**
+ * Deletes a player's results (their right to erasure, Progress → Your data),
+ * and answers how many there were. Their guest stays in the user pool, which
+ * only the pool may delete.
+ */
+export async function deleteProgress(
+  db: NodePgDatabase,
+  userId: string,
+): Promise<number> {
+  const deleted = await db
+    .delete(progress)
+    .where(eq(progress.userId, userId))
+    .returning({ levelId: progress.levelId });
+  return deleted.length;
+}

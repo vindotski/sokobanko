@@ -3,8 +3,8 @@ import { CircleHelpIcon, KeyboardIcon } from "@lucide/vue";
 import { useMediaQuery } from "@vueuse/core";
 
 /**
- * Settings, from any page: the theme, sound, and the way to the controls and
- * About. From the bottom on phones, within thumb reach; from the side
+ * Settings, from any page: the theme, sound, and the way to the controls,
+ * About and the legal pages. From the bottom on phones, within thumb reach; from the side
  * elsewhere.
  */
 const open = useSettingsOpen();
@@ -37,6 +37,7 @@ const wide = useMediaQuery("(min-width: 768px)");
             </NuxtLink>
           </Button>
         </div>
+        <LegalLinks @click="open = false" />
       </div>
     </SheetContent>
   </Sheet>

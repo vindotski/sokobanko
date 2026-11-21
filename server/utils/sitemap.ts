@@ -1,3 +1,6 @@
+/** The server-rendered pages that aren't levels: the map, Help and the legal pages. */
+export const PAGES = ["/", "/help", "/privacy", "/terms", "/legal"];
+
 const escapeXml = (text: string) =>
   text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 

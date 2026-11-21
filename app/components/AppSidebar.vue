@@ -44,6 +44,7 @@ const settingsOpen = useSettingsOpen();
         <SettingsIcon class="size-6 lg:size-5" aria-hidden="true" />
         Settings
       </button>
+      <LegalLinks label="Legal, sidebar" class="hidden px-3 pt-2 pb-1 lg:block" />
     </div>
   </aside>
 </template>

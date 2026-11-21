@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import { expect, userEvent, within } from "storybook/test";
 import SettingsSheet from "~/components/SettingsSheet.vue";
 
-/** Theme and sound, with the way to the controls and About. */
+/** Theme and sound, with the way to the controls, About and the legal pages. */
 const meta = {
   title: "App/Settings",
   component: SettingsSheet,
@@ -32,6 +32,12 @@ export const Open: Story = {
     await expect(sound).toHaveAttribute("aria-checked", "true");
     await userEvent.click(sound);
     localStorage.removeItem("sokobanko:sound");
+    // And the way to the legal pages.
+    await expect(
+      within(sheet.getByRole("navigation", { name: "Legal" })).getAllByRole(
+        "link",
+      ),
+    ).toHaveLength(3);
   },
 };
 
