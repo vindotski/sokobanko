@@ -9,16 +9,25 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-21
+
 ### Added
 - **Privacy policy, terms of use and legal notice** (`/privacy`, `/terms`, `/legal`), linked from
   Help, Settings and the sidebar. The policy lists everything Sokobanko processes, where and for
-  how long, and every cookie and storage key; there's no consent banner because nothing is used
-  for anything but the game. They're built from Spotstrap's blocks (`@kodentuzo/spotstrap` 0.2.0)
-  over the instance's legal facts (`LEGAL_FACTS`, read with `@kodentuzo/spotkit` 0.2.0), so who
-  runs it and their address are never in the repository.
+  how long, and every cookie and storage key. There's no consent banner: cookies are only for
+  the game, and visits, where the instance counts them, are counted without cookies. The pages
+  are built from Spotstrap's blocks (`@kodentuzo/spotstrap` 0.2.0) over the instance's legal
+  facts (`LEGAL_FACTS`, read with `@kodentuzo/spotkit` 0.2.0), so who runs it and their address
+  are never in the repository.
 - **Your data**, on Progress (Spotstrap's block): download everything about you as a file, or
   delete your guest in the pool, which deletes your results with it, and clear this browser.
   Where the instance counts visits and you have a say, a switch turns it off.
+
+### Upgrading
+- The legal pages need `LEGAL_FACTS`. Spotcraft 0.9.0 and later sets it for every app; on your
+  own server, set it yourself ([Self-Hosting](docs/Self-Hosting.md)). Without it, the pages say
+  they can't be shown.
+- `NUXT_PUBLIC_LEGAL_*` is no longer read; remove it from the app's settings.
 
 ## [0.7.0] - 2026-11-21
 
@@ -255,7 +264,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/vindotski/sokobanko/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/vindotski/sokobanko/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/vindotski/sokobanko/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/vindotski/sokobanko/compare/v0.4.0...v0.5.0
