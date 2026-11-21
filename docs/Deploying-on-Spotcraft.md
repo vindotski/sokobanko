@@ -20,7 +20,16 @@ Sokobanko runs at **https://sokobanko.app**, as an app on [Spotcraft](https://sp
 | Port | `3000` |
 | Memory, CPUs | `512m`, `1` |
 | Read-only | on |
-| Env | none |
+| Env | `NUXT_PUBLIC_LEGAL_ADDRESS`: the postal address for the legal notice, lines separated by `\n` (below) |
+
+**The legal settings.** The privacy policy, terms and legal notice name who runs Sokobanko. The address is set only here, never in the repository:
+
+| Variable | Default |
+| --- | --- |
+| `NUXT_PUBLIC_LEGAL_ADDRESS` | none: the legal notice says it's available on request, and the server warns at startup |
+| `NUXT_PUBLIC_LEGAL_NAME` | `Ivan Vinski` |
+| `NUXT_PUBLIC_LEGAL_EMAIL` | `ivan@vin.ski` |
+| `NUXT_PUBLIC_LEGAL_COUNTRY` | `Croatia`; also the governing law in the terms, and with Croatia the privacy policy names AZOP |
 
 Spotcraft sets `PORT`, `PUBLIC_URL`, `DATABASE_URL`, `DATABASE_SCHEMA` and the `AUTH_*` settings itself. The container is healthy once `/api/health` answers 200: Postgres responds.
 

@@ -28,6 +28,7 @@ Settings (theme, sound) is an action, not a section, so it opens as a sheet: fro
 | `/play` | The next level, or the all-solved celebration | In the browser | no |
 | `/progress` | Solved count, totals, completed levels | In the browser | no |
 | `/help` | How to play, the controls, the FAQ, About | On the server | yes |
+| `/privacy`, `/terms`, `/legal` | The privacy policy (with every cookie and storage key), the terms of use, and the legal notice | On the server | yes |
 
 `/levels`, `/profile` and `/faq` redirect (301) to `/`, `/progress` and `/help`.
 
@@ -42,6 +43,12 @@ With the hint, the map is hidden for a moment while a script right after the lev
 - `/sitemap.xml` lists the map, Help and every level card, and `/robots.txt` points to it.
 - The game and Progress send `X-Robots-Tag: noindex`.
 - The site's address is `runtimeConfig.public.siteUrl` (`NUXT_PUBLIC_SITE_URL`).
+
+**Privacy.** No analytics, ads or third-party requests; the CSP allows only the site itself. The legal pages read who runs Sokobanko from `runtimeConfig.public.legal` (`NUXT_PUBLIC_LEGAL_*`), so the postal address is set where it's deployed, never in the repository. Progress → **Your data** (`DataControls`, `useYourData`):
+- **Download my data** saves one JSON file: the server's part from `GET /api/me/export` (the guest and every result) and this browser's (its `sokobanko:*` keys, the theme and the map cookies).
+- **Delete my data** calls `DELETE /api/me/progress`, signs out of the user pool, clears the browser's keys, cookies and upload outbox, and reloads. The guest itself stays in the pool, which only the pool may delete; the privacy policy says to email for that.
+
+When the app starts storing something new in the browser, or sending data somewhere new, update `pages/privacy.vue` and `LEGAL_UPDATED` (`app/utils/legal.ts`) with it.
 
 ## Playing a level
 

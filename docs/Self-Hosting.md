@@ -49,6 +49,8 @@ This is the local stack's setup, not a deployment mode Spotcraft documents. Pin 
 | `AUTH_ISSUER` | The pool's `AUTH_ISSUER` |
 | `AUTH_JWKS_URL` | The pool's keys, e.g. `http://pool:3000/_spotcraft/auth/jwks` |
 | `PORT` | Optional; 3000 by default |
+| `NUXT_PUBLIC_SITE_URL` | The site's address, for canonical links and the sitemap |
+| `NUXT_PUBLIC_LEGAL_NAME`, `_ADDRESS`, `_EMAIL`, `_COUNTRY` | Who runs it, for the privacy policy, terms and legal notice. Change them: they describe the operator, and the privacy policy describes Sokobanko's own hosting (Hetzner, Cloudflare), so adapt it too. |
 
 The browser always uses `/_spotcraft/auth` on the page's own origin, which is why the proxy route is needed.
 
