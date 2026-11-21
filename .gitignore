@@ -13,7 +13,10 @@ coverage/
 
 # Agent skills, restored from skills-lock.json (docs/Development.md)
 .agents/
-.claude/skills/
+.claude/skills/*
+# The ecosystem's shared skills are committed.
+!.claude/skills/commit-message/
+!.claude/skills/github-workflows/
 storybook-static/
 *storybook.log
 .vitest/
