@@ -215,8 +215,11 @@ importers:
         specifier: 5.3.0
         version: 5.3.0
       '@kodentuzo/spotkit':
-        specifier: 0.1.0
-        version: 0.1.0
+        specifier: 0.2.0
+        version: 0.2.0
+      '@kodentuzo/spotstrap':
+        specifier: 0.2.0
+        version: 0.2.0(@kodentuzo/spotkit@0.2.0)(tailwindcss@4.3.3)
       '@lucide/vue':
         specifier: ^1.61.0
         version: 1.61.0(vue@3.5.44(typescript@6.0.3))
@@ -1232,9 +1235,21 @@ packages:
     engines: {node: '>=24'}
     hasBin: true
 
-  '@kodentuzo/spotkit@0.1.0':
-    resolution: {integrity: sha512-0AInxA9KOJUiyz6pFldwJxp3mboj9WGFA5RdZXrOR7MDilG7fttqBSNzcpgdJ0t6j6G0XMiV5S7f2J6nTndYOw==}
+  '@kodentuzo/spotkit@0.2.0':
+    resolution: {integrity: sha512-VeidR/DJeH6WnzHowYr7d0z+xeP56PBTQKcySTiMnLpOvj9OpVCTwwdEqpna1yCdEwCG8aSFBKh4fsiNHXPE5w==}
     engines: {node: '>=24'}
+
+  '@kodentuzo/spotstrap@0.2.0':
+    resolution: {integrity: sha512-9soAxn5HYhg3cvTUD7myAwDo5LnxOn0JrhPkVRIAh6NdLfTJi7aSX872vEfb9i6NhVfwXjEsHBX+M5X0L9O+3Q==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      '@kodentuzo/spotkit': ^0.2.0
+      tailwindcss: ^4.3.0
+    peerDependenciesMeta:
+      '@kodentuzo/spotkit':
+        optional: true
+      tailwindcss:
+        optional: true
 
   '@lucide/vue@1.61.0':
     resolution: {integrity: sha512-XYclbwUQ6Mvf0UskBG9gJH91BdF3VK4Tt6Pv8PSntwPwNnf357PCQnma4TrzOEdwD49UYCtsTafpfytRIxm1cQ==}
@@ -6366,9 +6381,14 @@ snapshots:
     transitivePeerDependencies:
       - pg-native
 
-  '@kodentuzo/spotkit@0.1.0':
+  '@kodentuzo/spotkit@0.2.0':
     dependencies:
       jose: 6.2.17
+
+  '@kodentuzo/spotstrap@0.2.0(@kodentuzo/spotkit@0.2.0)(tailwindcss@4.3.3)':
+    optionalDependencies:
+      '@kodentuzo/spotkit': 0.2.0
+      tailwindcss: 4.3.3
 
   '@lucide/vue@1.61.0(vue@3.5.44(typescript@6.0.3))':
     dependencies:

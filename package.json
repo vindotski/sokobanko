@@ -27,7 +27,8 @@
   "dependencies": {
     "@fontsource-variable/geist": "5.3.0",
     "@fontsource-variable/geist-mono": "5.3.0",
-    "@kodentuzo/spotkit": "0.1.0",
+    "@kodentuzo/spotkit": "0.2.0",
+    "@kodentuzo/spotstrap": "0.2.0",
     "@lucide/vue": "^1.61.0",
     "@nuxtjs/color-mode": "4.0.1",
     "@sokobanko/core": "workspace:*",

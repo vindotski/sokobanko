@@ -4,12 +4,7 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { levels } from "../db/schema";
-import {
-  type Completion,
-  deleteProgress,
-  readProgress,
-  recordBest,
-} from "./progress";
+import { type Completion, readProgress, recordBest } from "./progress";
 
 // Against the local stack: `pnpm exec spotcraft dev`, then
 // `set -a; . ./.env; set +a; pnpm test`. Players are guests of its user pool,
@@ -117,16 +112,6 @@ describe.skipIf(!url)("progress in Postgres", () => {
     const [a, b] = [await newPlayer(), await newPlayer()];
     await recordBest(db, a, run(4));
     expect(await readProgress(db, b)).toEqual([]);
-  });
-
-  it("deletes one player's results, and only theirs", async () => {
-    const [a, b] = [await newPlayer(), await newPlayer()];
-    await recordBest(db, a, run(4));
-    await recordBest(db, b, run(6));
-    expect(await deleteProgress(db, a)).toBe(1);
-    expect(await readProgress(db, a)).toEqual([]);
-    expect(await readProgress(db, b)).toEqual([run(6)]);
-    expect(await deleteProgress(db, a)).toBe(0);
   });
 
   it("goes with the player: deleting a user in the pool deletes it", async () => {

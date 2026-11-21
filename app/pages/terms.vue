@@ -6,13 +6,14 @@ usePageSeo({
     "The terms for playing Sokobanko: free to play, play fair, and no guarantees beyond what the law requires.",
   path: "/terms",
 });
-const legal = useLegal();
+const { facts } = useLegalFacts();
+const owner = computed(() => facts.value?.controller);
 </script>
 
 <template>
   <LegalArticle title="Terms of Use">
     <p>
-      Sokobanko is a free Sokoban game, run by {{ legal.name }} (the
+      Sokobanko is a free Sokoban game, run by {{ owner?.name ?? "its owner" }} (the
       <NuxtLink to="/legal">legal notice</NuxtLink> has the details). By playing
       it, you agree to these terms. They're short on purpose.
     </p>
@@ -72,12 +73,14 @@ const legal = useLegal();
     <h2>Changes and law</h2>
     <p>
       These terms may change as Sokobanko does, for example when accounts
-      arrive; the date at the top says when they last did. The law of
-      {{ legal.country }} applies, without taking away the protection the law
+      arrive; the date at the top says when they last did. Croatian law
+      applies, without taking away the protection the law
       of the country where you live gives you as a consumer.
     </p>
     <p>
-      Questions: <a :href="`mailto:${legal.email}`">{{ legal.email }}</a>.
+      Questions:
+      <a v-if="owner" :href="`mailto:${owner.email}`">{{ owner.email }}</a
+      ><NuxtLink v-else to="/legal">see the legal notice</NuxtLink>.
     </p>
   </LegalArticle>
 </template>

@@ -1,13 +1,17 @@
+import type { LegalFacts } from "@kodentuzo/spotkit";
+import { formatDate } from "@kodentuzo/spotstrap/blocks";
+
 /**
- * Who runs Sokobanko, from settings (runtimeConfig.public.legal): for the
- * privacy policy, terms and legal notice.
+ * The instance's legal facts (server/api/legal.get.ts), for the privacy
+ * policy, terms and legal notice. Fetched once per page, on the server.
  */
-export function useLegal() {
-  const legal = useRuntimeConfig().public.legal;
-  return {
-    name: legal.name,
-    email: legal.email,
-    country: legal.country,
-    address: addressLines(legal.address),
-  };
+export function useLegalFacts() {
+  const { data: facts, error } = useFetch<LegalFacts>("/api/legal", {
+    key: "legal-facts",
+  });
+  /** "21 November 2026", when the facts last changed. */
+  const updated = computed(() =>
+    facts.value ? formatDate(facts.value.updated) : "",
+  );
+  return { facts, error, updated };
 }

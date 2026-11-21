@@ -13,10 +13,12 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
 - **Privacy policy, terms of use and legal notice** (`/privacy`, `/terms`, `/legal`), linked from
   Help, Settings and the sidebar. The policy lists everything Sokobanko processes, where and for
   how long, and every cookie and storage key; there's no consent banner because nothing is used
-  for anything but the game. Who runs it comes from settings, so the postal address is never in
-  the repository (`NUXT_PUBLIC_LEGAL_*`).
-- **Your data**, on Progress: download everything about you as a file, or delete your results,
-  sign out and clear this browser.
+  for anything but the game. They're built from Spotstrap's blocks (`@kodentuzo/spotstrap` 0.2.0)
+  over the instance's legal facts (`LEGAL_FACTS`, read with `@kodentuzo/spotkit` 0.2.0), so who
+  runs it and their address are never in the repository.
+- **Your data**, on Progress (Spotstrap's block): download everything about you as a file, or
+  delete your guest in the pool, which deletes your results with it, and clear this browser.
+  Where the instance counts visits and you have a say, a switch turns it off.
 
 ## [0.7.0] - 2026-11-21
 

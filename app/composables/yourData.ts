@@ -19,72 +19,39 @@ function parsed(value: string | null): unknown {
 }
 
 /**
- * Progress → Your data (DataControls), browser only: everything about the
- * player as a file, or all of it deleted.
+ * Progress → Your data, browser only: Sokobanko's part of the download and of
+ * the delete. The YourData block (components/YourData.vue) does the rest
+ * through Spotcraft's user pool: its file has the account, and deleting the
+ * guest there deletes their results on the server too.
  */
 export function useYourData() {
-  const pool = useUserPool();
   const cookies = COOKIES.map((name) => ({ name, ref: useMapCookie(name) }));
-  const busy = ref<"download" | "delete">();
-  const error = ref<string>();
 
-  /** The server's part (/api/me/export) and this browser's, in one file. */
-  async function download() {
-    busy.value = "download";
-    error.value = undefined;
-    try {
-      const server = await $fetch("/api/me/export");
-      const data = {
-        exportedAt: new Date().toISOString(),
-        site: location.origin,
-        server,
-        browser: {
-          localStorage: Object.fromEntries(
-            [...localKeys(), "nuxt-color-mode"].map((key) => [
-              key,
-              parsed(localStorage.getItem(key)),
-            ]),
-          ),
-          cookies: Object.fromEntries(
-            cookies.map((cookie) => [cookie.name, cookie.ref.value]),
-          ),
-        },
-      };
-      const url = URL.createObjectURL(
-        new Blob([`${JSON.stringify(data, null, 2)}\n`], {
-          type: "application/json",
-        }),
-      );
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "sokobanko-data.json";
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch {
-      error.value = "Couldn't reach the server for your data; try again soon.";
-    } finally {
-      busy.value = undefined;
-    }
+  /** The server's results (/api/me/export) and what this browser keeps. */
+  async function exportApp() {
+    return {
+      site: location.origin,
+      server: await $fetch("/api/me/export"),
+      browser: {
+        localStorage: Object.fromEntries(
+          [...localKeys(), "nuxt-color-mode"].map((key) => [
+            key,
+            parsed(localStorage.getItem(key)),
+          ]),
+        ),
+        cookies: Object.fromEntries(
+          cookies.map((cookie) => [cookie.name, cookie.ref.value]),
+        ),
+      },
+    };
   }
 
   /**
-   * Deletes the results on the server, signs out of the user pool, and clears
-   * what this browser keeps, the outbox included, so nothing uploads again.
-   * Then a fresh start: a full reload drops what the page holds in memory.
+   * After the guest is deleted: clears what this browser keeps, the outbox
+   * included, so nothing uploads again, then starts fresh with a full reload.
    * The theme stays: it says nothing about the player.
    */
-  async function erase() {
-    busy.value = "delete";
-    error.value = undefined;
-    try {
-      await $fetch("/api/me/progress", { method: "DELETE" });
-      await pool.signOut();
-    } catch {
-      busy.value = undefined;
-      error.value =
-        "Couldn't reach the server to delete your data; try again soon.";
-      return;
-    }
+  async function forget() {
     for (const key of localKeys()) localStorage.removeItem(key);
     for (const cookie of cookies) cookie.ref.value = null;
     // The cookies are written when the refs flush.
@@ -96,5 +63,5 @@ export function useYourData() {
     location.assign("/");
   }
 
-  return { busy, error, download, erase };
+  return { exportApp, forget };
 }
