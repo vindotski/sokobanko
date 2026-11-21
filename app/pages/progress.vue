@@ -4,7 +4,7 @@ import { UserIcon } from "@lucide/vue";
 /**
  * Progress: how far the player has got, from the browser's collections
  * (useProgress), the guest's "playing since" from the server, and their data
- * to download or delete (DataControls). Browser
+ * to download or delete (the YourData block). Browser
  * only and not indexed (routeRules): it's personal.
  */
 const { data: guest } = useAccount();
@@ -150,13 +150,16 @@ const stats = computed(() => {
       </Empty>
     </section>
 
-    <DataControls
-      :busy="yourData.busy.value"
-      @download="yourData.download"
-      @delete="yourData.erase"
-    />
-    <p v-if="yourData.error.value" role="alert" class="text-small text-destructive">
-      {{ yourData.error.value }}
-    </p>
+    <YourData
+      app-name="Sokobanko"
+      :export-app="yourData.exportApp"
+      @deleted="yourData.forget"
+    >
+      <AnalyticsSwitch />
+      <p class="text-small text-muted-foreground">
+        What's kept, and why: the
+        <NuxtLink to="/privacy" class="underline underline-offset-4">privacy policy</NuxtLink>.
+      </p>
+    </YourData>
   </div>
 </template>
