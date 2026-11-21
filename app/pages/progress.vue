@@ -3,11 +3,13 @@ import { UserIcon } from "@lucide/vue";
 
 /**
  * Progress: how far the player has got, from the browser's collections
- * (useProgress), and the guest's "playing since" from the server. Browser
+ * (useProgress), the guest's "playing since" from the server, and their data
+ * to download or delete (DataControls). Browser
  * only and not indexed (routeRules): it's personal.
  */
 const { data: guest } = useAccount();
 const { levels, completions } = useProgress();
+const yourData = useYourData();
 
 useSeoMeta({ title: "Progress · Sokobanko", robots: "noindex" });
 
@@ -147,5 +149,14 @@ const stats = computed(() => {
         </EmptyContent>
       </Empty>
     </section>
+
+    <DataControls
+      :busy="yourData.busy.value"
+      @download="yourData.download"
+      @delete="yourData.erase"
+    />
+    <p v-if="yourData.error.value" role="alert" class="text-small text-destructive">
+      {{ yourData.error.value }}
+    </p>
   </div>
 </template>
