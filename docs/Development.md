@@ -114,4 +114,4 @@ The coding agents' skills (Nuxt, Vue, PixiJS, shadcn-vue and others) aren't comm
 npx skills experimental_install
 ```
 
-Two skills are committed instead, in `.claude/skills/`: `commit-message` and `github-workflows`, Sokobanko's copies of the [ecosystem's shared skills](https://github.com/kodentuzo/ecosystem/tree/main/.claude/skills).
+Two skills are committed instead, in `.claude/skills/`: `commit-message` and `github-workflows`, Sokobanko's own copies of the shared skills.

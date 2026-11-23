@@ -3,9 +3,9 @@
 A box-pushing puzzle game in the browser (Nuxt 4, Vue 3, shadcn-vue, PixiJS, Postgres with
 Drizzle), deployed on Spotcraft. The first app built on Spotcraft, spotkit and Spotstrap.
 
-Read the shared rules for every repository of the ecosystem first:
-[AGENTS.md](https://github.com/kodentuzo/ecosystem/blob/main/AGENTS.md), in a local checkout
-@~/Repositories/ecosystem/AGENTS.md. This file adds this repository's layout, commands and
+Read the shared rules for every Kodentuzo repository first:
+[AGENTS.md](https://github.com/kodentuzo/.github/blob/main/AGENTS.md), in a local checkout
+@~/Repositories/kodentuzo/.github/AGENTS.md. This file adds this repository's layout, commands and
 conventions, and wins where the two differ.
 
 ## Commands
@@ -21,9 +21,9 @@ user's checkout without asking.
 
 ## Conventions
 
-- **Docs** live in `docs/` and are published to the wiki from `main`.
+- **Docs** live in `docs/` (index: `docs/README.md`).
 - **Releases:** a signed `vX.Y.Z` tag on `main` publishes the image and deploys it
-  ([CONTRIBUTING.md](CONTRIBUTING.md), the wiki's Contributing page). Note user-facing changes
+  ([CONTRIBUTING.md](CONTRIBUTING.md), `docs/Contributing.md`). Note user-facing changes
   under `[Unreleased]` in `CHANGELOG.md`.
 - **Legal pages** come from `LEGAL_FACTS` and Spotstrap's blocks; no personal details in the
   repository.

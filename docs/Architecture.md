@@ -9,7 +9,7 @@ Sokobanko is one Nuxt 4 app at the repository root, plus two TypeScript packages
 | `app/` | The Nuxt pages, layouts and components (shadcn-vue on Tailwind CSS v4), and the browser's data: TanStack DB collections and the upload outbox (`app/collections/`), read through `useProgress()` |
 | `server/` | Nitro routes, the database (Drizzle and its migrations, which hold the levels), and who a request comes from |
 | `scripts/` | Applying the migrations, importing a level collection, and finding solutions for the tests |
-| `docs/` | This wiki, published from `main` |
+| `docs/` | These docs |
 
 ## Pages and navigation
 
@@ -133,6 +133,5 @@ The schema `app_sokobanko` (`server/db/schema.ts`):
 - **`storybook`:** every story in `stories/` as a test in headless Chromium, in light and dark: it must render, pass its play function and axe, and match its screenshot. Then the static Storybook builds ([Development](Development.md#storybook)).
 - **`image`:** a multi-arch (amd64, arm64) distroless image from the `Dockerfile`. On `main` and tags it's pushed to Docker Hub with an SBOM and provenance.
 - **`deploy`** (version tags only): the tagged commit's image goes to Spotcraft through its deploy hook, with zero downtime.
-- **`wiki`** (`main`): publishes `docs/` to this wiki.
 
 The branching and release flow is in [Contributing](Contributing.md), and the deployment in [Deploying on Spotcraft](Deploying-on-Spotcraft.md).

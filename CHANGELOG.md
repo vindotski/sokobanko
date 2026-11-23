@@ -5,7 +5,7 @@ All notable changes to Sokobanko are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A `vX.Y.Z` tag
 publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and deploys it
-(`.github/workflows/ci.yml`, the wiki's Contributing page).
+(`.github/workflows/ci.yml`, `docs/Contributing.md`).
 
 ## [Unreleased]
 
@@ -18,6 +18,9 @@ publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and de
   ([Self-Hosting](docs/Self-Hosting.md)).
 
 ### Changed
+- **Docs:** the docs are read in `docs/` (index: `docs/README.md`), not a wiki; CI's `wiki` job
+  and the wiki's sidebar are gone. `CLAUDE.md` and the skills point at the shared rules in
+  kodentuzo/.github.
 - Local development uses `spotcraft dev` from `@kodentuzo/spotcraft` 0.9.1, whose user pool has
   the export that Progress → Your data downloads.
 

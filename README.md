@@ -25,7 +25,7 @@ Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. 
 
 ## Engineering highlights
 
-- **One set of rules, two places.** The game logic is a pure, dependency-free TypeScript package. The browser plays with it, and the server replays every result with it. ([Architecture](https://github.com/vindotski/sokobanko/wiki/Architecture))
+- **One set of rules, two places.** The game logic is a pure, dependency-free TypeScript package. The browser plays with it, and the server replays every result with it. ([Architecture](docs/Architecture.md))
 - **Results that can't be faked.** The browser sends a run's whole input log, undos included. The server replays it, enforces the undo budget and the unlock order, and keeps a best only if it really solves the level.
 - **Local first.** A solve counts immediately and unlocks the next level offline too. TanStack DB collections hold the progress, and a durable outbox in IndexedDB uploads it in play order once the server can be reached, from one tab at a time. A run the server refuses is dropped.
 - **A real game canvas.** PixiJS v8, with a map-style camera (pinch, scroll, fit, recenter), a floating joystick, deadlock warnings and accessible announcements.
@@ -39,12 +39,12 @@ Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. 
 
 ## Documentation
 
-- **[The wiki](https://github.com/vindotski/sokobanko/wiki):**
-  - [Architecture](https://github.com/vindotski/sokobanko/wiki/Architecture)
-  - [Getting Started](https://github.com/vindotski/sokobanko/wiki/Getting-Started)
-  - [Development](https://github.com/vindotski/sokobanko/wiki/Development)
-  - [Deploying on Spotcraft](https://github.com/vindotski/sokobanko/wiki/Deploying-on-Spotcraft)
-  - [Self-Hosting](https://github.com/vindotski/sokobanko/wiki/Self-Hosting)
+- **[The docs](docs/README.md):**
+  - [Architecture](docs/Architecture.md)
+  - [Getting Started](docs/Getting-Started.md)
+  - [Development](docs/Development.md)
+  - [Deploying on Spotcraft](docs/Deploying-on-Spotcraft.md)
+  - [Self-Hosting](docs/Self-Hosting.md)
 - **[Contributing](CONTRIBUTING.md):** branches, pull requests and releases.
 - **[Changelog](CHANGELOG.md):** what changed in each version.
 

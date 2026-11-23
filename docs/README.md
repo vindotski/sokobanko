@@ -10,6 +10,4 @@ The technical documentation for [Sokobanko](https://github.com/vindotski/sokoban
 | [Self-Hosting](Self-Hosting.md) | Running the Docker image anywhere else: Postgres, the user pool, the proxy and settings |
 | [Parity](Parity.md) | How it compares with the original Sokoban and the top mobile apps |
 
-The project's changes are in the [CHANGELOG](https://github.com/vindotski/sokobanko/blob/main/CHANGELOG.md).
-
-> This wiki is published from the repository's [`docs/`](https://github.com/vindotski/sokobanko/tree/main/docs) folder on every push to `main`. Edit it there with a pull request; edits made here are overwritten.
+The project's changes are in the [CHANGELOG](../CHANGELOG.md).

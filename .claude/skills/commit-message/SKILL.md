@@ -5,10 +5,6 @@ description: Write a Conventional Commits message and commit the current changes
 
 # Commit
 
-This is Sokobanko's copy of the ecosystem's shared skill
-([kodentuzo/ecosystem](https://github.com/kodentuzo/ecosystem/tree/main/.claude/skills/commit-message)),
-with Sokobanko's scopes. Change a shared rule there first, then here.
-
 You commit finished, verified work with this message and push the branch. Never force-push or push
 to `main`; the branch is `feature/`, `bugfix/` or `chore/` from `origin/main`, and its PR goes into
 `main`. Tags are signed (`git tag -s`) and made only when the user asks.
@@ -40,7 +36,8 @@ to `main`; the branch is `feature/`, `bugfix/` or `chore/` from `origin/main`, a
   trivial changes.
 - **Breaking changes:** add `!` after the scope, and a `BREAKING CHANGE: <what and how to migrate>`
   footer.
-- Add no AI attribution or `Co-Authored-By` lines unless the user asks.
+- A commit an agent wrote ends with its `Co-Authored-By:` trailer (the shared rules in
+  kodentuzo/.github AGENTS.md).
 
 ## Types
 
