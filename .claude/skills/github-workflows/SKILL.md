@@ -5,10 +5,6 @@ description: Sokobanko's conventions for GitHub Actions workflows and Dependabot
 
 # GitHub workflows
 
-This is Sokobanko's copy of the ecosystem's shared skill
-([kodentuzo/ecosystem](https://github.com/kodentuzo/ecosystem/tree/main/.claude/skills/github-workflows)),
-with Sokobanko's workflows and required checks. Change a shared rule there first, then here.
-
 ## Branches and triggers
 
 - `main` is the only long-lived branch; PRs target it, from `feature/`, `bugfix/` or `chore/`
@@ -57,7 +53,6 @@ workflow that only runs on `main` or tags can't be tested on a PR: say so to the
 - `ci.yml` runs on PRs, pushes to `main` and `v*.*.*` tags:
   - `branch-name`, `verify` (against Spotcraft's local stack), `storybook`, `image` (built, pushed
     to Docker Hub on push events) and `self-host` (the image without Spotcraft);
-  - `wiki` publishes `docs/` to the wiki from `main`;
   - `deploy` sends a `v*` tag's image to Spotcraft through its deploy hook.
 - `update-screenshots.yml` is manual: it renders the stories' screenshots on Linux.
 - Required checks on `main`: `branch-name`, `verify`, `image`, `storybook`.

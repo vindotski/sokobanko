@@ -4,7 +4,7 @@ name: CI
 # pushed) so a broken Dockerfile shows before merging. main: verify, then
 # publish the image to Docker Hub. v* tags: the same, then deploy the tagged
 # commit to Spotcraft through its deploy hook (docs/Deploying-on-Spotcraft.md,
-# docs/Contributing.md). main also publishes docs/ to the wiki. Pull requests
+# docs/Contributing.md). Pull requests
 # and main also test every Storybook story (storybook). Every run also runs
 # the image without Spotcraft, from self-host/ (self-host).
 on:
@@ -239,42 +239,3 @@ jobs:
             esac
           done
           echo "Not live after $WAIT_MINUTES minutes"; exit 1
-
-  # main → the GitHub wiki: docs/ is its source, reviewed in pull requests.
-  # Pages are replaced wholesale, so edits made in the wiki itself are lost.
-  # Links between pages are written as Page.md, which works when browsing
-  # docs/ on GitHub; the wiki wants them without the extension.
-  wiki:
-    needs: verify
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    concurrency:
-      group: wiki
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Publish docs/ to the wiki
-        env:
-          TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-        run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/${REPO}.wiki.git" wiki
-          find wiki -maxdepth 1 -name '*.md' -delete
-          cp docs/*.md wiki/
-          # ](Page.md) and ](Page.md#part) → ](Page) and ](Page#part), for relative links only.
-          sed -i -E 's/\]\(([A-Za-z0-9_-]+)\.md(#[^)]*)?\)/](\1\2)/g' wiki/*.md
-          cd wiki
-          git add -A
-          if git diff --cached --quiet; then
-            echo "The wiki is up to date."
-            exit 0
-          fi
-          git -c user.name="github-actions[bot]" \
-            -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "Publish docs from ${GITHUB_SHA::7}"
-          git push -q origin HEAD
