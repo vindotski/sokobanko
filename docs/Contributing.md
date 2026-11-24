@@ -28,15 +28,15 @@ Merging to `main` builds and publishes the image (`sha-<short>`), but deploys no
 
    ```bash
    git fetch origin
-   git tag -s vX.Y.Z -m "Sokobanko X.Y.Z" origin/main
+   git tag -s vX.Y.Z -m "Sokoban X.Y.Z" origin/main
    git push origin vX.Y.Z
    ```
 
-3. CI publishes `X.Y.Z`, `X.Y`, `latest` and `sha-<short>`, then deploys `sha-<short>` to Spotcraft and waits until it's live ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)). The `production` environment accepts only `v*.*.*` tags, and version tags can't be moved or deleted.
+3. CI publishes `X.Y.Z`, `X.Y`, `latest` and `sha-<short>`, then copies `X.Y.Z` to the instance's registry, deploys it to Spotcraft and waits until it's live ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)). The `production` environment accepts only `v*.*.*` tags, and version tags can't be moved or deleted.
 4. Draft a GitHub Release for the tag from the CHANGELOG section, and publish it.
 
 An urgent fix is a `bugfix/` pull request followed by these same steps. A tiny fix may carry its own version bump instead of a separate release pull request.
 
-Rolling back is picking the previous `sha-…` tag in Spotcraft's dashboard ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)).
+Rolling back is releasing the previous version in Studio ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)).
 
 Running the app and its tests is in [Getting Started](Getting-Started.md) and [Development](Development.md).
