@@ -3,12 +3,12 @@ import { PAGES, sitemap } from "./sitemap";
 
 describe("sitemap", () => {
   it("lists every path on the site", () => {
-    const xml = sitemap("https://sokobanko.app", ["/", "/levels/first-push"]);
+    const xml = sitemap("https://sokoban.game", ["/", "/levels/first-push"]);
     expect(xml).toContain(
       '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     );
-    expect(xml).toContain("<loc>https://sokobanko.app/</loc>");
-    expect(xml).toContain("<loc>https://sokobanko.app/levels/first-push</loc>");
+    expect(xml).toContain("<loc>https://sokoban.game/</loc>");
+    expect(xml).toContain("<loc>https://sokoban.game/levels/first-push</loc>");
   });
 
   it("escapes what XML needs escaped", () => {

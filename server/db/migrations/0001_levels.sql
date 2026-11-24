@@ -1,9 +1,9 @@
 -- The levels: Postgres is their only source. Collections after these are added by
--- bin/import-collection.ts, one migration each. Names resolve to app_sokobanko
+-- bin/import-collection.ts, one migration each. Names resolve to app_sokoban
 -- through the role's search path.
--- Basics, made for Sokobanko.
+-- Basics, made for Sokoban.
 INSERT INTO "collections" ("id", "title", "author", "credit", "order") VALUES
-	('basics', 'Basics', NULL, 'Made for Sokobanko. Hello World! is from DoctorLai/sokoban-web (https://github.com/DoctorLai/sokoban-web), MIT licensed.', 1);
+	('basics', 'Basics', NULL, 'Made for Sokoban. Hello World! is from DoctorLai/sokoban-web (https://github.com/DoctorLai/sokoban-web), MIT licensed.', 1);
 --> statement-breakpoint
 INSERT INTO "levels" ("id", "collection_id", "title", "order", "map") VALUES
 	('first-push', 'basics', 'First Push', 1, '["#########","#@  $  .#","#########"]'),

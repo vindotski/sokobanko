@@ -33,7 +33,7 @@ const wide = useMediaQuery("(min-width: 768px)");
           <Button variant="outline" as-child @click="open = false">
             <NuxtLink to="/help#about">
               <CircleHelpIcon data-icon="inline-start" />
-              About Sokobanko
+              About Sokoban
             </NuxtLink>
           </Button>
         </div>

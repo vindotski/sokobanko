@@ -1,4 +1,4 @@
-import { isBetter, pendingUploads } from "@sokobanko/core";
+import { isBetter, pendingUploads } from "@sokoban/core";
 import {
   type Collection,
   createCollection,
@@ -20,6 +20,11 @@ import { RetryLater, shouldRetryUpload, uploadOutcome } from "./upload";
  * durable outbox in IndexedDB (offline-transactions), so a solve counts at
  * once and reaches the server whenever it can. Browser only: made on first
  * use, by plugins/tanstack.client.ts.
+ *
+ * Nothing is stored on the device until Spotkit's storage switch is on, which
+ * the player's first click on a level turns on (composables/storage.ts). Until
+ * then there is no outbox; `startStoring` starts it, at that click or, on a
+ * later visit, as soon as the pool shows the switch was on.
  */
 
 type ApiLevel = Awaited<ReturnType<typeof fetchLevels>>[number];
@@ -52,8 +57,7 @@ export interface Run {
 const fetchLevels = () => $fetch("/api/levels");
 const fetchCollections = () => $fetch("/api/collections");
 
-const OLD_PROGRESS = "sokobanko:progress:v1";
-const RUNS = "sokobanko:runs:v2";
+const RUNS = "sokoban:runs:v2";
 
 function create() {
   // The user pool's client reads the runtime config, which uploads made later
@@ -130,27 +134,39 @@ function create() {
     }),
   );
 
-  const executor = startOfflineExecutor({
-    collections: { runs: runs as unknown as Collection },
-    mutationFns: {
-      uploadRun: async ({ transaction }) => {
-        for (const mutation of transaction.mutations) {
-          const run = mutation.modified as unknown as Run;
-          await upload(run.levelId, run.log);
-        }
-        runs.utils.acceptMutations(transaction);
-        await Promise.all([
-          verified.utils.refetch(),
-          queryClient.invalidateQueries({ queryKey: ["me", "account"] }),
-        ]);
+  /**
+   * The upload outbox (IndexedDB, and a lock in localStorage), started by
+   * `startStoring`: starting it stores something on the device.
+   */
+  let executor: ReturnType<typeof startOfflineExecutor> | undefined;
+  let recordRun: ReturnType<typeof makeRecordRun> | undefined;
+
+  function startStoring() {
+    if (executor) return;
+    executor = startOfflineExecutor({
+      collections: { runs: runs as unknown as Collection },
+      mutationFns: {
+        uploadRun: async ({ transaction }) => {
+          for (const mutation of transaction.mutations) {
+            const run = mutation.modified as unknown as Run;
+            await upload(run.levelId, run.log);
+          }
+          runs.utils.acceptMutations(transaction);
+          await Promise.all([
+            verified.utils.refetch(),
+            queryClient.invalidateQueries({ queryKey: ["me", "account"] }),
+          ]);
+        },
       },
-    },
-    shouldRetry: shouldRetryUpload,
-    // A tab that takes over the outbox picks up what others left.
-    onLeadershipChange: (isLeader) => {
-      if (isLeader) requeueSoon();
-    },
-  });
+      shouldRetry: shouldRetryUpload,
+      // A tab that takes over the outbox picks up what others left.
+      onLeadershipChange: (isLeader) => {
+        if (isLeader) requeueSoon();
+      },
+    });
+    recordRun = makeRecordRun(executor);
+    requeueSoon();
+  }
 
   /** Sends a run's log to the server, which replays it (complete.post.ts). */
   async function upload(levelId: string, log: string) {
@@ -187,22 +203,24 @@ function create() {
   /** Levels whose run the server refused, so the solved dialog can say so. */
   const rejected = ref(new Set<string>());
 
-  const recordRun = executor.createOfflineAction<Run>({
-    mutationFnName: "uploadRun",
-    onMutate: (run) => {
-      if (runs.has(run.levelId)) {
-        runs.update(run.levelId, (draft) => Object.assign(draft, run));
-      } else {
-        runs.insert(run);
-      }
-    },
-  });
+  const makeRecordRun = (offline: NonNullable<typeof executor>) =>
+    offline.createOfflineAction<Run>({
+      mutationFnName: "uploadRun",
+      onMutate: (run) => {
+        if (runs.has(run.levelId)) {
+          runs.update(run.levelId, (draft) => Object.assign(draft, run));
+        } else {
+          runs.insert(run);
+        }
+      },
+    });
 
   /** Levels queued in this tab and not settled yet, so none goes in twice. */
   const inFlight = new Set<string>();
 
   /** Queues a run for the server; the UI sees it at once. */
   function queue(run: Run) {
+    if (!recordRun) return;
     rejected.value.delete(run.levelId);
     inFlight.add(run.levelId);
     const transaction = recordRun({
@@ -234,10 +252,15 @@ function create() {
     levelId: string,
     run: Omit<Run, "levelId" | "queuedAt">,
   ) {
-    await executor.waitForInit();
+    // A solve comes after the player's first click on a level, so storing is
+    // already on; this only makes sure the outbox is there.
+    startStoring();
+    const offline = executor;
+    if (!offline) return;
+    await offline.waitForInit();
     if (!isBetter(run, runs.get(levelId))) return;
     const solved: Run = { levelId, ...run, queuedAt: "" };
-    if (executor.isOfflineEnabled) {
+    if (offline.isOfflineEnabled) {
       queue(solved);
     } else if (runs.has(levelId)) {
       runs.update(levelId, (draft) => Object.assign(draft, solved));
@@ -252,8 +275,11 @@ function create() {
    * again in play order. Only the tab that runs the outbox does this.
    */
   async function requeueMissing() {
-    await executor.waitForInit();
-    if (!executor.isOfflineEnabled) {
+    // Before the player's first click there is no outbox, and nothing to send.
+    const offline = executor;
+    if (!offline) return;
+    await offline.waitForInit();
+    if (!offline.isOfflineEnabled) {
       // Another tab runs the outbox; when it saves a run, the change reaches
       // this tab through localStorage, and the server's bests are fresh.
       await verified.utils.refetch();
@@ -263,7 +289,7 @@ function create() {
     // hasn't queued yet goes in, compared with nothing.
     await Promise.all([levels.preload(), verified.preload().catch(() => {})]);
     const queued = new Set(
-      (await executor.peekOutbox()).flatMap((tx) =>
+      (await offline.peekOutbox()).flatMap((tx) =>
         tx.mutations.map((m) => String(m.key)),
       ),
     );
@@ -286,46 +312,13 @@ function create() {
   // the outbox's tab queues them.
   runs.subscribeChanges(requeueSoon);
 
-  /** Progress from before TanStack DB, kept as a plain map in localStorage. */
-  function migrateOldProgress() {
-    try {
-      const old = localStorage.getItem(OLD_PROGRESS);
-      if (!old) return;
-      for (const [levelId, value] of Object.entries(JSON.parse(old) ?? {})) {
-        const r = value as Partial<Run> & { solution?: string };
-        const log = r.log ?? r.solution;
-        if (
-          typeof log !== "string" ||
-          !Number.isInteger(r.moves) ||
-          !Number.isInteger(r.pushes) ||
-          typeof r.solvedAt !== "string" ||
-          runs.has(levelId)
-        ) {
-          continue;
-        }
-        runs.insert({
-          levelId,
-          log,
-          moves: r.moves as number,
-          pushes: r.pushes as number,
-          solvedAt: r.solvedAt,
-          queuedAt: "",
-        });
-      }
-      localStorage.removeItem(OLD_PROGRESS);
-    } catch {}
-  }
-
-  migrateOldProgress();
-  requeueSoon();
-
   return {
     queryClient,
     levels,
     levelCollections,
     verified,
     runs,
-    executor,
+    startStoring,
     rejected,
     recordSolve,
   };

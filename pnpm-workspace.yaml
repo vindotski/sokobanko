@@ -9,7 +9,6 @@ allowBuilds:
 minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   # The owner's own packages, published from their CI with npm provenance:
-  # Spotcraft's app helpers, its CLI, and Spotstrap's blocks.
+  # Spotkit (the app helpers and the CLI) and Spotstrap's blocks.
   - "@kodentuzo/spotkit"
-  - "@kodentuzo/spotcraft"
   - "@kodentuzo/spotstrap"

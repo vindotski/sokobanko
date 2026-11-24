@@ -1,11 +1,11 @@
-Sokobanko is one Nuxt 4 app at the repository root, plus two TypeScript packages it builds on. The browser plays and keeps progress. The server checks every result by replaying it, and keeps the verified bests in Postgres.
+Sokoban is one Nuxt 4 app at the repository root, plus two TypeScript packages it builds on. The browser plays and keeps progress. The server checks every result by replaying it, and keeps the verified bests in Postgres.
 
 ## Layout
 
 | Path | What's in it |
 | --- | --- |
-| `packages/core` (`@sokobanko/core`) | The rules as pure TypeScript, with no DOM and no dependencies: XSB parsing, moves and pushes, dead squares, LURD replay, input-log replay with the undo budget, unlock order, and comparing results. Used by the browser and the server alike, and unit-tested. |
-| `packages/game` (`@sokobanko/game`) | The PixiJS v8 board: drawing, the map-style camera (follow, zoom, pan, fit), keyboard, joystick, pinch and wheel input, and the celebration. It reports progress (moves, pushes, the input log, undos left) to whoever embeds it. |
+| `packages/core` (`@sokoban/core`) | The rules as pure TypeScript, with no DOM and no dependencies: XSB parsing, moves and pushes, dead squares, LURD replay, input-log replay with the undo budget, unlock order, and comparing results. Used by the browser and the server alike, and unit-tested. |
+| `packages/game` (`@sokoban/game`) | The PixiJS v8 board: drawing, the map-style camera (follow, zoom, pan, fit), keyboard, joystick, pinch and wheel input, and the celebration. It reports progress (moves, pushes, the input log, undos left) to whoever embeds it. |
 | `app/` | The Nuxt pages, layouts and components (shadcn-vue on Tailwind CSS v4), and the browser's data: TanStack DB collections and the upload outbox (`app/collections/`), read through `useProgress()` |
 | `server/` | Nitro routes, the database (Drizzle and its migrations, which hold the levels), and who a request comes from |
 | `scripts/` | Applying the migrations, importing a level collection, and finding solutions for the tests |
@@ -28,13 +28,13 @@ Settings (theme, sound) is an action, not a section, so it opens as a sheet: fro
 | `/play` | The next level, or the all-solved celebration | In the browser | no |
 | `/progress` | Solved count, totals, completed levels | In the browser | no |
 | `/help` | How to play, the controls, the FAQ, About | On the server | yes |
-| `/privacy`, `/terms`, `/legal` | The privacy policy (with every cookie and storage key), the terms of use, and the legal notice | On the server | yes |
+| `/privacy`, `/terms`, `/legal` | The privacy notice (with every cookie and storage key), the terms of use, and the legal notice | On the server | yes |
 
 `/levels`, `/profile` and `/faq` redirect (301) to `/`, `/progress` and `/help`.
 
 **The map hint.** Progress lives in the browser, so on its own the server would draw every map empty, and a returning player's map would jump when their progress loaded. So once a level is solved, the browser keeps two small cookies for the server (`app/utils/mapHint.ts`):
-- **`sokobanko-map`:** each collection's level up next, e.g. `basics:*|microban:microban-041` (`*` once a collection is solved). Collections unlock in order, so this gives every level's state (`seedProgressView`).
-- **`sokobanko-map-columns`:** how many levels per row the path last fit, so it isn't drawn 4 wide and then re-flowed.
+- **`sokoban-map`:** each collection's level up next, e.g. `basics:*|microban:microban-041` (`*` once a collection is solved). Collections unlock in order, so this gives every level's state (`seedProgressView`).
+- **`sokoban-map-columns`:** how many levels per row the path last fit, so it isn't drawn 4 wide and then re-flowed.
 
 With the hint, the map is hidden for a moment while a script right after the level up next scrolls to it, and only then shown, so it never appears at the top and jumps (a CSS fallback shows it after 2s anyway). The Continue card has the same height in every state. A page drawn from a hint is the player's own, so it's sent with `Cache-Control: private`. Without the cookies (a first visit, or a search engine) the map is drawn without progress, as before. The hint is only a hint: the browser's progress replaces it, and a solved level after the one up next (one added later) shows as locked until then.
 
@@ -45,19 +45,20 @@ With the hint, the map is hidden for a moment while a script right after the lev
 - The site's address is `runtimeConfig.public.siteUrl` (`NUXT_PUBLIC_SITE_URL`).
 
 **Privacy.** No ads or third-party requests; the CSP allows only the site itself. The legal pages are built from Spotstrap's blocks (`@kodentuzo/spotstrap/blocks`, views from its registry in `app/components/`) over the instance's legal facts:
-- `GET /api/legal` returns `legalFacts()` from `@kodentuzo/spotkit`, which reads `LEGAL_FACTS`. Spotcraft sets it for every app, and `spotcraft dev` writes example values. Who runs Sokobanko, their address, and what the server does with data live there, never in the repository.
-- `/privacy` is `privacyPolicy()` with what Sokobanko stores itself, plus a section on what this browser keeps (every cookie and storage key) and one on children. `/legal` is `legalNotice()`. `/terms` names the owner from the same facts.
-- Visits are counted only if the instance does (`analytics()` from `@kodentuzo/spotkit/client`, in `plugins/analytics.client.ts`). Where the visitor has a say, Progress → Your data shows a switch.
+- `GET /api/legal` returns the facts from `/_spotcraft/legal.json` on the app's own address (`legal()` from `@kodentuzo/spotkit/client`, with `PUBLIC_URL`; `LEGAL_URL` overrides the address, and `spotkit dev` sets it to its stand-in). The legal slot serves them to every app. Who runs Sokoban, their address, and what the server does with data live there, never in the repository.
+- `/privacy` is `privacyNotice()` with what Sokoban stores itself, plus a section on what this browser keeps (every cookie and storage key) and one on children. `/legal` is `legalNotice()`. `/terms` names the owner from the same facts.
+- Visits are counted one way, with no consent and no switch: the instance's script (`analytics()` from `@kodentuzo/spotkit/client`, in `plugins/analytics.client.ts`) sets no cookie and stores nothing on the device.
+- **Nothing is stored on the device before the player acts.** Spotkit's storage switch (`storageSwitch`) is off until the first click on a level, or the first move on a level opened from a link (`plugins/storage.client.ts`, `composables/storage.ts`). Only then does the app start the upload outbox, keep a half-played level or the sound setting, or make a guest in the pool (which happens at the first solve). On a later visit the pool's session cookie shows the switch was on (`storageSwitch.restore()`, which creates nothing). The map hint cookies were already set only once a level is solved.
 
 Progress → **Your data** (Spotstrap's `YourData`, `useYourData`):
-- **Download your data** saves one JSON file: the guest from the pool, the server's part from `GET /api/me/export` (every result) and this browser's (its `sokobanko:*` keys and the cookies).
+- **Download your data** saves one JSON file: the guest from the pool, the server's part from `GET /api/me/export` (every result) and this browser's (its `sokoban:*` keys and the cookies).
 - **Delete your data** deletes the guest in the pool, which deletes its results with it (a foreign key). Then it clears the browser's keys, cookies and upload outbox, and reloads.
 
 When the app starts storing something new in the browser, or sending data somewhere new, update `pages/privacy.vue` and `LEGAL_UPDATED` (`app/utils/legal.ts`, the terms' date) with it.
 
 ## Playing a level
 
-1. **`/play/:id`** renders in the browser only. It takes the level from the levels collection and mounts the board from `@sokobanko/game`. A locked level goes to its card instead.
+1. **`/play/:id`** renders in the browser only. It takes the level from the levels collection and mounts the board from `@sokoban/game`. A locked level goes to its card instead.
 2. **Each move, undo and restart** reports the run: the moves, the pushes, and the **input log**, made of LURD letters, uppercase for pushes, with `z` for each undo. A half-played run is kept in `localStorage`, so a reload resumes it with its undos already used.
 3. **On a solve,** the run is recorded in the `runs` collection at once, and the next level in its collection unlocks, whether or not the server can be reached.
 
@@ -69,11 +70,11 @@ The browser's data lives in [TanStack DB](https://tanstack.com/db) collections (
 | --- | --- | --- |
 | `levels`, `collections` | The levels and collections, in play order | `/api/levels` and `/api/collections`, through TanStack Query |
 | `verified` | The server's verified bests | `/api/me/completions`, through TanStack Query |
-| `runs` | Each level's best run solved in this browser, with its input log | `localStorage` (`sokobanko:runs:v2`), shared by the browser's tabs |
+| `runs` | Each level's best run solved in this browser, with its input log | `localStorage` (`sokoban:runs:v2`), shared by the browser's tabs |
 
 `useProgress()` (`app/composables/progress.ts`) reads them with live queries:
 - **`best`:** the better of `verified` and `runs` for each level. Fewer moves wins, then fewer pushes.
-- **`states`:** unlocking, through `levelStates` from `@sokobanko/core`.
+- **`states`:** unlocking, through `levelStates` from `@sokoban/core`.
 - **Unsynced runs:** which runs the server doesn't have yet.
 
 Levels, Play and Profile render only in the browser, because the collections don't run on the server. Home and the FAQ are still server-rendered.
@@ -104,7 +105,7 @@ The server keeps moves, pushes and the time, never the log.
 
 ## Guests and the user pool
 
-Players don't sign up. Sokobanko uses [Spotcraft](https://spotcraft.dev)'s **user pool**, shared by the apps on a Spotcraft server:
+Players don't sign up. Sokoban uses [Spotcraft](https://spotcraft.dev)'s **user pool**, shared by the apps on a Spotcraft server:
 
 - **Making a guest:** before the first save, the browser makes an anonymous guest through Better Auth's client at `/_spotcraft/auth` on the app's own domain. The pool sets an HttpOnly session cookie.
 - **Reading it:** `server/middleware/guest.ts` reads that session with `@kodentuzo/spotkit` (`AUTH_URL`, `AUTH_ISSUER`, `AUTH_JWKS_URL`) and puts the guest's id on the request.
@@ -112,7 +113,7 @@ Players don't sign up. Sokobanko uses [Spotcraft](https://spotcraft.dev)'s **use
 
 ## Data model
 
-The schema `app_sokobanko` (`server/db/schema.ts`):
+The schema `app_sokoban` (`server/db/schema.ts`):
 
 | Table | Holds | Guards |
 | --- | --- | --- |
@@ -129,9 +130,9 @@ The schema `app_sokobanko` (`server/db/schema.ts`):
 `.github/workflows/ci.yml`:
 
 - **`branch-name`** (pull requests): branches are `feature/`, `bugfix/` or `chore/`, and target `main`.
-- **`verify`:** lint (Biome), typecheck (vue-tsc for the app and the stories, TypeScript 7 for the packages), then the unit tests, with the database tests run against Spotcraft's local stack, then a build.
+- **`verify`:** lint (Biome), typecheck (vue-tsc for the app and the stories, TypeScript 7 for the packages), then the unit tests, with the database tests run against Spotkit's local stack, then a build.
 - **`storybook`:** every story in `stories/` as a test in headless Chromium, in light and dark: it must render, pass its play function and axe, and match its screenshot. Then the static Storybook builds ([Development](Development.md#storybook)).
-- **`image`:** a multi-arch (amd64, arm64) distroless image from the `Dockerfile`. On `main` and tags it's pushed to Docker Hub with an SBOM and provenance.
-- **`deploy`** (version tags only): the tagged commit's image goes to Spotcraft through its deploy hook, with zero downtime.
+- **`image`:** a multi-arch (amd64, arm64) distroless image from the `Dockerfile`. On `main` and tags it's pushed to Docker Hub (`vindotski/sokoban`) with an SBOM and provenance.
+- **`deploy`** (version tags only): the version's image is copied to the instance's registry, `registry.vin.ski/sokoban`, and Spotcraft deploys it through the app's deploy hook, with zero downtime.
 
 The branching and release flow is in [Contributing](Contributing.md), and the deployment in [Deploying on Spotcraft](Deploying-on-Spotcraft.md).

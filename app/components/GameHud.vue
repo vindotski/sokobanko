@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { GameProgress } from "@sokobanko/game";
+import type { GameProgress } from "@sokoban/game";
 
 /**
  * The run at a glance, like a game's HUD: boxes on goals (the goal), moves

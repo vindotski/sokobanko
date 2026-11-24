@@ -4,9 +4,9 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "app_sokobanko.collections": {
+    "app_sokoban.collections": {
       "name": "collections",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "id": {
           "name": "id",
@@ -53,14 +53,14 @@
       "checkConstraints": {
         "collections_order_positive": {
           "name": "collections_order_positive",
-          "value": "\"app_sokobanko\".\"collections\".\"order\" > 0"
+          "value": "\"app_sokoban\".\"collections\".\"order\" > 0"
         }
       },
       "isRLSEnabled": false
     },
-    "app_sokobanko.levels": {
+    "app_sokoban.levels": {
       "name": "levels",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "id": {
           "name": "id",
@@ -99,7 +99,7 @@
           "name": "levels_collection_id_collections_id_fk",
           "tableFrom": "levels",
           "tableTo": "collections",
-          "schemaTo": "app_sokobanko",
+          "schemaTo": "app_sokoban",
           "columnsFrom": ["collection_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
@@ -118,18 +118,18 @@
       "checkConstraints": {
         "levels_order_positive": {
           "name": "levels_order_positive",
-          "value": "\"app_sokobanko\".\"levels\".\"order\" > 0"
+          "value": "\"app_sokoban\".\"levels\".\"order\" > 0"
         },
         "levels_map_is_array": {
           "name": "levels_map_is_array",
-          "value": "jsonb_typeof(\"app_sokobanko\".\"levels\".\"map\") = 'array'"
+          "value": "jsonb_typeof(\"app_sokoban\".\"levels\".\"map\") = 'array'"
         }
       },
       "isRLSEnabled": false
     },
-    "app_sokobanko.progress": {
+    "app_sokoban.progress": {
       "name": "progress",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -178,7 +178,7 @@
           "name": "progress_level_id_levels_id_fk",
           "tableFrom": "progress",
           "tableTo": "levels",
-          "schemaTo": "app_sokobanko",
+          "schemaTo": "app_sokoban",
           "columnsFrom": ["level_id"],
           "columnsTo": ["id"],
           "onDelete": "restrict",
@@ -196,11 +196,11 @@
       "checkConstraints": {
         "progress_moves_positive": {
           "name": "progress_moves_positive",
-          "value": "\"app_sokobanko\".\"progress\".\"moves\" > 0"
+          "value": "\"app_sokoban\".\"progress\".\"moves\" > 0"
         },
         "progress_pushes_within_moves": {
           "name": "progress_pushes_within_moves",
-          "value": "\"app_sokobanko\".\"progress\".\"pushes\" >= 0 and \"app_sokobanko\".\"progress\".\"pushes\" <= \"app_sokobanko\".\"progress\".\"moves\""
+          "value": "\"app_sokoban\".\"progress\".\"pushes\" >= 0 and \"app_sokoban\".\"progress\".\"pushes\" <= \"app_sokoban\".\"progress\".\"moves\""
         }
       },
       "isRLSEnabled": false

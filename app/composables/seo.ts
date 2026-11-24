@@ -18,11 +18,11 @@ export function usePageSeo(page: {
     ogDescription: page.description,
     ogUrl: url,
     ogType: "website",
-    ogSiteName: "Sokobanko",
+    ogSiteName: "Sokoban",
     ogImage: image,
     ogImageWidth: 1200,
     ogImageHeight: 630,
-    ogImageAlt: "Sokobanko: a Sokoban level in black and white",
+    ogImageAlt: "Sokoban: a level in black and white",
     twitterCard: "summary_large_image",
   });
   useHead({ link: [{ rel: "canonical", href: url }] });

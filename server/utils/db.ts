@@ -5,8 +5,8 @@ let pool: pg.Pool | undefined;
 let instance: NodePgDatabase | undefined;
 
 /**
- * Drizzle over Sokobanko's schema, from DATABASE_URL (Spotcraft sets it, and
- * `spotcraft dev` writes it to .env). Made on first use, so building and
+ * Drizzle over Sokoban's schema, from DATABASE_URL (Spotcraft sets it, and
+ * `spotkit dev` writes it to .env). Made on first use, so building and
  * importing the server need no database. The role's search path is its schema.
  */
 export function db(): NodePgDatabase {

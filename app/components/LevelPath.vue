@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { LevelState } from "@sokobanko/core";
+import type { LevelState } from "@sokoban/core";
 import { useElementSize } from "@vueuse/core";
 
 /**

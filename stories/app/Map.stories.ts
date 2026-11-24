@@ -1,4 +1,4 @@
-import type { LevelState } from "@sokobanko/core";
+import type { LevelState } from "@sokoban/core";
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import { expect } from "storybook/test";
 import ContinueCard from "~/components/ContinueCard.vue";

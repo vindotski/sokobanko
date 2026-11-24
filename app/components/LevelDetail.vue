@@ -6,7 +6,7 @@ import {
   PlayIcon,
   XIcon,
 } from "@lucide/vue";
-import type { LevelJson, LevelState } from "@sokobanko/core";
+import type { LevelJson, LevelState } from "@sokoban/core";
 
 /**
  * A level's card, like a level-start screen: the board, where it sits, how

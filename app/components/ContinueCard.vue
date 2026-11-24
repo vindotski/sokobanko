@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PlayIcon, ShuffleIcon, TrophyIcon } from "@lucide/vue";
-import type { LevelJson } from "@sokobanko/core";
+import type { LevelJson } from "@sokoban/core";
 
 type Shown = LevelJson & { number: number; collectionTitle?: string };
 

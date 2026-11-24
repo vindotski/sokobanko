@@ -2,11 +2,12 @@ name: CI
 
 # Pull requests: check the branch's name, verify, and build the image (not
 # pushed) so a broken Dockerfile shows before merging. main: verify, then
-# publish the image to Docker Hub. v* tags: the same, then deploy the tagged
-# commit to Spotcraft through its deploy hook (docs/Deploying-on-Spotcraft.md,
-# docs/Contributing.md). Pull requests
-# and main also test every Storybook story (storybook). Every run also runs
-# the image without Spotcraft, from self-host/ (self-host).
+# publish the image to Docker Hub. v* tags: the same, then copy the image to
+# the instance's registry (Spotdeck) and deploy that version to Spotcraft
+# through the app's deploy hook (docs/Deploying-on-Spotcraft.md,
+# docs/Contributing.md). Pull requests and main also test every Storybook
+# story (storybook). Every run also runs the image without Spotcraft, from
+# self-host/ (self-host).
 on:
   push:
     branches: [main]
@@ -58,11 +59,20 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
-      # The database tests run against Spotcraft's local stack, set up as on its
-      # servers: Postgres with the app's schema, and the user pool. It also
-      # applies the migrations and writes .env.
-      - name: Start Spotcraft's local stack
-        run: pnpm exec spotcraft dev
+      # The database tests run against Spotkit's local stack, set up as on a
+      # Spotcraft server: Postgres with the app's schema, and the user pool. It
+      # also applies the migrations and writes .env. `spotkit dev` then keeps
+      # serving its analytics and legal stand-ins, so it runs in the background
+      # and the step waits for it to say so.
+      - name: Start Spotkit's local stack
+        run: |
+          nohup pnpm exec spotkit dev > spotkit-dev.log 2>&1 &
+          for _ in $(seq 90); do
+            if grep -q '^Serving the' spotkit-dev.log; then cat spotkit-dev.log; exit 0; fi
+            sleep 2
+          done
+          cat spotkit-dev.log
+          exit 1
       - name: Test
         run: |
           set -a
@@ -103,7 +113,7 @@ jobs:
           if-no-files-found: ignore
       - run: pnpm build-storybook
 
-  # Sokobanko without Spotcraft (docs/Self-Hosting.md): the self-host/ stack
+  # Sokoban without Spotcraft (docs/Self-Hosting.md): the self-host/ stack
   # (Postgres, the user pool, the app and Caddy) from a fresh image, migrated,
   # and the smoke test against it: legal pages, a guest's solve in both
   # exports, and deleting the guest deletes the result.
@@ -126,14 +136,11 @@ jobs:
         with:
           context: .
           load: true
-          tags: sokobanko:self-host
+          tags: sokoban:self-host
           provenance: false
           cache-from: type=gha
       - name: Start the stack
-        run: |
-          LEGAL_FACTS="$(cat self-host/legal-facts.json)"
-          export LEGAL_FACTS
-          docker compose up -d --wait --wait-timeout 180
+        run: docker compose up -d --wait --wait-timeout 180
       - name: Migrate
         run: docker compose run --rm --no-deps --entrypoint /nodejs/bin/node app .output/server/index.mjs migrate
       - name: Smoke test
@@ -172,17 +179,17 @@ jobs:
       - id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
-          images: ${{ vars.DOCKERHUB_USERNAME || 'vindotski' }}/sokobanko
+          images: ${{ vars.DOCKERHUB_USERNAME || 'vindotski' }}/sokoban
           tags: |
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha,format=short
           labels: |
-            org.opencontainers.image.title=sokobanko
-            org.opencontainers.image.description=Sokobanko, a box-pushing puzzle, hosted on Spotcraft
+            org.opencontainers.image.title=sokoban
+            org.opencontainers.image.description=Sokoban, a box-pushing puzzle, hosted on Spotcraft
             org.opencontainers.image.licenses=AGPL-3.0-only
-            org.opencontainers.image.source=https://github.com/vindotski/sokobanko
+            org.opencontainers.image.source=https://github.com/vindotski/sokoban
 
       - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -196,34 +203,66 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # A v* tag → Spotcraft, through the app's deploy hook
-  # (docs/Deploying-on-Spotcraft.md); merges to
-  # main only build. The production environment accepts only v* tags. Off
-  # until it has the variable SPOTCRAFT_HOOK_URL and the secret
-  # SPOTCRAFT_DEPLOY_TOKEN. A job's `if` can't see an environment's variables,
-  # so the step checks.
+  # A v* tag → Spotcraft (docs/Deploying-on-Spotcraft.md): the image the job
+  # above published is copied, as it is (same digest, both architectures), to
+  # the instance's registry, Spotdeck, under the version (v1.2.3 → 1.2.3), and
+  # the app's deploy hook is called with that tag. Merges to main only build.
+  # The production environment accepts only v* tags and holds the variables
+  # SPOTCRAFT_REGISTRY and SPOTCRAFT_HOOK_URL and the secrets
+  # SPOTCRAFT_PUSH_TOKEN and SPOTCRAFT_DEPLOY_TOKEN. A job's `if` can't see an
+  # environment's variables, so the step checks: without all four, nothing
+  # happens.
   deploy:
     needs: image
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     environment: production
     concurrency:
       group: deploy
       cancel-in-progress: false
     steps:
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Check the settings
+        id: settings
+        env:
+          REGISTRY: ${{ vars.SPOTCRAFT_REGISTRY }}
+          URL: ${{ vars.SPOTCRAFT_HOOK_URL }}
+          PUSH_TOKEN: ${{ secrets.SPOTCRAFT_PUSH_TOKEN }}
+          DEPLOY_TOKEN: ${{ secrets.SPOTCRAFT_DEPLOY_TOKEN }}
+        run: |
+          if [ -z "$REGISTRY" ] || [ -z "$URL" ] || [ -z "$PUSH_TOKEN" ] || [ -z "$DEPLOY_TOKEN" ]; then
+            echo "::notice::No deploy: set SPOTCRAFT_REGISTRY and SPOTCRAFT_HOOK_URL, and the secrets SPOTCRAFT_PUSH_TOKEN and SPOTCRAFT_DEPLOY_TOKEN, in the production environment."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        if: steps.settings.outputs.ready == 'true'
+        with:
+          registry: ${{ vars.SPOTCRAFT_REGISTRY }}
+          username: sokoban
+          password: ${{ secrets.SPOTCRAFT_PUSH_TOKEN }}
+      # The push token reaches only <registry>/sokoban.
+      - name: Copy the image to Spotdeck
+        if: steps.settings.outputs.ready == 'true'
+        env:
+          REGISTRY: ${{ vars.SPOTCRAFT_REGISTRY }}
+          HUB: ${{ vars.DOCKERHUB_USERNAME || 'vindotski' }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          docker buildx imagetools create \
+            --tag "$REGISTRY/sokoban:$VERSION" "docker.io/$HUB/sokoban:$VERSION"
+          docker buildx imagetools inspect "$REGISTRY/sokoban:$VERSION"
       - name: Deploy to Spotcraft
+        if: steps.settings.outputs.ready == 'true'
         env:
           URL: ${{ vars.SPOTCRAFT_HOOK_URL }}
           TOKEN: ${{ secrets.SPOTCRAFT_DEPLOY_TOKEN }}
           # A pull may take 5 minutes and the health check 2, after other apps' deploys.
           WAIT_MINUTES: 15
         run: |
-          if [ -z "$URL" ] || [ -z "$TOKEN" ]; then
-            echo "::notice::No deploy: set SPOTCRAFT_HOOK_URL and SPOTCRAFT_DEPLOY_TOKEN in the production environment."
-            exit 0
-          fi
-          TAG="sha-${GITHUB_SHA::7}"
+          TAG="${GITHUB_REF_NAME#v}"
           auth="Authorization: Bearer $TOKEN"
           curl -fsS --retry 5 --retry-all-errors -X POST "$URL" -H "$auth" \
             -H 'content-type: application/json' -d "{\"tag\":\"$TAG\"}"

@@ -27,7 +27,7 @@ const SOUNDS: Record<SoundName, Note[]> = {
   })),
 };
 
-const STORAGE_KEY = "sokobanko:sound";
+const STORAGE_KEY = "sokoban:sound";
 // Overall loudness; each note's volume scales it.
 const MASTER = 0.15;
 
@@ -35,8 +35,9 @@ let context: AudioContext | undefined;
 
 /**
  * Game sounds, muted by default. The choice is remembered in this browser
- * only, and read on the client after mounting, so the server always renders
- * the muted state.
+ * only, once the player has started playing (nothing is stored before), and
+ * read on the client after mounting, so the server always renders the muted
+ * state.
  */
 export function useSound() {
   const enabled = useState("sound-enabled", () => false);
@@ -49,9 +50,13 @@ export function useSound() {
 
   function setEnabled(on: boolean) {
     enabled.value = on;
-    try {
-      localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
-    } catch {}
+    // Remembered only once the player has started playing: nothing is stored
+    // before (composables/storage.ts). Until then it lasts for the visit.
+    if (storing()) {
+      try {
+        localStorage.setItem(STORAGE_KEY, on ? "on" : "off");
+      } catch {}
+    }
     // Turning sound on is a click, which lets the browser start audio.
     if (on) audio();
   }

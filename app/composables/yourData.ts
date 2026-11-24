@@ -1,5 +1,5 @@
-/** What this browser keeps for Sokobanko (pages/privacy.vue lists it all). */
-const KEY_PREFIX = "sokobanko:";
+/** What this browser keeps for Sokoban (pages/privacy.vue lists it all). */
+const KEY_PREFIX = "sokoban:";
 const COOKIES = [MAP_HINT_COOKIE, MAP_COLUMNS_COOKIE];
 /** The upload outbox's database (@tanstack/offline-transactions). */
 const OUTBOX_DB = "offline-transactions";
@@ -19,7 +19,7 @@ function parsed(value: string | null): unknown {
 }
 
 /**
- * Progress → Your data, browser only: Sokobanko's part of the download and of
+ * Progress → Your data, browser only: Sokoban's part of the download and of
  * the delete. The YourData block (components/YourData.vue) does the rest
  * through Spotcraft's user pool: its file has the account, and deleting the
  * guest there deletes their results on the server too.

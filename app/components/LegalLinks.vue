@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * The way to the privacy policy, terms and legal notice, from any page.
+ * The way to the privacy notice, terms and legal notice, from any page.
  * `label` names the landmark, so two on one page (the sidebar's and the
  * page's own) can be told apart.
  */

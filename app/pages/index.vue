@@ -19,7 +19,7 @@ const route = useRoute();
 const cardOpen = computed(() => route.path.startsWith("/levels/"));
 
 usePageSeo({
-  title: "Sokobanko · Free Sokoban puzzles in your browser",
+  title: "Sokoban · Free Sokoban puzzles in your browser",
   description:
     "The classic box-pushing puzzle: 159 levels, no sign-up, on your phone or computer. Push every box onto a goal, one move at a time.",
   path: "/",
@@ -31,7 +31,7 @@ useHead({
       innerHTML: JSON.stringify({
         "@context": "https://schema.org",
         "@type": "VideoGame",
-        name: "Sokobanko",
+        name: "Sokoban",
         url: useRuntimeConfig().public.siteUrl,
         description:
           "The classic box-pushing puzzle in the browser, with server-verified results and no sign-up.",
@@ -128,7 +128,7 @@ watch(
 </script>
 
 <template>
-  <PageHeader title="Sokobanko" subtitle="Free Sokoban puzzles in your browser" />
+  <PageHeader title="Sokoban" subtitle="Free Sokoban puzzles in your browser" />
   <!-- One column, or the map and a level's card side by side from lg. -->
   <div
     class="mx-auto grid w-full max-w-5xl flex-1 items-start gap-8 px-4 py-6"

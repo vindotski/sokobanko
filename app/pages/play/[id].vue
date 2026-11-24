@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ArrowLeftIcon, ChevronDownIcon, PauseIcon } from "@lucide/vue";
-import { isBetter, UNDO_BUDGET } from "@sokobanko/core";
-import type { CameraState, GameProgress } from "@sokobanko/game";
+import { isBetter, UNDO_BUDGET } from "@sokoban/core";
+import type { CameraState, GameProgress } from "@sokoban/game";
 import {
   onKeyStroke,
   useOnline,
@@ -37,7 +37,7 @@ if (!level) {
 const levelId = level.id;
 // Personal and interactive, so search engines skip it (routeRules sends the
 // same as a header); the level's card is the page to index.
-useSeoMeta({ title: `${level.title} · Sokobanko`, robots: "noindex" });
+useSeoMeta({ title: `${level.title} · Sokoban`, robots: "noindex" });
 // The collection and its author, under the title.
 const collection = computed(() =>
   collections.value.find((c) => c.id === level.collection),
@@ -51,7 +51,7 @@ const collectionSize = computed(
 // another level doesn't lose it. Storage can be missing or blocked (private
 // windows), in which case runs simply aren't kept. Read on the client only:
 // the server renders a fresh board either way.
-const runKey = `sokobanko:run:${levelId}`;
+const runKey = `sokoban:run:${levelId}`;
 function readRun() {
   try {
     return localStorage.getItem(runKey) ?? undefined;
@@ -60,6 +60,8 @@ function readRun() {
   }
 }
 function saveRun({ log, solved }: GameProgress) {
+  // Nothing is stored before the player acts (composables/storage.ts).
+  if (!storing()) return;
   try {
     // Nothing to resume at the start, or once solved.
     if (log && !solved) localStorage.setItem(runKey, log);
@@ -222,6 +224,9 @@ function playSound(prev: GameProgress, next: GameProgress) {
 }
 
 function onChange(next: GameProgress) {
+  // The first move of a level opened from a link is the player's action that
+  // asks for storage, as a click on a level is.
+  if (next.moves > 0 && !storing()) void startStoring();
   playSound(progress.value, next);
   announce(progress.value, next);
   progress.value = next;

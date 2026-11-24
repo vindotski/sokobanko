@@ -15,10 +15,10 @@ const settingsOpen = useSettingsOpen();
     <NuxtLink
       to="/"
       class="flex h-16 items-center justify-center px-4 font-semibold lg:justify-start lg:text-lead"
-      aria-label="Sokobanko, home"
+      aria-label="Sokoban, home"
     >
       <span class="lg:hidden" aria-hidden="true">S</span>
-      <span class="hidden lg:inline">Sokobanko</span>
+      <span class="hidden lg:inline">Sokoban</span>
     </NuxtLink>
     <nav aria-label="Sections" class="flex-1 px-2">
       <ul class="flex flex-col gap-1">

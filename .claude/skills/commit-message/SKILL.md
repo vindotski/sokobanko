@@ -1,6 +1,6 @@
 ---
 name: commit-message
-description: Write a Conventional Commits message and commit the current changes in Sokobanko. Use when a step is finished and verified, or when the user asks for a commit. The agent commits and pushes its branch; it merges and tags only as the repository's rules say.
+description: Write a Conventional Commits message and commit the current changes in Sokoban. Use when a step is finished and verified, or when the user asks for a commit. The agent commits and pushes its branch; it merges and tags only as the repository's rules say.
 ---
 
 # Commit

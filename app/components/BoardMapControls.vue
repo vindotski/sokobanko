@@ -5,7 +5,7 @@ import {
   MinusIcon,
   PlusIcon,
 } from "@lucide/vue";
-import type { CameraState } from "@sokobanko/game";
+import type { CameraState } from "@sokoban/game";
 
 // Map-style camera buttons over the board's corner, like a map app's.
 defineProps<{ camera: CameraState }>();

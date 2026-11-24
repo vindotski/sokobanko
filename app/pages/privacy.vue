@@ -4,24 +4,24 @@ import {
   type Doc,
   list,
   paragraph,
-  privacyPolicy,
+  privacyNotice,
 } from "@kodentuzo/spotstrap/blocks";
 
 /**
- * The privacy policy, from the instance's legal facts (who runs Sokobanko and
- * what the server does) and what Sokobanko itself keeps, below. Server-rendered
+ * The privacy notice, from the instance's legal facts (who runs Sokoban and
+ * what the server does) and what Sokoban itself keeps, below. Server-rendered
  * and indexed. Keep the lists true to the code: they're every cookie and
  * storage key the app writes.
  */
 usePageSeo({
-  title: "Privacy Policy · Sokobanko",
+  title: "Privacy notice · Sokoban",
   description:
-    "What Sokobanko keeps about you, why, where and for how long, and how to download or delete it.",
+    "What Sokoban keeps about you, why, where and for how long, and how to download or delete it.",
   path: "/privacy",
 });
 const { facts, error, updated } = useLegalFacts();
 
-/** What Sokobanko keeps on its server, beyond the platform's processing. */
+/** What Sokoban keeps on its server, beyond the platform's processing. */
 const appData: AppData[] = [
   {
     what: "Your result for each level you solve: your best number of moves and pushes, and when",
@@ -40,29 +40,29 @@ const appData: AppData[] = [
   },
 ];
 
-/** What this browser keeps for Sokobanko (composables/yourData.ts clears it). */
+/** What this browser keeps for Sokoban (composables/yourData.ts clears it). */
 const browser = [
   [
-    "sokobanko-map (cookie)",
+    "sokoban-map (cookie)",
     "the level up next in each collection, so the map loads as you left it",
     "a year",
   ],
   [
-    "sokobanko-map-columns (cookie)",
+    "sokoban-map-columns (cookie)",
     "how many levels fit in a row of your map",
     "a year",
   ],
   [
-    "sokobanko:runs:v2",
+    "sokoban:runs:v2",
     "the levels you've solved here, with your best moves, so they count even offline",
     "until you delete your data",
   ],
   [
-    "sokobanko:run:<level>",
+    "sokoban:run:<level>",
     "a level you're in the middle of, so a reload picks it up",
     "until you finish or delete your data",
   ],
-  ["sokobanko:sound", "whether sound is on", "until you change it"],
+  ["sokoban:sound", "whether sound is on", "until you change it"],
   [
     "nuxt-color-mode",
     "light, dark or the system's theme",
@@ -77,14 +77,14 @@ const browser = [
 
 const doc = computed<Doc | undefined>(() => {
   if (!facts.value) return undefined;
-  const policy = privacyPolicy(facts.value, { appName: "Sokobanko", appData });
+  const policy = privacyNotice(facts.value, { appName: "Sokoban", appData });
   const own = policy.sections.findIndex((s) => s.id === "app");
   policy.sections.splice(own + 1, 0, {
     id: "browser",
     heading: "What this browser keeps",
     blocks: [
       paragraph(
-        "All of it is needed for the game to work, or for something you chose, like a theme. Nothing tracks you.",
+        "Nothing is stored here until your first click on a level, apart from a theme you pick. All of it is needed for the game to work, or for something you chose. Nothing tracks you.",
       ),
       list(
         browser.map(([name, why, kept]) => [
@@ -98,7 +98,7 @@ const doc = computed<Doc | undefined>(() => {
     heading: "Children",
     blocks: [
       paragraph(
-        "Sokobanko is for all ages and asks for nothing that identifies anyone: no name, email or birthday. A parent can delete a child's data under Progress → Your data, or ask by email.",
+        "Sokoban is for all ages and asks for nothing that identifies anyone: no name, email or birthday. A parent can delete a child's data under Progress → Your data, or ask by email.",
       ),
     ],
   });
@@ -106,7 +106,7 @@ const doc = computed<Doc | undefined>(() => {
     ...policy,
     title: "",
     intro: [
-      "Sokobanko is a free puzzle game with no ads. This page says what it keeps about you, why, for how long, and what you can do about it.",
+      "Sokoban is a free puzzle game with no ads. This page says what it keeps about you, why, for how long, and what you can do about it.",
     ],
     footer: undefined,
   };
@@ -114,11 +114,11 @@ const doc = computed<Doc | undefined>(() => {
 </script>
 
 <template>
-  <PageHeader title="Privacy Policy" :subtitle="updated ? `Last updated ${updated}` : undefined" />
+  <PageHeader title="Privacy notice" :subtitle="updated ? `Last updated ${updated}` : undefined" />
   <div class="mx-auto w-full max-w-3xl px-4 py-6">
     <LegalDocument v-if="doc" :doc="doc" />
     <p v-else-if="error" role="alert">
-      The privacy policy can't be shown right now. Email the address in the
+      The privacy notice can't be shown right now. Email the address in the
       legal notice for it.
     </p>
   </div>

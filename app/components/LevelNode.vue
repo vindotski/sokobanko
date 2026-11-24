@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { CheckIcon, LockIcon } from "@lucide/vue";
-import type { LevelState } from "@sokobanko/core";
+import type { LevelState } from "@sokoban/core";
 
 /**
  * One level on the map: a 56px square with its number, linking to its card.

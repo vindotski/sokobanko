@@ -4,9 +4,9 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "app_sokobanko.collections": {
+    "app_sokoban.collections": {
       "name": "collections",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "id": {
           "name": "id",
@@ -47,9 +47,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "app_sokobanko.levels": {
+    "app_sokoban.levels": {
       "name": "levels",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "id": {
           "name": "id",
@@ -95,7 +95,7 @@
           "name": "levels_collection_id_collections_id_fk",
           "tableFrom": "levels",
           "tableTo": "collections",
-          "schemaTo": "app_sokobanko",
+          "schemaTo": "app_sokoban",
           "columnsFrom": ["collection_id"],
           "columnsTo": ["id"],
           "onDelete": "no action",
@@ -108,9 +108,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "app_sokobanko.progress": {
+    "app_sokoban.progress": {
       "name": "progress",
-      "schema": "app_sokobanko",
+      "schema": "app_sokoban",
       "columns": {
         "user_id": {
           "name": "user_id",
@@ -159,7 +159,7 @@
           "name": "progress_level_id_levels_id_fk",
           "tableFrom": "progress",
           "tableTo": "levels",
-          "schemaTo": "app_sokobanko",
+          "schemaTo": "app_sokoban",
           "columnsFrom": ["level_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",

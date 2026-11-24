@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   modules: ["@nuxtjs/color-mode", "shadcn-nuxt"],
   app: {
     head: {
-      title: "Sokobanko",
+      title: "Sokoban",
       htmlAttrs: { lang: "en" },
       // Native scrollbars and form controls follow the theme too.
       meta: [
@@ -61,7 +61,7 @@ export default defineNuxtConfig({
     public: {
       // The site's own address, for canonical links, link previews and the
       // sitemap (NUXT_PUBLIC_SITE_URL elsewhere).
-      siteUrl: "https://sokobanko.app",
+      siteUrl: "https://sokoban.game",
       // Where the browser reaches Spotcraft's user pool. Empty, so it's the
       // app's own /_spotcraft/auth: on Spotcraft, and in `nuxt dev` through
       // the proxy below, so phones on the same network can save too.
@@ -70,7 +70,7 @@ export default defineNuxtConfig({
   },
   $development: {
     nitro: {
-      // The local pool (`spotcraft dev`, AUTH_URL in .env) listens on
+      // The local pool (`spotkit dev`, AUTH_URL in .env) listens on
       // 127.0.0.1 only; the dev server passes /_spotcraft/auth on to it, as
       // Spotcraft's Caddy does in production.
       devProxy: process.env.AUTH_URL

@@ -1,6 +1,6 @@
-# Sokobanko, hosted as an app on Spotcraft (docs/Deploying-on-Spotcraft.md;
+# Sokoban, hosted as an app on Spotcraft (docs/Deploying-on-Spotcraft.md;
 # docs/Self-Hosting.md for other hosts).
-# Build from the repository root: docker build -t sokobanko .
+# Build from the repository root: docker build -t sokoban .
 
 # The build output is plain JavaScript, so it is built once on the native platform.
 FROM --platform=$BUILDPLATFORM node:26.13.0-slim@sha256:5adad64f9a1fca2d51972caa65983634c8a774eb300d72b20f7f2a0f60368072 AS build

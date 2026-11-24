@@ -1,4 +1,4 @@
-import type { LevelJson } from "@sokobanko/core";
+import type { LevelJson } from "@sokoban/core";
 
 /**
  * Levels for stories, as the API returns them. The maps are the published

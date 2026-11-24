@@ -1,11 +1,11 @@
-# Sokobanko
+# Sokoban
 
 The classic box-pushing puzzle in the browser, with server-verified results and no sign-up.
 
-**[Play it at sokobanko.app →](https://sokobanko.app)**
+**[Play it at sokoban.game →](https://sokoban.game)**
 
-[![CI](https://github.com/vindotski/sokobanko/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vindotski/sokobanko/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/vindotski/sokobanko)](https://github.com/vindotski/sokobanko/releases)
+[![CI](https://github.com/vindotski/sokoban/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vindotski/sokoban/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/vindotski/sokoban)](https://github.com/vindotski/sokoban/releases)
 [![License: AGPL-3.0-only](https://img.shields.io/badge/license-AGPL--3.0--only-blue)](LICENSE)
 
 | On a phone | |
@@ -16,10 +16,10 @@ The classic box-pushing puzzle in the browser, with server-verified results and 
 
 ## What it is
 
-Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. Sokobanko brings it to any browser, on a phone or a computer:
+Sokoban is a 1982 puzzle: push every box onto a goal, without ever pulling one. This game brings it to any browser, on a phone or a computer:
 
 - **159 levels:** four to learn the rules, then David W. Skinner's Microban, all 155.
-- **Play straight away.** No account. Your progress is kept even when you're offline.
+- **Play straight away.** No account, and nothing is stored on your device until your first click on a level. Your progress is kept even when you're offline.
 - **Fair scores:** every move and push is counted, each attempt gets three undos, and the server checks each result before keeping it.
 - **Made for everyone:** touch or keyboard, light and dark, screen-reader announcements, and a monochrome board that tells pieces apart by shape, not colour.
 

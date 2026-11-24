@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { LevelJson } from "@sokobanko/core";
+import type { LevelJson } from "@sokoban/core";
 import type {
   CameraState,
   Game,
   GamePadding,
   GameProgress,
-} from "@sokobanko/game";
+} from "@sokoban/game";
 
 const props = defineProps<{
   level: LevelJson;
@@ -28,7 +28,7 @@ let unmounted = false;
 
 onMounted(async () => {
   // PixiJS needs the DOM, so load it only on the client.
-  const { createGame } = await import("@sokobanko/game");
+  const { createGame } = await import("@sokoban/game");
   const el = container.value;
   if (!el || unmounted) return;
 

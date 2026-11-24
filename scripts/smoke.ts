@@ -1,6 +1,6 @@
 /**
  * The self-hosting stack's smoke test (self-host/, docs/Self-Hosting.md):
- * Sokobanko running without Spotcraft, end to end. Against a migrated stack:
+ * Sokoban running without Spotcraft, end to end. Against a migrated stack:
  *
  *   pnpm self-host && pnpm self-host:smoke
  *
@@ -138,9 +138,7 @@ await step(`the guest solves ${first.id}`, async () => {
   );
   ok(solved.moves > 0);
   equal(
-    sql(
-      `SELECT count(*) FROM app_sokobanko.progress WHERE user_id = '${guest}'`,
-    ),
+    sql(`SELECT count(*) FROM app_sokoban.progress WHERE user_id = '${guest}'`),
     "1",
   );
 });
@@ -172,9 +170,7 @@ await step("the guest deletes themselves", async () => {
   equal(await session.json(), null, "the session is still there");
   equal(sql(`SELECT count(*) FROM auth.users WHERE id = '${guest}'`), "0");
   equal(
-    sql(
-      `SELECT count(*) FROM app_sokobanko.progress WHERE user_id = '${guest}'`,
-    ),
+    sql(`SELECT count(*) FROM app_sokoban.progress WHERE user_id = '${guest}'`),
     "0",
     "the result outlived the guest",
   );

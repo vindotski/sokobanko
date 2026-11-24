@@ -13,12 +13,12 @@ import { defineConfig } from "vitest/config";
 const storybook = (theme: "light" | "dark") => ({
   extends: true as const,
   plugins: [storybookTest({ initialGlobals: { theme } })],
-  // The board (@sokobanko/game) is imported only when a story mounts it, too
+  // The board (@sokoban/game) is imported only when a story mounts it, too
   // late for Vite to find PixiJS's CommonJS dependency and pre-bundle it.
   optimizeDeps: {
     include: [
-      "@sokobanko/game > pixi.js",
-      "@sokobanko/game > pixi.js > eventemitter3",
+      "@sokoban/game > pixi.js",
+      "@sokoban/game > pixi.js > eventemitter3",
     ],
   },
   define: {

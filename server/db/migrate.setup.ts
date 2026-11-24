@@ -3,7 +3,7 @@ import { migrateDatabase } from "./migrate.ts";
 
 /**
  * Vitest's global setup: with DATABASE_URL set, applies the migrations once
- * before any database test runs, as `spotcraft dev` does (`pnpm db:migrate`).
+ * before any database test runs, as `spotkit dev` does (`pnpm db:migrate`).
  * Each test file migrating on its own would race.
  */
 export default async function setup() {

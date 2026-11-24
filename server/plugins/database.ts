@@ -15,7 +15,7 @@ export default defineNitroPlugin(async (nitroApp) => {
   nitroApp.hooks.hook("close", closeDb);
   if (import.meta.prerender || process.argv[2] !== "migrate") return;
   const storage = useStorage("assets:migrations");
-  const folder = await mkdtemp(join(tmpdir(), "sokobanko-migrations-"));
+  const folder = await mkdtemp(join(tmpdir(), "sokoban-migrations-"));
   try {
     for (const key of await storage.getKeys()) {
       const file = join(folder, ...key.split(":"));

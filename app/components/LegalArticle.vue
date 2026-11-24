@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * The frame of the privacy policy, terms and legal notice: a header with the
+ * The frame of the privacy notice, terms and legal notice: a header with the
  * date they last changed, then readable prose (headings, paragraphs, lists
  * and links styled here, so the pages are plain markup).
  */

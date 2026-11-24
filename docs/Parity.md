@@ -1,6 +1,6 @@
-This page compares Sokobanko with the original Sokoban and with today's most-installed Sokoban apps, and lists what's planned to close the gaps.
+This page compares this game with the original Sokoban and with today's most-installed Sokoban apps, and lists what's planned to close the gaps.
 
-**The difference in kind:** the others are standalone programs that ship their levels inside the app. Sokobanko is a web page. Its levels live in Postgres, written by migrations and served by its own small server. Every run is an input log of LURD moves (and `z` for undos) that the server replays before it keeps a result. So parity has two halves. The first is to play at least as well as the originals: undo, counters, controls. The second is to offer what being on the web makes possible: shareable links, levels that can be edited without a release, and later on, verified leaderboards.
+**The difference in kind:** the others are standalone programs that ship their levels inside the app. Sokoban is a web page. Its levels live in Postgres, written by migrations and served by its own small server. Every run is an input log of LURD moves (and `z` for undos) that the server replays before it keeps a result. So parity has two halves. The first is to play at least as well as the originals: undo, counters, controls. The second is to offer what being on the web makes possible: shareable links, levels that can be edited without a release, and later on, verified leaderboards.
 
 **Compared** (checked 2026-11-03):
 - **The original**, *Sokoban* by Thinking Rabbit, 1982, on the PC-8801 and FM-7 (shown as 1982).
@@ -13,13 +13,13 @@ No iOS-only Sokoban app had a meaningful number of ratings. The apps are picked 
 
 **Others:** ✅ yes · ◐ partly · ✖ no · ? not verified (store listings and reviews don't say)
 
-**Sokobanko:** ✅ built · ◐ partly built · 📐 designed · ⏳ planned · ✖ not planned
+**Sokoban:** ✅ built · ◐ partly built · 📐 designed · ⏳ planned · ✖ not planned
 
 ## Rules and core play
 
 All of them use the same rules: push, never pull, one box at a time, and solved when every box is on a goal. The 1982 original also has breakable walls from level 11 on, which later versions dropped.
 
-| Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
+| Feature | Sokoban | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Move and push counters | ✅ | ? | ✅ | ? | ✅ | ✅ |
 | Undo | ◐ 3 per attempt, refilled by Restart, checked by the server (button) | ? | ◐ one step | ✅ unlimited | ? | ✅ unlimited |
@@ -38,11 +38,11 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 **Worth knowing:**
 - **Unlocking in order:** each collection unlocks in its own order. A solve unlocks the next level in the browser at once, and the server replays the solution to verify it, later if it can't be reached at the time.
-- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions. Sokobanko sits in between: three undos per attempt, and the server replays the full input log, undos included, so the limit holds for saved results.
+- **Restart limits:** the 1982 release allowed only 4 restarts per level, and the 1988 one only one undo step. Unlimited undo became standard with later PC and mobile versions. Sokoban sits in between: three undos per attempt, and the server replays the full input log, undos included, so the limit holds for saved results.
 
 ## Controls and UX
 
-| Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
+| Feature | Sokoban | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Keyboard movement | ✅ arrows and WASD | ✅ numpad | ✅ arrows | ✖ | ? | ? |
 | Keyboard undo, redo and restart | ✅ Z or U, Y, R | ? | ✅ U, R | ✖ | ? | ? |
@@ -56,11 +56,11 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Reduced motion | ✅ celebrations respect it | ✖ | ✖ | ? | ? | ? |
 | Screen readers | ✅ pushes, undos and solves announced in a live region; a labelled board | ✖ | ✖ | ✖ | ? | ? |
 
-**Worth knowing:** the strongest accessibility feature list found was in a smaller app, [Sokoban by Accessible Apps](https://play.google.com/store/search?q=sokoban&c=apps) (5K+ installs). Its listing claims TalkBack support, WCAG AA contrast and tap-to-walk. Sokobanko's monochrome board tells the pieces apart by shape, not colour.
+**Worth knowing:** the strongest accessibility feature list found was in a smaller app, [Sokoban by Accessible Apps](https://play.google.com/store/search?q=sokoban&c=apps) (5K+ installs). Its listing claims TalkBack support, WCAG AA contrast and tap-to-walk. Sokoban's monochrome board tells the pieces apart by shape, not colour.
 
 ## Levels and formats
 
-| Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
+| Feature | Sokoban | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Bundled levels | 159 in 2 collections | 20 | 50 | a free set and paid packs | about 600 (?) | 2,950 in 34 collections |
 | Well-known collections | ✅ Microban, credited | Original | Original | Falcon's official sets | Original, Extra and its own | Original, Microban, Maelstrom, … |
@@ -81,7 +81,7 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 
 ## Progress, community and tools
 
-| Feature | Sokobanko | 1982 | 1988 | Touch | Orange Void | Collection |
+| Feature | Sokoban | 1982 | 1988 | Touch | Orange Void | Collection |
 | --- | --- | --- | --- | --- | --- | --- |
 | Progress saved | ✅ in the browser first, then verified and kept by the server | ✖ | ✖ lost at power off | ✅ | ✖ | ✅ |
 | Best result per level | ✅ fewest moves | ✖ | ✅ fewest pushes, moves and time | ? | ? | ✅ |
@@ -94,10 +94,10 @@ All of them use the same rules: push, never pull, one box at a time, and solved 
 | Ads or purchases | ✖ on purpose | boxed | boxed | ads and purchases | ads | ads |
 
 **On purpose:**
-- **No ads and no purchases:** Sokobanko is a portfolio piece and a showcase for Spotcraft.
+- **No ads and no purchases:** Sokoban is a portfolio piece and a showcase for Spotcraft.
 - **No hints or solver:** solving is NP-hard and PSPACE-complete, and good solvers (Rolling Stone, then Festival's FESS, the first to solve all 90 XSokoban problems) are research projects of their own. Deadlock warnings are the useful, cheap part of what solvers do.
 
-**Worth knowing:** being able to verify scores is what sets Sokoban apart, because a solution can be replayed. Sokobanko's server already replays every run before keeping it, so verified leaderboards need accounts and a page to show them, not a new trust model.
+**Worth knowing:** being able to verify scores is what sets Sokoban apart, because a solution can be replayed. Sokoban's server already replays every run before keeping it, so verified leaderboards need accounts and a page to show them, not a new trust model.
 
 ## Sources
 
