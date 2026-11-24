@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { parseLevel } from "@sokobanko/core";
+import { parseLevel } from "@sokoban/core";
 import { onKeyStroke } from "@vueuse/core";
 
 /**
@@ -43,10 +43,9 @@ const unlocker = computed(() =>
 );
 
 usePageSeo({
-  title: () =>
-    `${level.value?.title} · Sokoban level ${level.value?.number} · Sokobanko`,
+  title: () => `${level.value?.title} · Level ${level.value?.number} · Sokoban`,
   description: () =>
-    `Level ${level.value?.number} of ${collection.value?.title ?? "Sokobanko"}: push ${boxes.value} ${boxes.value === 1 ? "box" : "boxes"} onto ${boxes.value === 1 ? "its goal" : "their goals"}. Free to play in your browser, no sign-up.`,
+    `Level ${level.value?.number} of ${collection.value?.title ?? "Sokoban"}: push ${boxes.value} ${boxes.value === 1 ? "box" : "boxes"} onto ${boxes.value === 1 ? "its goal" : "their goals"}. Free to play in your browser, no sign-up.`,
   path: () => `/levels/${level.value?.id}`,
 });
 

@@ -1,4 +1,4 @@
-import { levelStates } from "@sokobanko/core";
+import { levelStates } from "@sokoban/core";
 import { describe, expect, it } from "vitest";
 import {
   hintFromStates,

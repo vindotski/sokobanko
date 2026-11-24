@@ -1,4 +1,4 @@
-import type { Direction } from "@sokobanko/core";
+import type { Direction } from "@sokoban/core";
 
 /**
  * Snaps a drag vector to the dominant axis, or `null` inside the dead zone.

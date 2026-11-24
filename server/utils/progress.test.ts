@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { levels } from "../db/schema";
 import { type Completion, readProgress, recordBest } from "./progress";
 
-// Against the local stack: `pnpm exec spotcraft dev`, then
+// Against the local stack: `pnpm exec spotkit dev`, then
 // `set -a; . ./.env; set +a; pnpm test`. Players are guests of its user pool,
 // as on Spotcraft. Skipped without DATABASE_URL.
 const url = process.env.DATABASE_URL;
@@ -22,12 +22,16 @@ describe.skipIf(!url)("progress in Postgres", () => {
    * guests per address doesn't stop repeated runs.
    */
   const newPlayer = async () => {
+    const address = `198.51.100.${Math.floor(Math.random() * 250)}`;
     const response = await fetch(`${authUrl}/sign-in/anonymous`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         origin: "http://localhost:3000",
-        "x-spotcraft-client-ip": `198.51.100.${Math.floor(Math.random() * 250)}`,
+        // Spotpass 0.2 reads x-client-ip; the 0.1 pool in Spotkit's local
+        // stack still reads the older name.
+        "x-client-ip": address,
+        "x-spotcraft-client-ip": address,
       },
       body: "{}",
     });

@@ -1,7 +1,7 @@
 import type { StorybookConfig } from "@storybook-vue/nuxt";
 
 /**
- * Storybook for Sokobanko's components, inside the Nuxt app (auto-imports,
+ * Storybook for Sokoban's components, inside the Nuxt app (auto-imports,
  * color mode and Tailwind work in stories). Stories live in stories/, outside
  * app/components, where Nuxt would register them as components.
  */
@@ -13,14 +13,14 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
     "@storybook/addon-vitest",
   ],
-  // The board (@sokobanko/game) is imported only when a story mounts it, too
+  // The board (@sokoban/game) is imported only when a story mounts it, too
   // late for Vite to find PixiJS's CommonJS dependency and pre-bundle it.
   viteFinal: (config) => {
     config.optimizeDeps ??= {};
     config.optimizeDeps.include = [
       ...(config.optimizeDeps.include ?? []),
-      "@sokobanko/game > pixi.js",
-      "@sokobanko/game > pixi.js > eventemitter3",
+      "@sokoban/game > pixi.js",
+      "@sokoban/game > pixi.js > eventemitter3",
     ];
     return config;
   },

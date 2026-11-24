@@ -1,5 +1,5 @@
 import type { LegalFacts } from "@kodentuzo/spotkit";
-import { privacyPolicy } from "@kodentuzo/spotstrap/blocks";
+import { privacyNotice } from "@kodentuzo/spotstrap/blocks";
 import type { Meta, StoryObj } from "@storybook-vue/nuxt";
 import { expect, userEvent, within } from "storybook/test";
 import LegalDocument from "~/components/LegalDocument.vue";
@@ -8,12 +8,12 @@ import YourData from "~/components/YourData.vue";
 
 /**
  * Privacy: Progress → Your data (Spotstrap's YourData block), the links to
- * the legal pages, and the privacy policy rendered from legal facts.
+ * the legal pages, and the privacy notice rendered from legal facts.
  */
 const meta = {
   title: "App/Legal",
   component: YourData,
-  args: { appName: "Sokobanko" },
+  args: { appName: "Sokoban" },
 } satisfies Meta<typeof YourData>;
 
 export default meta;
@@ -76,13 +76,13 @@ const facts: LegalFacts = {
   ],
 };
 
-export const PrivacyPolicy: Story = {
+export const PrivacyNotice: Story = {
   decorators: [() => ({ template: '<div class="w-[40rem]"><story /></div>' })],
   render: () => ({
     components: { LegalDocument },
     setup: () => ({
-      doc: privacyPolicy(facts, {
-        appName: "Sokobanko",
+      doc: privacyNotice(facts, {
+        appName: "Sokoban",
         appData: [
           {
             what: "Your result for each level",

@@ -4,7 +4,7 @@ import { SCHEMA } from "./schema.ts";
 
 const { escapeIdentifier: id } = pg;
 
-/** Any constant works; it only has to be the same for every run migrating Sokobanko. */
+/** Any constant works; it only has to be the same for every run migrating Sokoban. */
 const LOCK = 7_605_217_310;
 
 /**

@@ -4,7 +4,7 @@ import SokobanGame from "~/components/SokobanGame.vue";
 import { firstPush, microban7, twoBoxes } from "../fixtures/levels";
 
 /**
- * The real PixiJS board (@sokobanko/game). It follows the theme, moves with
+ * The real PixiJS board (@sokoban/game). It follows the theme, moves with
  * the arrow keys or WASD, and reports each move, the solve, and the camera.
  */
 const meta = {

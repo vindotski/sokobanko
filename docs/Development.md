@@ -37,7 +37,7 @@ CI does the same, against a fresh stack.
 
 1. Edit `server/db/schema.ts`.
 2. Run `pnpm db:generate` and review the SQL it writes to `server/db/migrations/`.
-3. Run `pnpm db:migrate`, or `pnpm exec spotcraft dev`, which migrates too.
+3. Run `pnpm db:migrate`, or `pnpm exec spotkit dev`, which migrates too.
 
 **Migrations only ever add.** During a release the old and new versions both run for a few seconds, and a rollback runs an older image against a newer database. Renaming or dropping something needs its own plan ([Deploying on Spotcraft](Deploying-on-Spotcraft.md)). Don't edit a migration once it's been applied.
 
@@ -72,7 +72,7 @@ Only add levels whose terms allow it, and keep their credit (the README lists th
 
 [Storybook](https://storybook.js.org) documents the components and tests them. It runs inside the Nuxt app (`@storybook-vue/nuxt`), so auto-imports, color mode and Tailwind work in stories.
 
-- **Where things are:** stories live in `stories/`: `ui/` for the shadcn-vue primitives, `app/` for Sokobanko's components, and `docs/` for the Introduction and the design tokens (colours, type, sizing, the board's pieces). Level fixtures are in `stories/fixtures/levels.ts`. Stories stay out of `app/components`, because Nuxt would register them as components there.
+- **Where things are:** stories live in `stories/`: `ui/` for the shadcn-vue primitives, `app/` for Sokoban's components, and `docs/` for the Introduction and the design tokens (colours, type, sizing, the board's pieces). Level fixtures are in `stories/fixtures/levels.ts`. Stories stay out of `app/components`, because Nuxt would register them as components there.
 - **Toolbars:** **Theme** switches light and dark (the `dark` class on `<html>`, as color mode sets it), and **Viewport** switches phone and desktop.
 - **Leaving out:** components that read the TanStack collections or the server (the pages, `ProgressSync`) aren't storied.
 
@@ -114,4 +114,4 @@ The coding agents' skills (Nuxt, Vue, PixiJS, shadcn-vue and others) aren't comm
 npx skills experimental_install
 ```
 
-Two skills are committed instead, in `.claude/skills/`: `commit-message` and `github-workflows`, Sokobanko's own copies of the shared skills.
+Two skills are committed instead, in `.claude/skills/`: `commit-message` and `github-workflows`, Sokoban's own copies of the shared skills.

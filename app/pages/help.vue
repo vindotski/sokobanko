@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { UNDO_BUDGET } from "@sokobanko/core";
+import { UNDO_BUDGET } from "@sokoban/core";
 
 /**
  * Help: how to play, the controls, the FAQ and about. Server-rendered and
  * indexed. Settings links to #controls and #about.
  */
 usePageSeo({
-  title: "How to play · Sokobanko",
+  title: "How to play · Sokoban",
   description:
     "How to play Sokoban: push every box onto a goal, never pull. Controls for touch and keyboard, answers to common questions, and where the levels come from.",
   path: "/help",
@@ -42,12 +42,12 @@ const questions = [
     question: "What do you keep about me?",
     answer:
       "Only what's needed to save your progress: a guest with a random id, its session, and your best moves and pushes per level. No name, email, ads or tracking. You can download or delete it all from Progress → Your data. The details are in the",
-    link: { to: "/privacy", label: "privacy policy" },
+    link: { to: "/privacy", label: "privacy notice" },
   },
   {
     question: "Where do the levels come from?",
     answer:
-      "The first four were made for Sokobanko, except Hello World!, from DoctorLai's sokoban-web. The rest are David W. Skinner's Microban, 155 small puzzles that each show an idea, shared freely as long as he's credited.",
+      "The first four were made for Sokoban, except Hello World!, from DoctorLai's sokoban-web. The rest are David W. Skinner's Microban, 155 small puzzles that each show an idea, shared freely as long as he's credited.",
   },
   {
     question: "Can I make my own levels?",
@@ -144,7 +144,7 @@ const questions = [
       <p class="text-small text-muted-foreground">
         The code is open source under the AGPL-3.0-only licence, on
         <a
-          href="https://github.com/vindotski/sokobanko"
+          href="https://github.com/vindotski/sokoban"
           class="underline underline-offset-4"
           target="_blank"
           rel="noopener noreferrer"

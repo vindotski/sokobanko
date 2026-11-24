@@ -1,4 +1,4 @@
-# Sokobanko without Spotcraft (docs/Self-Hosting.md): Postgres, the user pool,
+# Sokoban without Spotcraft (docs/Self-Hosting.md): Postgres, the user pool,
 # the app and Caddy, on http://localhost:8080. CI runs it and scripts/smoke.ts
 # against it. The passwords and secret are fixed, for a throwaway local stack:
 # change them, and put TLS in front, before running it anywhere else.
@@ -7,15 +7,16 @@
 #   pnpm self-host:smoke  the smoke test
 #   pnpm self-host:down   stop it and delete its data
 #
-# LEGAL_FACTS is the contents of legal-facts.json (the scripts set it).
-name: sokobanko-self-host
+# The legal facts are legal-facts.json, served by Caddy at
+# /_spotcraft/legal.json, as Spotcraft serves them.
+name: sokoban-self-host
 
 x-pool: &pool
   AUTH_ISSUER: http://localhost:8080/pools/main
 
 services:
   # Spotcraft's Postgres image. init.sql makes the roles and schemas on a fresh
-  # volume, as Spotcraft's servers and `spotcraft dev` have them.
+  # volume, as Spotcraft's servers and `spotkit dev` have them.
   postgres:
     image: postgres:18.7-trixie@sha256:2ea8630df176ad090ec92136dee850397c5af8781e4bcf2e4162593691c61bbc
     restart: unless-stopped
@@ -39,8 +40,9 @@ services:
       timeout: 5s
       retries: 30
 
-  # The user pool, from the Spotcraft image of the version in package.json
-  # (@kodentuzo/spotcraft). It migrates the auth schema when it starts.
+  # The user pool, from the pinned Spotcraft 0.9.1 image (the last that holds
+  # the pool; Spotcraft 0.20 moved it to Spotpass). It migrates the auth schema
+  # when it starts.
   auth:
     image: vindotski/spotcraft:0.9.1@sha256:e62ced5b774078679b0063ed16e64ec6c73f39a1f03d767231e9d0087ab3f8d5
     restart: unless-stopped
@@ -68,18 +70,19 @@ services:
   # Read-only, as on Spotcraft: only /tmp is written, by the migrations. The
   # health check is the image's, checked more often.
   app:
-    image: ${SOKOBANKO_IMAGE:-sokobanko:self-host}
+    image: ${SOKOBAN_IMAGE:-sokoban:self-host}
     restart: unless-stopped
     read_only: true
     tmpfs:
       - /tmp
     environment:
       <<: *pool
-      DATABASE_URL: postgres://app_sokobanko:self-host-app-password@postgres:5432/apps
+      DATABASE_URL: postgres://app_sokoban:self-host-app-password@postgres:5432/apps
       AUTH_URL: http://auth:3000/_spotcraft/auth
       AUTH_JWKS_URL: http://auth:3000/_spotcraft/auth/jwks
       NUXT_PUBLIC_SITE_URL: http://localhost:8080
-      LEGAL_FACTS: ${LEGAL_FACTS:-}
+      # Where the app reads the legal facts: the Caddy below serves them.
+      LEGAL_URL: http://caddy:8080/_spotcraft/legal.json
     depends_on:
       postgres:
         condition: service_healthy

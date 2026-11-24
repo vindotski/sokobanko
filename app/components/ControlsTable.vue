@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UNDO_BUDGET } from "@sokobanko/core";
+import { UNDO_BUDGET } from "@sokoban/core";
 
 // Every way to play, on a touch screen and with a keyboard and mouse: in the
 // game's help sheet and on the Help page.

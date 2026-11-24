@@ -1,4 +1,4 @@
-import type { LevelRef, LevelState } from "@sokobanko/core";
+import type { LevelRef, LevelState } from "@sokoban/core";
 
 /** The Settings sheet, opened from any page's header or the sidebar. */
 export const useSettingsOpen = () => useState("settings-open", () => false);

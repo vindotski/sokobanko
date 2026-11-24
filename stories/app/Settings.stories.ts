@@ -22,7 +22,7 @@ type Story = StoryObj<typeof meta>;
 /** Sound is a switch; it remembers the choice. */
 export const Open: Story = {
   play: async () => {
-    localStorage.removeItem("sokobanko:sound");
+    localStorage.removeItem("sokoban:sound");
     const sheet = within(
       await within(document.body).findByRole("dialog", { name: "Settings" }),
     );
@@ -31,7 +31,7 @@ export const Open: Story = {
     await userEvent.click(sound);
     await expect(sound).toHaveAttribute("aria-checked", "true");
     await userEvent.click(sound);
-    localStorage.removeItem("sokobanko:sound");
+    localStorage.removeItem("sokoban:sound");
     // And the way to the legal pages.
     await expect(
       within(sheet.getByRole("navigation", { name: "Legal" })).getAllByRole(

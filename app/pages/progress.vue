@@ -11,7 +11,7 @@ const { data: guest } = useAccount();
 const { levels, completions } = useProgress();
 const yourData = useYourData();
 
-useSeoMeta({ title: "Progress · Sokobanko", robots: "noindex" });
+useSeoMeta({ title: "Progress · Sokoban", robots: "noindex" });
 
 const unsynced = computed(
   () => completions.value.filter((c) => !c.synced).length,
@@ -151,14 +151,13 @@ const stats = computed(() => {
     </section>
 
     <YourData
-      app-name="Sokobanko"
+      app-name="Sokoban"
       :export-app="yourData.exportApp"
       @deleted="yourData.forget"
     >
-      <AnalyticsSwitch />
       <p class="text-small text-muted-foreground">
         What's kept, and why: the
-        <NuxtLink to="/privacy" class="underline underline-offset-4">privacy policy</NuxtLink>.
+        <NuxtLink to="/privacy" class="underline underline-offset-4">privacy notice</NuxtLink>.
       </p>
     </YourData>
   </div>

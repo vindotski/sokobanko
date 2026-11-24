@@ -66,7 +66,7 @@ const levels = maps.map((map, index) => {
 
 // The app's schema (SCHEMA in server/db/schema.ts), named so the
 // migration doesn't depend on the role's search path.
-const SCHEMA = '"app_sokobanko"';
+const SCHEMA = '"app_sokoban"';
 
 const text = (value: string | undefined) =>
   value === undefined ? "NULL" : `'${value.replaceAll("'", "''")}'`;

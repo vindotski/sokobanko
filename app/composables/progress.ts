@@ -1,4 +1,4 @@
-import { isBetter, type LevelState, levelStates } from "@sokobanko/core";
+import { isBetter, type LevelState, levelStates } from "@sokoban/core";
 import { useLiveQuery } from "@tanstack/vue-db";
 import { useQuery } from "@tanstack/vue-query";
 import { localData } from "~/collections";

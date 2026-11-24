@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Redo2Icon, RotateCcwIcon, Undo2Icon } from "@lucide/vue";
-import { UNDO_BUDGET } from "@sokobanko/core";
-import type { GameProgress } from "@sokobanko/game";
+import { UNDO_BUDGET } from "@sokoban/core";
+import type { GameProgress } from "@sokoban/game";
 
 /** Undo, redo and restart: 44px, labelled, with the keys in their tooltips. */
 defineProps<{ progress: GameProgress }>();

@@ -1,28 +1,78 @@
 # Changelog
 
-All notable changes to Sokobanko are documented in this file.
+All notable changes to Sokoban are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html). A `vX.Y.Z` tag
-publishes the image `vindotski/sokobanko` as `X.Y.Z`, `X.Y` and `latest`, and deploys it
+publishes the image `vindotski/sokoban` as `X.Y.Z`, `X.Y` and `latest`, and deploys it
 (`.github/workflows/ci.yml`, `docs/Contributing.md`).
 
 ## [Unreleased]
 
+Sokoban 0.9.0 is the game under its new name, on Spotcraft 0.21 and Spotkit 0.5. It is a
+breaking release: read "Upgrading from 0.8" first.
+
 ### Added
-- **A self-hosting stack** in `self-host/`: Postgres, Spotcraft's user pool, the app and Caddy in
-  one Compose file, with example legal facts. `pnpm self-host` runs it on
-  <http://localhost:8080>, and `pnpm self-host:smoke` checks it end to end: the legal pages, a
-  guest's solve in both exports, and that deleting the guest deletes the result. CI's new
-  `self-host` job runs it on every pull request, so Sokobanko keeps working without Spotcraft
+- **A self-hosting stack** in `self-host/`: Postgres, a user pool, the app and Caddy in one
+  Compose file, with example legal facts. `pnpm self-host` runs it on <http://localhost:8080>,
+  and `pnpm self-host:smoke` checks it end to end: the legal pages, a guest's solve in both
+  exports, and that deleting the guest deletes the result. CI's new `self-host` job runs it on
+  every pull request, so Sokoban keeps working without Spotcraft
   ([Self-Hosting](docs/Self-Hosting.md)).
+- **Nothing is stored on the device before the player's first click on a level.** Spotkit's
+  storage switch is off until then (or until the first move of a level opened from a link). Only
+  then does the app start its upload outbox, keep a half-played level or the sound choice, or
+  (at the first solve) make a guest in the pool. A later visit finds the switch on by the pool's
+  session cookie. The privacy notice says so.
+- **A release also goes to the instance's registry.** A `v*` tag copies the image to
+  `registry.vin.ski/sokoban` (Spotdeck) with a push token, then calls the app's deploy hook with
+  the version and waits until it is live ([Deploying on Spotcraft](docs/Deploying-on-Spotcraft.md)).
 
 ### Changed
+- **Breaking, the name:** Sokobanko is now **Sokoban**: the product name, page titles and link
+  previews, the package and workspace packages (`@sokoban/core`, `@sokoban/game`), the browser's
+  storage keys (`sokoban:*`) and cookies (`sokoban-map`, `sokoban-map-columns`), the legal pages'
+  wording and the image, `vindotski/sokoban` on Docker Hub (the old `vindotski/sokobanko` keeps
+  its versions). The game, its levels and the migrations' SQL are unchanged, apart from the
+  schema's name below.
+- **Breaking, the address:** the game is at **https://sokoban.game**. sokobanko.app was the old
+  address.
+- **Breaking, a fresh database:** the Spotcraft app is `sokoban`, so its schema is `app_sokoban`
+  (it was `app_sokobanko`) and the migrations create the tables there. Nothing is moved: players'
+  results on the old address are not carried over, and the browser's old keys do not apply on the
+  new address.
+- **Spotcraft 0.21:** the app no longer reads `LEGAL_FACTS`. The server reads the legal facts
+  from `/_spotcraft/legal.json` on the app's own address (`PUBLIC_URL`; `LEGAL_URL` overrides it),
+  through `@kodentuzo/spotkit/client`, and caches them for a minute.
+- **Spotkit 0.5.0 and Spotstrap 0.4.0** (were 0.2.0 each). Visits are counted one way, with no
+  consent and no opt-out, so the "Count my visits" switch in Progress → Your data is gone. The
+  legal pages say "privacy notice", as Spotstrap's block does.
+- **Local development uses `spotkit dev`** (`pnpm exec spotkit dev`, from `@kodentuzo/spotkit`);
+  `spotcraft.json` is now `spotkit.json`, and `@kodentuzo/spotcraft` is no longer a dev
+  dependency. `spotkit dev` keeps running to serve its stand-ins for analytics and legal facts.
+  `.env.example` lists the new names.
+- **CI** starts `spotkit dev` for the database tests, and the `deploy` job copies the image to
+  the registry before calling the hook, with the version (`0.9.0`) as the tag, not `sha-…`. It
+  needs the production environment's `SPOTCRAFT_REGISTRY` and `SPOTCRAFT_HOOK_URL` variables and
+  `SPOTCRAFT_PUSH_TOKEN` and `SPOTCRAFT_DEPLOY_TOKEN` secrets.
 - **Docs:** the docs are read in `docs/` (index: `docs/README.md`), not a wiki; CI's `wiki` job
   and the wiki's sidebar are gone. `CLAUDE.md` and the skills point at the shared rules in
-  kodentuzo/.github.
-- Local development uses `spotcraft dev` from `@kodentuzo/spotcraft` 0.9.1, whose user pool has
-  the export that Progress → Your data downloads.
+  kodentuzo/.github. [Deploying on Spotcraft](docs/Deploying-on-Spotcraft.md) is for vin.ski on
+  Spotcraft 0.21, set up in Studio.
+
+### Removed
+- The one-time migration of progress kept before TanStack DB (`sokoban:progress:v1`): it can't
+  apply on a new address.
+
+### Upgrading from 0.8
+1. **Players:** the game moved to https://sokoban.game with a fresh database. Progress made on
+   sokobanko.app stays there, and is not copied.
+2. **Owner:** make the app `sokoban` in Studio with the image `registry.vin.ski/sokoban`, domain
+   `sokoban.game` and no `LEGAL_FACTS`; set the secrets and variables from
+   [Deploying on Spotcraft](docs/Deploying-on-Spotcraft.md#ci); create `vindotski/sokoban` on
+   Docker Hub; push a `v0.9.0` tag.
+3. **Developers:** run `pnpm install`, then `pnpm exec spotkit dev`. It makes a new local stack
+   with its own empty data. Stop the old one (from `spotcraft dev`) with its own `stop` command.
 
 ## [0.8.0] - 2026-11-21
 
@@ -279,7 +329,7 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokobanko/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokoban/compare/v0.8.0...HEAD
 [0.8.0]: https://github.com/vindotski/sokobanko/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/vindotski/sokobanko/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/vindotski/sokobanko/compare/v0.5.0...v0.6.0

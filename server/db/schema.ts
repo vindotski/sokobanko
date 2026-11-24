@@ -13,13 +13,13 @@ import {
 import { users } from "./auth.ts";
 
 /**
- * Sokobanko's own tables, in its schema on Spotcraft, `app_sokobanko` (the
+ * Sokoban's own tables, in its schema on Spotcraft, `app_sokoban` (the
  * same name locally). Named here rather than left to the search path, as
  * drizzle-kit would otherwise write `"public".` into the foreign keys. Not
  * exported, so drizzle-kit doesn't try to create the schema, which Spotcraft
  * owns. The players are in Spotcraft's user pool, `auth.users`.
  */
-export const SCHEMA = "app_sokobanko";
+export const SCHEMA = "app_sokoban";
 const app = pgSchema(SCHEMA);
 
 /**

@@ -1,4 +1,4 @@
-import { parseLevel, replay } from "@sokobanko/core";
+import { parseLevel, replay } from "@sokoban/core";
 import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";

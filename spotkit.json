@@ -1,0 +1,1 @@
+{ "name": "sokoban", "migrate": "pnpm db:migrate" }

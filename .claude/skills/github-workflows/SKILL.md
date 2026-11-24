@@ -1,6 +1,6 @@
 ---
 name: github-workflows
-description: Sokobanko's conventions for GitHub Actions workflows and Dependabot — SHA-pinned actions, least-privilege permissions, environments, OIDC publishing, branch triggers, required checks. Use when creating, editing or reviewing anything in .github/.
+description: Sokoban's conventions for GitHub Actions workflows and Dependabot — SHA-pinned actions, least-privilege permissions, environments, OIDC publishing, branch triggers, required checks. Use when creating, editing or reviewing anything in .github/.
 ---
 
 # GitHub workflows
@@ -48,7 +48,7 @@ There's no local runner. Check syntax with `actionlint` when it's installed
 (`brew install actionlint`); otherwise read the diff carefully and let the PR's CI run prove it. A
 workflow that only runs on `main` or tags can't be tested on a PR: say so to the user.
 
-## In Sokobanko
+## In Sokoban
 
 - `ci.yml` runs on PRs, pushes to `main` and `v*.*.*` tags:
   - `branch-name`, `verify` (against Spotcraft's local stack), `storybook`, `image` (built, pushed

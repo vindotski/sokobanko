@@ -1,4 +1,4 @@
-import { type LevelRef, type LevelState, levelStates } from "@sokobanko/core";
+import { type LevelRef, type LevelState, levelStates } from "@sokoban/core";
 
 /**
  * The map hint: where the player is up to, in a small cookie, so the server
@@ -12,9 +12,9 @@ import { type LevelRef, type LevelState, levelStates } from "@sokobanko/core";
  * next (one added later in the middle) shows as locked until the real
  * progress arrives.
  */
-export const MAP_HINT_COOKIE = "sokobanko-map";
+export const MAP_HINT_COOKIE = "sokoban-map";
 /** The map's levels per row, so it isn't drawn 4 wide and then re-flowed. */
-export const MAP_COLUMNS_COOKIE = "sokobanko-map-columns";
+export const MAP_COLUMNS_COOKIE = "sokoban-map-columns";
 /** A year, renewed whenever the progress changes. */
 export const MAP_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
