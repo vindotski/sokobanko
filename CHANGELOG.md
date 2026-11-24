@@ -9,6 +9,8 @@ publishes the image `vindotski/sokoban` as `X.Y.Z`, `X.Y` and `latest`, and depl
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-24
+
 Sokoban 0.9.0 is the game under its new name, on Spotcraft 0.21 and Spotkit 0.5. It is a
 breaking release: read "Upgrading from 0.8" first.
 
@@ -329,7 +331,8 @@ The first release, live at https://sokobanko.app on [Spotcraft](https://spotcraf
   in `DEPLOY.md`.
 - The MIT license.
 
-[Unreleased]: https://github.com/vindotski/sokoban/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/vindotski/sokoban/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/vindotski/sokoban/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/vindotski/sokobanko/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/vindotski/sokobanko/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/vindotski/sokobanko/compare/v0.5.0...v0.6.0
